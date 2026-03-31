@@ -1,0 +1,21 @@
+# Backend - not needed for mobile build
+backend/
+
+# Admin panel - not needed for mobile build
+admin/
+
+# Videos - too large (616 MP4 files ~3GB)
+videos/
+
+# Temp files
+temp-expo/
+*.log
+
+# Git
+.git/
+
+# Large binary files
+*.mp4
+*.zip
+*.tar.gz
+*.rar

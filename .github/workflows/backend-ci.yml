@@ -1,0 +1,74 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bigbossfitness_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore backend/BigBoss.sln
+
+      - name: Build
+        run: dotnet build backend/BigBoss.sln --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test backend/BigBoss.Tests --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+        env:
+          BBF_DATABASE_URL: "Host=localhost;Database=bigbossfitness_test;Username=test;Password=test"
+          BBF_JWT_SECRET: "test-secret-key-for-ci-minimum-32-chars"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: backend/BigBoss.Tests/TestResults/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
+
+      - name: Check formatting
+        run: dotnet format backend/BigBoss.sln --verify-no-changes --verbosity diagnostic
