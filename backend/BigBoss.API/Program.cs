@@ -214,10 +214,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // Listen on all interfaces for mobile development
-if (app.Environment.IsDevelopment())
-{
-    app.Urls.Add("http://0.0.0.0:5000");
-}
+app.Urls.Clear();
+app.Urls.Add("http://0.0.0.0:5050");
 
 Log.Information("Big Boss Fitness API starting on {Urls}", app.Urls);
 

@@ -7,7 +7,7 @@ const DEV_API_HOST = Platform.OS === 'android' ? '192.168.19.194' : 'localhost';
 export const API_CONFIG = {
   // Base URL - change DEV_API_HOST above when your IP changes
   BASE_URL: __DEV__
-    ? `http://${DEV_API_HOST}:5000`
+    ? `http://${DEV_API_HOST}:5050`
     : 'https://api.bigbossfitness.ma',
 
   // API Version
