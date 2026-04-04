@@ -5,6 +5,7 @@ using BigBoss.Core.Enums;
 using BigBoss.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BigBoss.Infrastructure.Migrations
 {
     [DbContext(typeof(BigBossDbContext))]
-    partial class BigBossDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404223113_AddChallengeParticipation")]
+    partial class AddChallengeParticipation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

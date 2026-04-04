@@ -475,6 +475,22 @@ export default function HomeScreen() {
                 <View style={styles.separatorLine} />
               </View>
 
+              {/* ---------- Challenges ---------- */}
+              <TouchableOpacity
+                style={styles.challengeLink}
+                activeOpacity={0.7}
+                onPress={() => router.push('/(main)/challenges' as any)}
+              >
+                <View style={styles.challengeLinkLeft}>
+                  <Ionicons name="flag" size={22} color={Colors.primary} />
+                  <View>
+                    <Text style={styles.challengeLinkTitle}>Challenges</Text>
+                    <Text style={styles.challengeLinkSub}>Rejoins un defi et gagne des points</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={Colors.lightGray} />
+              </TouchableOpacity>
+
               {/* ---------- Seance libre ---------- */}
               <TouchableOpacity
                 style={styles.freeSessionBtn}
@@ -1006,6 +1022,37 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.lightGray,
     marginHorizontal: 12,
+  },
+
+  // ---- Challenge link ----
+  challengeLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  challengeLinkLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  challengeLinkTitle: {
+    ...Typography.body,
+    fontWeight: Fonts.weight.semiBold,
+    color: Colors.dark,
+  },
+  challengeLinkSub: {
+    ...Typography.caption,
+    color: Colors.gray,
   },
 
   // ---- Free session ----

@@ -134,6 +134,10 @@ export default function MainLayout() {
         name="points/history"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="challenges/index"
+        options={{ href: null }}
+      />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
     </Tabs>
   );

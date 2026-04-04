@@ -163,6 +163,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IGamificationConfigService, GamificationConfigService>();
 builder.Services.AddScoped<IPointsService, PointsService>();
 builder.Services.AddScoped<IStreakService, StreakService>();
+builder.Services.AddScoped<IChallengeParticipationService, ChallengeParticipationService>();
 
 // Build app
 var app = builder.Build();

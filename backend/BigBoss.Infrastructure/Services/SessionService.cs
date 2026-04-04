@@ -18,6 +18,7 @@ public class SessionService : ISessionService
     private readonly IPointsService _pointsService;
     private readonly IStreakService _streakService;
     private readonly IGamificationConfigService _gamificationConfig;
+    private readonly IChallengeParticipationService _challengeParticipationService;
     private readonly ILogger<SessionService> _logger;
 
     public SessionService(
@@ -28,6 +29,7 @@ public class SessionService : ISessionService
         IPointsService pointsService,
         IStreakService streakService,
         IGamificationConfigService gamificationConfig,
+        IChallengeParticipationService challengeParticipationService,
         ILogger<SessionService> logger)
     {
         _context = context;
@@ -37,6 +39,7 @@ public class SessionService : ISessionService
         _pointsService = pointsService;
         _streakService = streakService;
         _gamificationConfig = gamificationConfig;
+        _challengeParticipationService = challengeParticipationService;
         _logger = logger;
     }
 
@@ -521,11 +524,14 @@ public class SessionService : ISessionService
                     }
                 }
             }
+
+            // Update challenge progress
+            await _challengeParticipationService.UpdateProgressFromSessionAsync(userId, session.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to award points for session {SessionId}", session.Id);
-            // Don't fail the session completion if points fail
+            _logger.LogError(ex, "Failed to award points/update challenges for session {SessionId}", session.Id);
+            // Don't fail the session completion if gamification fails
         }
 
         return summary;

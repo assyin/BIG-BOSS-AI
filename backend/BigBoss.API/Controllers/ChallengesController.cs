@@ -12,11 +12,13 @@ namespace BigBoss.API.Controllers;
 public class ChallengesController : ControllerBase
 {
     private readonly IChallengeService _challengeService;
+    private readonly IChallengeParticipationService _participationService;
     private readonly ILogger<ChallengesController> _logger;
 
-    public ChallengesController(IChallengeService challengeService, ILogger<ChallengesController> logger)
+    public ChallengesController(IChallengeService challengeService, IChallengeParticipationService participationService, ILogger<ChallengesController> logger)
     {
         _challengeService = challengeService;
+        _participationService = participationService;
         _logger = logger;
     }
 
@@ -113,4 +115,55 @@ public class ChallengesController : ControllerBase
 
         return NoContent();
     }
+
+    // ─── PARTICIPATION ENDPOINTS ───
+
+    [HttpPost("{id:guid}/join")]
+    public async Task<IActionResult> Join(Guid id)
+    {
+        var userId = GetUserId();
+        var participation = await _participationService.JoinChallengeAsync(id, userId);
+        return Ok(participation);
+    }
+
+    [HttpPost("{id:guid}/leave")]
+    public async Task<IActionResult> Leave(Guid id)
+    {
+        var userId = GetUserId();
+        await _participationService.LeaveChallengeAsync(id, userId);
+        return Ok(new { message = "Challenge quitte" });
+    }
+
+    [HttpGet("{id:guid}/my-progress")]
+    public async Task<IActionResult> MyProgress(Guid id)
+    {
+        var userId = GetUserId();
+        var progress = await _participationService.GetMyProgressAsync(id, userId);
+        if (progress == null) return NotFound(new { message = "Tu ne participes pas a ce challenge" });
+        return Ok(progress);
+    }
+
+    [HttpGet("{id:guid}/leaderboard")]
+    public async Task<IActionResult> Leaderboard(Guid id, [FromQuery] int top = 50)
+    {
+        var entries = await _participationService.GetLeaderboardAsync(id, top);
+        return Ok(entries);
+    }
+
+    [HttpGet("my-challenges")]
+    public async Task<IActionResult> MyChallenges()
+    {
+        var userId = GetUserId();
+        var challenges = await _participationService.GetMyChallengesAsync(userId);
+        return Ok(challenges);
+    }
+
+    [HttpPost("{id:guid}/finalize")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Finalize(Guid id)
+    {
+        await _participationService.FinalizeChallengeAsync(id);
+        return Ok(new { message = "Challenge finalise" });
+    }
+
 }

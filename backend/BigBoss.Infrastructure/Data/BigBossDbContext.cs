@@ -32,6 +32,7 @@ public class BigBossDbContext : DbContext
     public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
+    public DbSet<ChallengeParticipation> ChallengeParticipations => Set<ChallengeParticipation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
