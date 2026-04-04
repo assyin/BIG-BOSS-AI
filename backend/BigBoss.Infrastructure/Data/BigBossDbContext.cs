@@ -35,6 +35,7 @@ public class BigBossDbContext : DbContext
     public DbSet<ChallengeParticipation> ChallengeParticipations => Set<ChallengeParticipation>();
     public DbSet<ShopReward> ShopRewards => Set<ShopReward>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
+    public DbSet<AffiliationEvent> AffiliationEvents => Set<AffiliationEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

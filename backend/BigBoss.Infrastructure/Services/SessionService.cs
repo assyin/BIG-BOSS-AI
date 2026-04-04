@@ -20,6 +20,7 @@ public class SessionService : ISessionService
     private readonly IGamificationConfigService _gamificationConfig;
     private readonly IChallengeParticipationService _challengeParticipationService;
     private readonly IAchievementService _achievementService;
+    private readonly IAffiliationService _affiliationService;
     private readonly ILogger<SessionService> _logger;
 
     public SessionService(
@@ -32,6 +33,7 @@ public class SessionService : ISessionService
         IGamificationConfigService gamificationConfig,
         IChallengeParticipationService challengeParticipationService,
         IAchievementService achievementService,
+        IAffiliationService affiliationService,
         ILogger<SessionService> logger)
     {
         _context = context;
@@ -43,6 +45,7 @@ public class SessionService : ISessionService
         _gamificationConfig = gamificationConfig;
         _challengeParticipationService = challengeParticipationService;
         _achievementService = achievementService;
+        _affiliationService = affiliationService;
         _logger = logger;
     }
 
@@ -533,6 +536,9 @@ public class SessionService : ISessionService
 
             // Check achievements
             await _achievementService.CheckAndAwardAsync(userId);
+
+            // First session affiliation bonus
+            await _affiliationService.ProcessFirstSessionBonusAsync(userId);
         }
         catch (Exception ex)
         {

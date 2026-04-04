@@ -66,6 +66,7 @@ public class SessionServiceTests : IDisposable
             new Mock<IGamificationConfigService>().Object,
             new Mock<IChallengeParticipationService>().Object,
             new Mock<IAchievementService>().Object,
+            new Mock<IAffiliationService>().Object,
             _loggerMock.Object
         );
     }

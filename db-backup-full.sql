@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ubeg1AyowFTnM0CvKjZogRY4HIeXrCC4IUhdg5gN91GqUYg1nMfxSXtNbc7jLVh
+\restrict VdJs6gi7Ks34VdckIHgZx4aPBxg1O4Dvxk3seEiqh6pVxJnk6TBOiCFXOFNHqHw
 
 -- Dumped from database version 16.13 (Debian 16.13-1.pgdg13+1)
 -- Dumped by pg_dump version 16.13 (Debian 16.13-1.pgdg13+1)
@@ -45,6 +45,26 @@ CREATE TABLE public."Achievements" (
 
 
 ALTER TABLE public."Achievements" OWNER TO bigboss;
+
+--
+-- Name: AffiliationEvents; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."AffiliationEvents" (
+    "Id" uuid NOT NULL,
+    "ReferrerId" uuid NOT NULL,
+    "RefereeId" uuid NOT NULL,
+    "ReferralCode" text NOT NULL,
+    "EventType" integer NOT NULL,
+    "PointsAwarded" integer NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "IpAddress" text,
+    "DeviceFingerprint" text,
+    "IsSuspicious" boolean NOT NULL
+);
+
+
+ALTER TABLE public."AffiliationEvents" OWNER TO bigboss;
 
 --
 -- Name: BodyStats; Type: TABLE; Schema: public; Owner: bigboss
@@ -759,6 +779,12 @@ INSERT INTO public."Achievements" VALUES ('6632d639-40f7-49b6-8741-3b9fef7b7a91'
 
 
 --
+-- Data for Name: AffiliationEvents; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
 -- Data for Name: BodyStats; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -1459,6 +1485,7 @@ INSERT INTO public."__EFMigrationsHistory" VALUES ('20260331111408_AddProgrammes
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404221149_AddGamificationSystem', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404223113_AddChallengeParticipation', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404224938_AddShopRewards', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404234026_AddAffiliation', '8.0.2');
 
 
 --
@@ -2123,6 +2150,14 @@ ALTER TABLE ONLY public."Achievements"
 
 
 --
+-- Name: AffiliationEvents PK_AffiliationEvents; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AffiliationEvents"
+    ADD CONSTRAINT "PK_AffiliationEvents" PRIMARY KEY ("Id");
+
+
+--
 -- Name: BodyStats PK_BodyStats; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2312,6 +2347,20 @@ ALTER TABLE ONLY public.sessions
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT "PK_users" PRIMARY KEY (id);
+
+
+--
+-- Name: IX_AffiliationEvents_RefereeId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_AffiliationEvents_RefereeId" ON public."AffiliationEvents" USING btree ("RefereeId");
+
+
+--
+-- Name: IX_AffiliationEvents_ReferrerId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_AffiliationEvents_ReferrerId" ON public."AffiliationEvents" USING btree ("ReferrerId");
 
 
 --
@@ -2518,6 +2567,22 @@ CREATE INDEX "IX_users_subscription_tier" ON public.users USING btree (subscript
 
 
 --
+-- Name: AffiliationEvents FK_AffiliationEvents_users_RefereeId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AffiliationEvents"
+    ADD CONSTRAINT "FK_AffiliationEvents_users_RefereeId" FOREIGN KEY ("RefereeId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: AffiliationEvents FK_AffiliationEvents_users_ReferrerId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AffiliationEvents"
+    ADD CONSTRAINT "FK_AffiliationEvents_users_ReferrerId" FOREIGN KEY ("ReferrerId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: BodyStats FK_BodyStats_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2665,5 +2730,5 @@ ALTER TABLE ONLY public.sessions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ubeg1AyowFTnM0CvKjZogRY4HIeXrCC4IUhdg5gN91GqUYg1nMfxSXtNbc7jLVh
+\unrestrict VdJs6gi7Ks34VdckIHgZx4aPBxg1O4Dvxk3seEiqh6pVxJnk6TBOiCFXOFNHqHw
 
