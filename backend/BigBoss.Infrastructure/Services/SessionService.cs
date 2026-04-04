@@ -15,6 +15,9 @@ public class SessionService : ISessionService
     private readonly IClaudeService _claudeService;
     private readonly OpenAIService _openAIService;
     private readonly IUserService _userService;
+    private readonly IPointsService _pointsService;
+    private readonly IStreakService _streakService;
+    private readonly IGamificationConfigService _gamificationConfig;
     private readonly ILogger<SessionService> _logger;
 
     public SessionService(
@@ -22,12 +25,18 @@ public class SessionService : ISessionService
         IClaudeService claudeService,
         OpenAIService openAIService,
         IUserService userService,
+        IPointsService pointsService,
+        IStreakService streakService,
+        IGamificationConfigService gamificationConfig,
         ILogger<SessionService> logger)
     {
         _context = context;
         _claudeService = claudeService;
         _openAIService = openAIService;
         _userService = userService;
+        _pointsService = pointsService;
+        _streakService = streakService;
+        _gamificationConfig = gamificationConfig;
         _logger = logger;
     }
 
@@ -466,6 +475,58 @@ public class SessionService : ISessionService
 
         // Generate AI summary
         var summary = await GenerateSummary(session, userId);
+
+        // Award points for session completion
+        try
+        {
+            var minDuration = await _gamificationConfig.GetIntAsync("points.session_min_duration", 15);
+            var minExercises = await _gamificationConfig.GetIntAsync("points.session_min_exercises", 3);
+            var sessionPoints = await _gamificationConfig.GetIntAsync("points.session_complete", 10);
+
+            var duration = session.ActualDurationMinutes ?? 0;
+            var exerciseCount = session.SessionExercises.Count(se => se.IsCompleted);
+
+            if (duration >= minDuration && exerciseCount >= minExercises && sessionPoints > 0)
+            {
+                await _pointsService.AwardPointsAsync(new PointAwardRequest
+                {
+                    UserId = userId,
+                    Amount = sessionPoints,
+                    Type = PointTransactionType.SessionComplete,
+                    Reason = $"Seance terminee: {session.Title}",
+                    IdempotencyKey = $"session_complete:{session.Id}",
+                    RelatedEntityId = session.Id,
+                    RelatedEntityType = "Session"
+                });
+
+                // Update streak
+                await _streakService.RecordActivityAsync(userId);
+
+                // Check for PR bonus
+                if (summary.NewPersonalRecords?.Count > 0)
+                {
+                    var prBonus = await _gamificationConfig.GetIntAsync("points.pr_bonus", 30);
+                    if (prBonus > 0)
+                    {
+                        await _pointsService.AwardPointsAsync(new PointAwardRequest
+                        {
+                            UserId = userId,
+                            Amount = prBonus,
+                            Type = PointTransactionType.PRBonus,
+                            Reason = $"Record personnel battu! ({summary.NewPersonalRecords.Count} PR)",
+                            IdempotencyKey = $"pr_bonus:{session.Id}",
+                            RelatedEntityId = session.Id,
+                            RelatedEntityType = "Session"
+                        });
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to award points for session {SessionId}", session.Id);
+            // Don't fail the session completion if points fail
+        }
 
         return summary;
     }

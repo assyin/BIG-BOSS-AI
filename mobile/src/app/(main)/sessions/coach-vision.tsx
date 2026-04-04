@@ -26,25 +26,46 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Exercise type mapping from exercise names to config keys
 const EXERCISE_TYPE_MAP: Record<string, string> = {
-  squat: 'squat',
-  'back squat': 'squat',
-  'front squat': 'squat',
-  'goblet squat': 'squat',
-  'push-up': 'pushup',
-  'push up': 'pushup',
-  pushup: 'pushup',
-  pompe: 'pushup',
-  pompes: 'pushup',
-  curl: 'curl',
-  'bicep curl': 'curl',
-  'barbell curl': 'curl',
-  'dumbbell curl': 'curl',
-  deadlift: 'deadlift',
-  'soulevé de terre': 'deadlift',
-  'overhead press': 'overhead_press',
-  'shoulder press': 'overhead_press',
-  'military press': 'overhead_press',
-  'développé épaules': 'overhead_press',
+  // Squat
+  squat: 'squat', 'back squat': 'squat', 'front squat': 'squat', 'goblet squat': 'squat', 'bulgarian': 'squat',
+  // Push-up
+  'push-up': 'pushup', 'push up': 'pushup', pushup: 'pushup', pompe: 'pushup', pompes: 'pushup',
+  // Curl
+  curl: 'curl', 'bicep curl': 'curl', 'barbell curl': 'curl', 'dumbbell curl': 'curl', 'hammer curl': 'curl', 'concentration': 'curl',
+  // Deadlift
+  deadlift: 'deadlift', 'soulevé de terre': 'deadlift', 'romanian deadlift': 'deadlift',
+  // Overhead press
+  'overhead press': 'overhead_press', 'shoulder press': 'overhead_press', 'military press': 'overhead_press', 'développé épaules': 'overhead_press',
+  // Bench press
+  'bench press': 'bench_press', 'développé couché': 'bench_press', 'chest press': 'bench_press', 'incline press': 'bench_press', 'decline press': 'bench_press',
+  // Rowing
+  row: 'rowing', rowing: 'rowing', 'barbell row': 'rowing', 'dumbbell row': 'rowing', 'cable row': 'rowing', 'seated row': 'rowing',
+  // Lunge
+  lunge: 'lunge', fente: 'lunge', fentes: 'lunge', 'walking lunge': 'lunge', 'reverse lunge': 'lunge',
+  // Dips
+  dip: 'dips', dips: 'dips', 'tricep dip': 'dips', 'chest dip': 'dips',
+  // Pull-up
+  'pull-up': 'pullup', 'pull up': 'pullup', pullup: 'pullup', traction: 'pullup', tractions: 'pullup', 'chin-up': 'pullup', 'chin up': 'pullup',
+  // Hip thrust
+  'hip thrust': 'hip_thrust', 'glute bridge': 'hip_thrust',
+  // Plank
+  plank: 'plank', planche: 'plank', 'side plank': 'plank',
+  // Crunch
+  crunch: 'crunch', 'sit-up': 'crunch', 'sit up': 'crunch', abdominal: 'crunch', abdos: 'crunch',
+  // Lateral raise
+  'lateral raise': 'lateral_raise', 'élévation latérale': 'lateral_raise', 'side raise': 'lateral_raise',
+  // Tricep extension
+  'tricep extension': 'tricep_extension', 'triceps': 'tricep_extension', 'skull crusher': 'tricep_extension', pushdown: 'tricep_extension',
+  // Calf raise
+  'calf raise': 'calf_raise', mollet: 'calf_raise', mollets: 'calf_raise',
+  // Front raise
+  'front raise': 'front_raise', 'élévation frontale': 'front_raise',
+  // Leg curl
+  'leg curl': 'leg_curl', 'hamstring curl': 'leg_curl', ischio: 'leg_curl',
+  // Leg press
+  'leg press': 'leg_press', 'presse': 'leg_press',
+  // Face pull
+  'face pull': 'face_pull',
 };
 
 function getExerciseConfig(exerciseName: string): ExerciseConfig | null {

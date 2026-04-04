@@ -26,6 +26,13 @@ public class BigBossDbContext : DbContext
     public DbSet<Programme> Programmes => Set<Programme>();
     public DbSet<ProgrammeSession> ProgrammeSessions => Set<ProgrammeSession>();
 
+    // Gamification
+    public DbSet<PointTransaction> PointTransactions => Set<PointTransaction>();
+    public DbSet<GamificationConfig> GamificationConfigs => Set<GamificationConfig>();
+    public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
+    public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

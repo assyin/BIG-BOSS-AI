@@ -61,6 +61,9 @@ public class SessionServiceTests : IDisposable
             _claudeServiceMock.Object,
             openAiService,
             _userServiceMock.Object,
+            new Mock<IPointsService>().Object,
+            new Mock<IStreakService>().Object,
+            new Mock<IGamificationConfigService>().Object,
             _loggerMock.Object
         );
     }

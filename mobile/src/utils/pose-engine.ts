@@ -306,6 +306,444 @@ export const EXERCISE_CONFIGS: Record<string, ExerciseConfig> = {
       return { phase, counted };
     },
   },
+
+  // ─── BENCH PRESS ───
+  bench_press: {
+    name: 'Developpe couche',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return feedback;
+      const elbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+      if (elbowAngle < 95) {
+        feedback.push({ type: 'good', message: 'Bonne amplitude!', messageAr: 'نزول مزيان!' });
+      } else if (elbowAngle > 170) {
+        feedback.push({ type: 'good', message: 'Lockout complet', messageAr: 'مد كامل' });
+      }
+      // Check elbow flare
+      if (isVisible(lShoulder) && isVisible(lElbow)) {
+        const flare = Math.abs(lElbow.y - lShoulder.y);
+        if (flare < 15) {
+          feedback.push({ type: 'warning', message: 'Coudes trop ouverts', messageAr: 'الكيعان مفتوحين بزاف' });
+        }
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle < 120 ? 'down' : 'up';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── ROWING ───
+  rowing: {
+    name: 'Rowing',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      if (!isVisible(lShoulder) || !isVisible(lHip)) return feedback;
+      const backAngle = calculateAngle(lShoulder, lHip, lKnee);
+      if (backAngle < 50) {
+        feedback.push({ type: 'error', message: 'Dos trop arrondi!', messageAr: 'الضهر محني!' });
+      } else if (backAngle >= 50 && backAngle <= 80) {
+        feedback.push({ type: 'good', message: 'Bon angle du dos', messageAr: 'زاوية الضهر مزيانة' });
+      }
+      if (isVisible(lElbow) && isVisible(lHip)) {
+        if (lElbow.y > lHip.y) {
+          feedback.push({ type: 'good', message: 'Bonne contraction!', messageAr: 'انقباض مزيان!' });
+        }
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle < 100 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── LUNGE / FENTES ───
+  lunge: {
+    name: 'Fentes',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return feedback;
+      const kneeAngle = calculateAngle(lHip, lKnee, lAnkle);
+      if (kneeAngle >= 80 && kneeAngle <= 100) {
+        feedback.push({ type: 'good', message: 'Bon angle du genou!', messageAr: 'زاوية الركبة مزيانة!' });
+      } else if (kneeAngle < 80) {
+        feedback.push({ type: 'warning', message: 'Genou trop fléchi', messageAr: 'الركبة مطوية بزاف' });
+      }
+      if (isVisible(lShoulder) && isVisible(lHip)) {
+        const torsoLean = Math.abs(lShoulder.x - lHip.x);
+        if (torsoLean > 30) {
+          feedback.push({ type: 'warning', message: 'Buste droit!', messageAr: 'نوض الصدر!' });
+        }
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lHip, lKnee, lAnkle);
+      const phase = angle < 120 ? 'down' : 'up';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── DIPS ───
+  dips: {
+    name: 'Dips',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return feedback;
+      const elbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+      if (elbowAngle <= 90) {
+        feedback.push({ type: 'good', message: 'Bonne profondeur!', messageAr: 'عمق مزيان!' });
+      } else if (elbowAngle > 160) {
+        feedback.push({ type: 'good', message: 'Lockout!', messageAr: 'مد كامل!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle < 110 ? 'down' : 'up';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── PULL UP / TRACTIONS ───
+  pullup: {
+    name: 'Tractions',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return feedback;
+      const elbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+      if (elbowAngle < 80) {
+        feedback.push({ type: 'good', message: 'Menton au-dessus!', messageAr: 'الذقن فوق!' });
+      } else if (elbowAngle > 160) {
+        feedback.push({ type: 'good', message: 'Extension complete', messageAr: 'مد كامل' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle < 100 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── HIP THRUST ───
+  hip_thrust: {
+    name: 'Hip Thrust',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      if (!isVisible(lShoulder) || !isVisible(lHip) || !isVisible(lKnee)) return feedback;
+      const hipAngle = calculateAngle(lShoulder, lHip, lKnee);
+      if (hipAngle > 170) {
+        feedback.push({ type: 'good', message: 'Full extension!', messageAr: 'مد كامل ديال الورك!' });
+      } else if (hipAngle < 100) {
+        feedback.push({ type: 'good', message: 'Position basse', messageAr: 'نزول' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      if (!isVisible(lShoulder) || !isVisible(lHip) || !isVisible(lKnee)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lHip, lKnee);
+      const phase = angle > 150 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── PLANCHE ───
+  plank: {
+    name: 'Planche',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lShoulder) || !isVisible(lHip) || !isVisible(lAnkle)) return feedback;
+      const bodyAngle = calculateAngle(lShoulder, lHip, lAnkle);
+      if (bodyAngle >= 165 && bodyAngle <= 195) {
+        feedback.push({ type: 'good', message: 'Corps bien aligne!', messageAr: 'الجسم مستقيم مزيان!' });
+      } else if (bodyAngle < 165) {
+        feedback.push({ type: 'error', message: 'Hanches trop hautes!', messageAr: 'الوسط طالع بزاف!' });
+      } else {
+        feedback.push({ type: 'error', message: 'Hanches trop basses!', messageAr: 'الوسط نازل بزاف!' });
+      }
+      return feedback;
+    },
+    detectRep: (_kps, prevPhase) => ({ phase: 'neutral', counted: false }), // Isometric, no reps
+  },
+
+  // ─── CRUNCH ───
+  crunch: {
+    name: 'Crunch',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      if (!isVisible(lShoulder) || !isVisible(lHip)) return feedback;
+      if (isVisible(lKnee)) {
+        const angle = calculateAngle(lShoulder, lHip, lKnee);
+        if (angle < 70) {
+          feedback.push({ type: 'good', message: 'Bonne contraction!', messageAr: 'انقباض مزيان!' });
+        }
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      if (!isVisible(lShoulder) || !isVisible(lHip) || !isVisible(lKnee)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lHip, lKnee);
+      const phase = angle < 80 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── LATERAL RAISE ───
+  lateral_raise: {
+    name: 'Elevations laterales',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lHip)) return feedback;
+      const armAngle = calculateAngle(lElbow, lShoulder, lHip);
+      if (armAngle >= 80 && armAngle <= 100) {
+        feedback.push({ type: 'good', message: 'Bras a l\'horizontale!', messageAr: 'الذراع فالمستوى!' });
+      } else if (armAngle > 100) {
+        feedback.push({ type: 'warning', message: 'Pas trop haut!', messageAr: 'ما تطلعش بزاف!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lHip)) return { phase: prevPhase, counted: false };
+      const armAngle = calculateAngle(lElbow, lShoulder, lHip);
+      const phase = armAngle > 60 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── TRICEP EXTENSION ───
+  tricep_extension: {
+    name: 'Extension triceps',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return feedback;
+      const elbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+      if (elbowAngle > 165) {
+        feedback.push({ type: 'good', message: 'Extension complete!', messageAr: 'مد كامل!' });
+      }
+      // Check elbow stability
+      const elbowDrift = Math.abs(lElbow.x - lShoulder.x);
+      if (elbowDrift > 40) {
+        feedback.push({ type: 'warning', message: 'Coude fixe!', messageAr: 'ثبت الكوع!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle > 140 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── CALF RAISE ───
+  calf_raise: {
+    name: 'Mollets',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      if (!isVisible(lKnee) || !isVisible(lAnkle) || !isVisible(lHip)) return feedback;
+      // Check if on toes (ankle rises)
+      const kneeAngle = calculateAngle(lHip, lKnee, lAnkle);
+      if (kneeAngle > 170) {
+        feedback.push({ type: 'good', message: 'Jambes tendues', messageAr: 'الرجلين مدودين' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lAnkle)) return { phase: prevPhase, counted: false };
+      // Detect by hip height change
+      const hipHeight = lHip.y;
+      const phase = hipHeight < 0.45 ? 'up' : 'down'; // Normalized coordinates
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── FRONT RAISE ───
+  front_raise: {
+    name: 'Elevations frontales',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lHip)) return feedback;
+      const armAngle = calculateAngle(lElbow, lShoulder, lHip);
+      if (armAngle >= 80 && armAngle <= 100) {
+        feedback.push({ type: 'good', message: 'Hauteur parfaite!', messageAr: 'الارتفاع مزيان!' });
+      } else if (armAngle > 110) {
+        feedback.push({ type: 'warning', message: 'Trop haut!', messageAr: 'طالع بزاف!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lHip)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lElbow, lShoulder, lHip);
+      const phase = angle > 60 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── LEG CURL ───
+  leg_curl: {
+    name: 'Leg Curl',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return feedback;
+      const kneeAngle = calculateAngle(lHip, lKnee, lAnkle);
+      if (kneeAngle < 60) {
+        feedback.push({ type: 'good', message: 'Contraction max!', messageAr: 'انقباض كامل!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lHip, lKnee, lAnkle);
+      const phase = angle < 90 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
+
+  // ─── LEG PRESS ───
+  leg_press: {
+    name: 'Leg Press',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return feedback;
+      const kneeAngle = calculateAngle(lHip, lKnee, lAnkle);
+      if (kneeAngle >= 80 && kneeAngle <= 100) {
+        feedback.push({ type: 'good', message: 'Bonne amplitude!', messageAr: 'عمق مزيان!' });
+      }
+      if (kneeAngle > 170) {
+        feedback.push({ type: 'warning', message: 'Ne verrouille pas!', messageAr: 'ما تقفلش الركبة!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lHip = kps[KEYPOINTS.LEFT_HIP];
+      const lKnee = kps[KEYPOINTS.LEFT_KNEE];
+      const lAnkle = kps[KEYPOINTS.LEFT_ANKLE];
+      if (!isVisible(lHip) || !isVisible(lKnee) || !isVisible(lAnkle)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lHip, lKnee, lAnkle);
+      const phase = angle < 120 ? 'down' : 'up';
+      return { phase, counted: prevPhase === 'down' && phase === 'up' };
+    },
+  },
+
+  // ─── FACE PULL ───
+  face_pull: {
+    name: 'Face Pull',
+    checkPoints: (kps) => {
+      const feedback: FeedbackItem[] = [];
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      const nose = kps[KEYPOINTS.NOSE];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return feedback;
+      // Check if hands are at face level
+      if (isVisible(nose) && Math.abs(lWrist.y - nose.y) < 40) {
+        feedback.push({ type: 'good', message: 'Mains au niveau du visage!', messageAr: 'اليدين فمستوى الوجه!' });
+      }
+      const elbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+      if (elbowAngle < 100) {
+        feedback.push({ type: 'good', message: 'Bonne contraction!', messageAr: 'انقباض مزيان!' });
+      }
+      return feedback;
+    },
+    detectRep: (kps, prevPhase) => {
+      const lShoulder = kps[KEYPOINTS.LEFT_SHOULDER];
+      const lElbow = kps[KEYPOINTS.LEFT_ELBOW];
+      const lWrist = kps[KEYPOINTS.LEFT_WRIST];
+      if (!isVisible(lShoulder) || !isVisible(lElbow) || !isVisible(lWrist)) return { phase: prevPhase, counted: false };
+      const angle = calculateAngle(lShoulder, lElbow, lWrist);
+      const phase = angle < 110 ? 'up' : 'down';
+      return { phase, counted: prevPhase === 'up' && phase === 'down' };
+    },
+  },
 };
 
 /** Calculate overall form score from feedback items */

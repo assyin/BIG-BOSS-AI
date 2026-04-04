@@ -78,6 +78,25 @@ public class User
     // Preferences
     public string PreferredLanguage { get; set; } = "fr";
     public bool NotificationsEnabled { get; set; } = true;
+    public string? City { get; set; }
+
+    // Gamification - Points
+    public int PointsBalance { get; set; }
+    public int TotalPointsEarned { get; set; }
+    public int TotalPointsSpent { get; set; }
+
+    // Gamification - Streak
+    public int CurrentStreak { get; set; }
+    public int LongestStreak { get; set; }
+    public DateTime? LastActivityDate { get; set; }
+
+    // Gamification - Affiliation
+    public string? ReferralCode { get; set; } // unique 8 chars
+    public Guid? ReferredByUserId { get; set; }
+
+    // Moderation
+    public bool IsSuspended { get; set; }
+    public string? SuspendedReason { get; set; }
 
     // Timestamps
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -95,4 +114,6 @@ public class User
     public virtual ICollection<ProgressPhoto> ProgressPhotos { get; set; } = new List<ProgressPhoto>();
     public virtual ICollection<CoachMessage> CoachMessages { get; set; } = new List<CoachMessage>();
     public virtual ICollection<Programme> Programmes { get; set; } = new List<Programme>();
+    public virtual ICollection<PointTransaction> PointTransactions { get; set; } = new List<PointTransaction>();
+    public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 }

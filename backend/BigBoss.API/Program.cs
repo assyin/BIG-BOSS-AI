@@ -158,6 +158,12 @@ builder.Services.AddScoped<ILiveService, LiveService>();
 builder.Services.AddScoped<INutritionPlanService, NutritionPlanService>();
 builder.Services.AddScoped<IProgrammeService, ProgrammeService>();
 
+// Gamification services
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IGamificationConfigService, GamificationConfigService>();
+builder.Services.AddScoped<IPointsService, PointsService>();
+builder.Services.AddScoped<IStreakService, StreakService>();
+
 // Build app
 var app = builder.Build();
 
