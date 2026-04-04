@@ -165,6 +165,7 @@ builder.Services.AddScoped<IPointsService, PointsService>();
 builder.Services.AddScoped<IStreakService, StreakService>();
 builder.Services.AddScoped<IChallengeParticipationService, ChallengeParticipationService>();
 builder.Services.AddScoped<IShopService, ShopService>();
+builder.Services.AddScoped<IAchievementService, AchievementService>();
 
 // Build app
 var app = builder.Build();

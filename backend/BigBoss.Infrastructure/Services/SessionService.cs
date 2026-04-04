@@ -19,6 +19,7 @@ public class SessionService : ISessionService
     private readonly IStreakService _streakService;
     private readonly IGamificationConfigService _gamificationConfig;
     private readonly IChallengeParticipationService _challengeParticipationService;
+    private readonly IAchievementService _achievementService;
     private readonly ILogger<SessionService> _logger;
 
     public SessionService(
@@ -30,6 +31,7 @@ public class SessionService : ISessionService
         IStreakService streakService,
         IGamificationConfigService gamificationConfig,
         IChallengeParticipationService challengeParticipationService,
+        IAchievementService achievementService,
         ILogger<SessionService> logger)
     {
         _context = context;
@@ -40,6 +42,7 @@ public class SessionService : ISessionService
         _streakService = streakService;
         _gamificationConfig = gamificationConfig;
         _challengeParticipationService = challengeParticipationService;
+        _achievementService = achievementService;
         _logger = logger;
     }
 
@@ -527,6 +530,9 @@ public class SessionService : ISessionService
 
             // Update challenge progress
             await _challengeParticipationService.UpdateProgressFromSessionAsync(userId, session.Id);
+
+            // Check achievements
+            await _achievementService.CheckAndAwardAsync(userId);
         }
         catch (Exception ex)
         {

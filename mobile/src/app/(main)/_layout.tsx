@@ -142,6 +142,10 @@ export default function MainLayout() {
         name="rewards/index"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="achievements/index"
+        options={{ href: null }}
+      />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
     </Tabs>
   );
