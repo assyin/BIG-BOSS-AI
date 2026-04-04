@@ -58,33 +58,7 @@ const MEASUREMENT_LABELS: Record<string, string> = {
 };
 
 
-// Mock 1RM data (ready to be replaced with real API data)
-const MOCK_1RM_SQUAT: LineChartDataPoint[] = [
-  { label: 'Oct', value: 100 },
-  { label: 'Nov', value: 107 },
-  { label: 'Dec', value: 110 },
-  { label: 'Jan', value: 115 },
-  { label: 'Fev', value: 118 },
-  { label: 'Mar', value: 125 },
-];
-
-const MOCK_1RM_BENCH: LineChartDataPoint[] = [
-  { label: 'Oct', value: 72 },
-  { label: 'Nov', value: 75 },
-  { label: 'Dec', value: 77 },
-  { label: 'Jan', value: 80 },
-  { label: 'Fev', value: 82 },
-  { label: 'Mar', value: 85 },
-];
-
-const MOCK_1RM_DEADLIFT: LineChartDataPoint[] = [
-  { label: 'Oct', value: 120 },
-  { label: 'Nov', value: 128 },
-  { label: 'Dec', value: 132 },
-  { label: 'Jan', value: 138 },
-  { label: 'Fev', value: 142 },
-  { label: 'Mar', value: 150 },
-];
+// 1RM data will come from real sessions when enough data is available
 
 export default function ProgressScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('mesures');
@@ -458,40 +432,36 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        {/* 1RM Curves */}
+        {/* Volume chart from real weight data */}
+        {allStats.length > 1 && (
+          <>
+            <Text style={[styles.prTitle, { marginTop: 24 }]}>Evolution du poids</Text>
+            <View style={styles.rmChartCard}>
+              <LineChart
+                title="Poids (kg)"
+                data={allStats.slice(0, 12).reverse().map((s): LineChartDataPoint => ({
+                  label: new Date(s.recordedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+                  value: s.weightKg,
+                }))}
+                color={Colors.primary}
+                height={180}
+                unit=" kg"
+              />
+            </View>
+          </>
+        )}
+
+        {/* 1RM Curves - placeholder */}
         <Text style={[styles.prTitle, { marginTop: 24 }]}>Courbes 1RM</Text>
         <Text style={styles.rmSubtitle}>
-          Evolution de votre 1RM estime sur 6 mois
+          Les courbes 1RM seront disponibles apres quelques seances
         </Text>
 
-        <View style={styles.rmChartCard}>
-          <LineChart
-            title="Squat"
-            data={MOCK_1RM_SQUAT}
-            color={Colors.primary}
-            height={160}
-            unit=" kg"
-          />
-        </View>
-
-        <View style={styles.rmChartCard}>
-          <LineChart
-            title="Developpe couche"
-            data={MOCK_1RM_BENCH}
-            color={Colors.info}
-            height={160}
-            unit=" kg"
-          />
-        </View>
-
-        <View style={styles.rmChartCard}>
-          <LineChart
-            title="Soulevé de terre"
-            data={MOCK_1RM_DEADLIFT}
-            color={Colors.success}
-            height={160}
-            unit=" kg"
-          />
+        <View style={styles.rmPlaceholder}>
+          <Ionicons name="analytics-outline" size={48} color={Colors.lightGray} />
+          <Text style={styles.rmPlaceholderText}>
+            Continue tes seances pour voir{'\n'}tes courbes de progression
+          </Text>
         </View>
 
         {!stats && (
@@ -1139,6 +1109,21 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.gray,
     marginBottom: 14,
+  },
+  rmPlaceholder: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  rmPlaceholderText: {
+    ...Typography.body,
+    color: Colors.lightGray,
+    textAlign: 'center',
+    lineHeight: 22,
   },
   rmChartCard: {
     backgroundColor: Colors.white,

@@ -2137,7 +2137,7 @@ const styles = StyleSheet.create({
   },
   splashBottom: {
     paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'android' ? 32 : 16,
+    paddingBottom: Platform.OS === 'android' ? 48 : 24,
     gap: 16,
     alignItems: 'center',
   },
@@ -2234,7 +2234,7 @@ const styles = StyleSheet.create({
   },
   introBottom: {
     paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'android' ? 32 : 16,
+    paddingBottom: Platform.OS === 'android' ? 48 : 24,
     paddingTop: 16,
   },
 
@@ -2953,7 +2953,7 @@ const styles = StyleSheet.create({
   },
   emotionalBottom: {
     paddingHorizontal: 24,
-    paddingBottom: Platform.OS === 'android' ? 32 : 16,
+    paddingBottom: Platform.OS === 'android' ? 48 : 24,
     paddingTop: 16,
   },
 
@@ -3173,7 +3173,8 @@ const styles = StyleSheet.create({
   // ─── NAVIGATION ───
   navRow: {
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'android' ? 48 : 24,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     backgroundColor: Colors.white,

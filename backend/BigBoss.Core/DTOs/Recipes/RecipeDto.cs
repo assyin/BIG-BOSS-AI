@@ -44,6 +44,7 @@ public class RecipeListDto
 {
     public Guid Id { get; set; }
     public string TitleFr { get; set; } = string.Empty;
+    public string? Title { get; set; }
     public RecipeCategory Category { get; set; }
     public int TotalTimeMinutes { get; set; }
     public int CaloriesPerServing { get; set; }

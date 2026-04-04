@@ -41,7 +41,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-image-picker",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "L'app a besoin de la camera pour analyser ta posture pendant les exercices."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

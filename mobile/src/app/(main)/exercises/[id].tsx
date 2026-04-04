@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Video, ResizeMode } from 'expo-av';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { ExerciseDetail, DifficultyLevel, Exercise } from '@/types/exercise.types';
@@ -58,11 +59,13 @@ export default function ExerciseDetailScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>('demo');
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
     setVideoError(false);
     setVideoLoading(false);
+    setPlaying(false);
   }, []);
 
   const handleVideoLoadStart = useCallback(() => {
@@ -235,15 +238,41 @@ export default function ExerciseDetailScreen() {
                   style={{ width: '100%', maxHeight: 500, borderRadius: 12, backgroundColor: '#000' } as any}
                 />
               </View>
+            ) : playing ? (
+              <View style={styles.videoPlayer}>
+                <Video
+                  key={currentVideoUrl}
+                  source={{ uri: currentVideoUrl }}
+                  style={{ width: '100%', aspectRatio: 3 / 4, borderRadius: 12 }}
+                  useNativeControls
+                  resizeMode={ResizeMode.COVER}
+                  shouldPlay
+                  isLooping
+                  onLoadStart={() => setVideoLoading(true)}
+                  onLoad={() => setVideoLoading(false)}
+                  onError={() => { setVideoError(true); setPlaying(false); }}
+                />
+                {videoLoading && (
+                  <View style={styles.playIconOverlay}>
+                    <ActivityIndicator size="large" color={Colors.white} />
+                  </View>
+                )}
+              </View>
             ) : (
-              <View style={styles.videoPlaceholderInner}>
+              <TouchableOpacity
+                style={styles.videoPlaceholderInner}
+                activeOpacity={0.8}
+                onPress={() => { setPlaying(true); setVideoError(false); }}
+              >
                 {thumbnailUrl ? (
                   <Image source={{ uri: thumbnailUrl }} style={styles.videoThumbnail} resizeMode="cover" />
-                ) : null}
-                <View style={[styles.playIconBox, thumbnailUrl && styles.playIconOverlay]}>
-                  <Ionicons name="play-circle" size={48} color={Colors.white} />
+                ) : (
+                  <View style={[styles.videoThumbnail, { backgroundColor: '#1a1a1a' }]} />
+                )}
+                <View style={[styles.playIconBox, styles.playIconOverlay]}>
+                  <Ionicons name="play-circle" size={56} color={Colors.white} />
                 </View>
-              </View>
+              </TouchableOpacity>
             )
           ) : (
             <View style={styles.videoPlaceholderInner}>
@@ -255,6 +284,9 @@ export default function ExerciseDetailScreen() {
               </View>
               <Text style={styles.videoText}>Aucune video disponible</Text>
             </View>
+          )}
+          {videoError && (
+            <Text style={[styles.videoText, { color: Colors.error }]}>Erreur de chargement video</Text>
           )}
           <Text style={styles.videoLabel}>{getVideoLabel()}</Text>
         </View>
@@ -572,11 +604,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#000',
+    backgroundColor: Colors.background,
   },
   videoPlayer: {
     width: '100%',
-    backgroundColor: '#000',
+    backgroundColor: Colors.background,
     alignItems: 'center',
   },
   videoOverlay: {

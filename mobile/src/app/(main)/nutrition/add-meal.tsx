@@ -34,43 +34,78 @@ const MEAL_TYPES: { key: MealType; label: string; icon: string }[] = [
 ];
 
 export default function AddMealScreen() {
-  const params = useLocalSearchParams<{ mealType?: string; date?: string }>();
+  const params = useLocalSearchParams<{
+    mealType?: string;
+    date?: string;
+    prefillName?: string;
+    prefillCalories?: string;
+    prefillProtein?: string;
+    prefillCarbs?: string;
+    prefillFat?: string;
+  }>();
 
   const [selectedType, setSelectedType] = useState<MealType>((params.mealType as MealType) || 'Lunch');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
-  const [showSearch, setShowSearch] = useState(true);
+  const [showSearch, setShowSearch] = useState(!params.prefillName);
 
   // Selected food details
-  const [foodName, setFoodName] = useState('');
-  const [quantity, setQuantity] = useState('100');
-  const [baseServing, setBaseServing] = useState(100);
-  const [calories, setCalories] = useState('');
-  const [proteins, setProteins] = useState('');
-  const [carbs, setCarbs] = useState('');
-  const [fats, setFats] = useState('');
+  const [foodName, setFoodName] = useState(params.prefillName || '');
+  const [quantity, setQuantity] = useState('1');
+  const [baseServing, setBaseServing] = useState(1);
+  const [calories, setCalories] = useState(params.prefillCalories || '');
+  const [proteins, setProteins] = useState(params.prefillProtein || '');
+  const [carbs, setCarbs] = useState(params.prefillCarbs || '');
+  const [fats, setFats] = useState(params.prefillFat || '');
   const [submitting, setSubmitting] = useState(false);
 
   // Base macros (per serving) for recalculation
-  const [baseCals, setBaseCals] = useState(0);
-  const [baseProt, setBaseProt] = useState(0);
-  const [baseCarbs, setBaseCarbs] = useState(0);
-  const [baseFats, setBaseFats] = useState(0);
+  const [baseCals, setBaseCals] = useState(Number(params.prefillCalories) || 0);
+  const [baseProt, setBaseProt] = useState(Number(params.prefillProtein) || 0);
+  const [baseCarbs, setBaseCarbs] = useState(Number(params.prefillCarbs) || 0);
+  const [baseFats, setBaseFats] = useState(Number(params.prefillFat) || 0);
 
-  // Search with debounce
+  // Search with debounce - local DB + Open Food Facts
   useEffect(() => {
     if (searchQuery.length < 2) { setSearchResults([]); return; }
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await api.get('/api/foods/search', { params: { q: searchQuery, limit: 15 } });
-        const data = res.data;
-        const combined = [...(data.foods || []), ...(data.recipes || [])];
-        setSearchResults(combined);
+        // Search local DB
+        const localRes = await api.get('/api/foods/search', { params: { q: searchQuery, limit: 10 } }).catch(() => ({ data: { foods: [], recipes: [] } }));
+        const localData = localRes.data;
+        const localResults: SearchResult[] = [...(localData.foods || []), ...(localData.recipes || [])];
+
+        // Search Open Food Facts (free API, no key needed)
+        let offResults: SearchResult[] = [];
+        try {
+          const offRes = await fetch(
+            `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=10&fields=product_name,product_name_fr,nutriments,serving_size,code,brands`,
+            { headers: { 'User-Agent': 'BigBossFitness/1.0' } }
+          );
+          const offData = await offRes.json();
+          offResults = (offData.products || [])
+            .filter((p: any) => p.product_name && p.nutriments)
+            .map((p: any): SearchResult => ({
+              id: p.code || Math.random().toString(),
+              type: 'food',
+              name: p.product_name_fr || p.product_name,
+              nameFr: p.product_name_fr || p.product_name,
+              category: p.brands || 'Open Food Facts',
+              servingSize: 100,
+              servingDescription: p.serving_size || '100g',
+              calories: Math.round(p.nutriments['energy-kcal_100g'] || p.nutriments['energy-kcal'] || 0),
+              protein: Math.round((p.nutriments.proteins_100g || 0) * 10) / 10,
+              carbs: Math.round((p.nutriments.carbohydrates_100g || 0) * 10) / 10,
+              fat: Math.round((p.nutriments.fat_100g || 0) * 10) / 10,
+            }));
+        } catch {}
+
+        setSearchResults([...localResults, ...offResults]);
       } catch { setSearchResults([]); }
       finally { setSearching(false); }
-    }, 300);
+    }, 400);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -90,6 +125,45 @@ export default function AddMealScreen() {
     setShowSearch(false);
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  // Barcode lookup via Open Food Facts
+  const [barcodeQuery, setBarcodeQuery] = useState('');
+  const [barcodeLoading, setBarcodeLoading] = useState(false);
+  const [showBarcode, setShowBarcode] = useState(false);
+
+  const handleBarcodeLookup = async () => {
+    if (!barcodeQuery.trim()) return;
+    setBarcodeLoading(true);
+    try {
+      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcodeQuery.trim()}.json`);
+      const data = await res.json();
+      if (data.status === 1 && data.product) {
+        const p = data.product;
+        const n = p.nutriments || {};
+        selectItem({
+          id: p.code || barcodeQuery,
+          type: 'food',
+          name: p.product_name_fr || p.product_name || 'Produit',
+          nameFr: p.product_name_fr || p.product_name,
+          category: p.brands || 'Scanne',
+          servingSize: 100,
+          servingDescription: p.serving_size || '100g',
+          calories: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
+          protein: Math.round((n.proteins_100g || 0) * 10) / 10,
+          carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
+          fat: Math.round((n.fat_100g || 0) * 10) / 10,
+        });
+        setShowBarcode(false);
+        setBarcodeQuery('');
+      } else {
+        Alert.alert('Produit non trouve', 'Ce code-barres n\'existe pas dans la base Open Food Facts.');
+      }
+    } catch {
+      Alert.alert('Erreur', 'Impossible de chercher ce code-barres.');
+    } finally {
+      setBarcodeLoading(false);
+    }
   };
 
   // Recalculate macros when quantity changes
@@ -175,13 +249,42 @@ export default function AddMealScreen() {
                 <Ionicons name="search-outline" size={18} color={Colors.gray} />
                 <TextInput style={styles.searchInput} placeholder="Poulet, riz, tagine, eggs..."
                   placeholderTextColor={Colors.lightGray} value={searchQuery}
-                  onChangeText={setSearchQuery} autoFocus />
+                  onChangeText={(t) => { setSearchQuery(t); setShowBarcode(false); }} autoFocus />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
                     <Ionicons name="close-circle" size={18} color={Colors.lightGray} />
                   </TouchableOpacity>
                 )}
+                <TouchableOpacity onPress={() => setShowBarcode(!showBarcode)} style={{ paddingLeft: 8 }}>
+                  <Ionicons name="barcode-outline" size={22} color={showBarcode ? Colors.primary : Colors.gray} />
+                </TouchableOpacity>
               </View>
+
+              {/* Barcode input */}
+              {showBarcode && (
+                <View style={styles.barcodeSection}>
+                  <Text style={styles.barcodeLabel}>Code-barres du produit</Text>
+                  <View style={styles.searchBar}>
+                    <Ionicons name="barcode-outline" size={18} color={Colors.primary} />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder="Ex: 3017620422003"
+                      placeholderTextColor={Colors.lightGray}
+                      value={barcodeQuery}
+                      onChangeText={setBarcodeQuery}
+                      keyboardType="number-pad"
+                      onSubmitEditing={handleBarcodeLookup}
+                    />
+                    <TouchableOpacity onPress={handleBarcodeLookup} disabled={barcodeLoading}>
+                      {barcodeLoading ? (
+                        <ActivityIndicator size="small" color={Colors.primary} />
+                      ) : (
+                        <Ionicons name="arrow-forward-circle" size={24} color={Colors.primary} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
               {/* Search Results */}
               {searching && <ActivityIndicator color={Colors.primary} style={{ marginTop: 16 }} />}
@@ -197,7 +300,7 @@ export default function AddMealScreen() {
                       <View style={styles.resultInfo}>
                         <Text style={styles.resultName} numberOfLines={1}>{item.nameFr || item.name}</Text>
                         <Text style={styles.resultMeta}>
-                          {item.type === 'food' ? '🥗 Aliment' : '🍽️ Recette'} · {Math.round(item.calories)} cal · P:{Math.round(item.protein)}g
+                          {item.category === 'Open Food Facts' ? '🌍 OFF' : item.type === 'recipe' ? '🍽️ Recette' : '📦 Local'} · {Math.round(item.calories)} cal · P:{Math.round(item.protein)}g
                         </Text>
                       </View>
                       <View style={styles.resultCals}>
@@ -327,6 +430,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12,
   },
   searchInput: { flex: 1, fontSize: 15, color: Colors.dark, padding: 0 },
+
+  // Barcode
+  barcodeSection: { marginTop: 12 },
+  barcodeLabel: { fontSize: 13, fontWeight: '600', color: Colors.primary, marginBottom: 6 },
 
   // Results
   resultsList: { marginTop: 8, borderRadius: 14, overflow: 'hidden', backgroundColor: Colors.white },

@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // API Configuration
 // For physical Android device: use your machine's LAN IP (run `hostname -I` to find it)
-const DEV_API_HOST = Platform.OS === 'android' ? '192.168.19.194' : 'localhost';
+const DEV_API_HOST = Platform.OS === 'android' ? '192.168.100.213' : 'localhost';
 
 export const API_CONFIG = {
   // Base URL - change DEV_API_HOST above when your IP changes

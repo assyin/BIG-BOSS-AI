@@ -270,8 +270,14 @@ public class ProgrammeService : IProgrammeService
 
         await _context.SaveChangesAsync();
 
+        // Reload with exercises included
+        var fullSession = await _context.Sessions
+            .Include(s => s.SessionExercises)
+                .ThenInclude(se => se.Exercise)
+            .FirstAsync(s => s.Id == session.Id);
+
         _logger.LogInformation("Programme session started: {PsId} -> Session {SessionId}", programmeSessionId, session.Id);
-        return session;
+        return fullSession;
     }
 
     public async Task CompleteProgrammeSessionAsync(Guid programmeId, Guid programmeSessionId, Guid userId)

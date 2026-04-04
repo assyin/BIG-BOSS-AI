@@ -391,6 +391,15 @@ export default function NutritionScreen() {
             <Ionicons name="create-outline" size={22} color={Colors.primary} />
             <Text style={styles.manualButtonText}>Ajouter manuellement</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.recipesButton}
+            onPress={() => router.push('/nutrition/recipes' as any)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="book-outline" size={22} color={Colors.warning} />
+            <Text style={styles.recipesButtonText}>Decouvrir les recettes</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -733,6 +742,22 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.md,
     fontWeight: Fonts.weight.semiBold,
     color: Colors.primary,
+  },
+  recipesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.warning,
+    backgroundColor: Colors.warningLight,
+  },
+  recipesButtonText: {
+    fontSize: Fonts.size.md,
+    fontWeight: Fonts.weight.semiBold,
+    color: Colors.warning,
   },
 
   // Scanning overlay

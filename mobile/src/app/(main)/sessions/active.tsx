@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Video, ResizeMode } from 'expo-av';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { useSessionStore } from '@/store/session.store';
@@ -232,26 +233,49 @@ export default function ActiveWorkoutScreen() {
       >
         {/* Exercise Header */}
         <View style={styles.exerciseHeader}>
-          <Text style={styles.exerciseName}>{currentExercise.exerciseName}</Text>
-          <Text style={styles.exercisePlan}>
-            {currentExercise.setsPlanned} sets x {currentExercise.repsPlanned} reps
-            {currentExercise.weightPlannedKg != null &&
-              ` · ${currentExercise.weightPlannedKg} kg`}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.exerciseName}>{currentExercise.exerciseName}</Text>
+            <Text style={styles.exercisePlan}>
+              {currentExercise.setsPlanned} sets x {currentExercise.repsPlanned} reps
+              {currentExercise.weightPlannedKg != null &&
+                ` · ${currentExercise.weightPlannedKg} kg`}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.coachVisionBtn}
+            onPress={() => router.push({ pathname: '/(main)/sessions/coach-vision', params: { exerciseName: currentExercise.exerciseName } } as any)}
+          >
+            <Ionicons name="body-outline" size={18} color={Colors.primary} />
+            <Text style={styles.coachVisionText}>Vision</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Video Player */}
-        {(currentExercise as any).videoDemoUrl && Platform.OS === 'web' ? (
-          <View style={styles.videoPlaceholder}>
-            <video
-              key={currentExercise.exerciseId + '-' + activeExerciseIndex}
-              src={(currentExercise as any).videoDemoUrl}
-              controls
-              playsInline
-              poster={currentExercise.thumbnailUrl || undefined}
-              style={{ width: '100%', maxHeight: 300, borderRadius: 16, backgroundColor: '#000' } as any}
-            />
-          </View>
+        {(currentExercise as any).videoDemoUrl ? (
+          Platform.OS === 'web' ? (
+            <View style={styles.videoPlaceholder}>
+              <video
+                key={currentExercise.exerciseId + '-' + activeExerciseIndex}
+                src={(currentExercise as any).videoDemoUrl}
+                controls
+                playsInline
+                poster={currentExercise.thumbnailUrl || undefined}
+                style={{ width: '100%', maxHeight: 300, borderRadius: 16, backgroundColor: '#000' } as any}
+              />
+            </View>
+          ) : (
+            <View style={styles.videoPlaceholder}>
+              <Video
+                key={currentExercise.exerciseId + '-' + activeExerciseIndex}
+                source={{ uri: (currentExercise as any).videoDemoUrl }}
+                style={{ width: '100%', aspectRatio: 3 / 4, borderRadius: 16 }}
+                useNativeControls
+                resizeMode={ResizeMode.COVER}
+                shouldPlay
+                isLooping
+              />
+            </View>
+          )
         ) : (
           <View style={styles.videoPlaceholder}>
             <View style={styles.playIconBox}>
@@ -456,8 +480,24 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 20,
     marginBottom: 16,
+  },
+  coachVisionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.primaryDim,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  coachVisionText: {
+    fontSize: Fonts.size.xs,
+    fontWeight: Fonts.weight.bold,
+    color: Colors.primary,
   },
   exerciseName: {
     ...Typography.h3,
@@ -469,12 +509,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   videoPlaceholder: {
-    height: 180,
+    minHeight: 180,
     backgroundColor: Colors.darkGray,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
   },
   playIconBox: {
     width: 56,

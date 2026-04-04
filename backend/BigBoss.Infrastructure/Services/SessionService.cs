@@ -578,7 +578,7 @@ public class SessionService : ISessionService
             ExerciseId: se.ExerciseId,
             ExerciseName: se.Exercise?.NameFr ?? "Exercice",
             ThumbnailUrl: se.Exercise?.ThumbnailUrl,
-            VideoDemoUrl: se.Exercise?.VideoLocalPath ?? se.Exercise?.VideoDemoUrl ?? se.Exercise?.VideoBunnyUrl,
+            VideoDemoUrl: se.Exercise?.VideoDemoUrl ?? se.Exercise?.VideoLocalPath ?? se.Exercise?.VideoBunnyUrl,
             OrderIndex: se.OrderIndex,
             SetsPlanned: se.SetsPlanned,
             RepsPlanned: se.RepsPlanned,

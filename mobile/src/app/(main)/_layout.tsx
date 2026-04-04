@@ -81,9 +81,15 @@ export default function MainLayout() {
       {/* Hidden sub-routes */}
       <Tabs.Screen
         name="nutrition/add-meal"
-        options={{
-          href: null,
-        }}
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="nutrition/recipes"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="nutrition/recipe-detail"
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="progress/add-measurement"
@@ -120,6 +126,10 @@ export default function MainLayout() {
         name="programme/nutrition-plan"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="sessions/coach-vision"
+        options={{ href: null }}
+      />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
     </Tabs>
   );
@@ -130,8 +140,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    height: Platform.OS === 'ios' ? 88 : 64,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+    height: Platform.OS === 'ios' ? 88 : 110,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 52,
     paddingTop: 8,
     elevation: 0,
     shadowOpacity: 0,

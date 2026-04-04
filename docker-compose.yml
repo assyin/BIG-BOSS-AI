@@ -63,7 +63,8 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
+    external: true
+    name: bigboss-pgdata
   redis_data:
     driver: local
 

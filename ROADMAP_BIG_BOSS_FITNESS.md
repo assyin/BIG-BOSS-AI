@@ -4,10 +4,10 @@
 ---
 
 **Projet**: Big Boss Fitness
-**Version**: 2.0 - PROGRAMME PERSONNALISE
-**Date**: 31 Mars 2026
+**Version**: 3.1 - NUTRITION COMPLETE + FAVORIS + CODE-BARRES
+**Date**: 4 Avril 2026
 **Duree Totale Estimee**: 32-40 semaines
-**Statut Actuel**: PHASE 0-1 COMPLETES - PROGRAMME PERSONNALISE COMPLET - MOBILE 96% - ADMIN 100%
+**Statut Actuel**: PHASE 0-2 COMPLETES - MOBILE 99% - ADMIN 100%
 
 ---
 
@@ -27,9 +27,9 @@
 |                                                                            |
 |  PHASE 0          PHASE 1         PHASE 2         PHASE 3                  |
 |  SETUP            MVP CORE        NUTRITION       COACH & VOCAL            |
-|  [████████████]   [██████████]    [████████░░]    [██░░░░░░░░]             |
+|  [████████████]   [██████████]    [██████████]    [██░░░░░░░░]             |
 |  Sem 1-2          Sem 3-8         Sem 9-12        Sem 13-16                |
-|  100% FAIT        98% FAIT        75% FAIT        15% FAIT                 |
+|  100% FAIT        98% FAIT        95% FAIT        15% FAIT                 |
 |                                                                            |
 |  PHASE 4          PHASE 5         PHASE 6         PHASE 7                  |
 |  CONTENU          COMMUNAUTE      VISION IA       BETA & LAUNCH            |
@@ -83,7 +83,9 @@
 - [x] Services API (auth, session, exercise, nutrition, coach, progress)
 - [x] Stores Zustand (auth, session)
 - [x] 23 ecrans complets
-- [ ] Test mobile sur appareil physique (besoin development build EAS)
+- [x] Test mobile sur appareil physique Android (EAS development build local)
+- [x] WSL2 mirrored mode + port forwarding configure
+- [x] Lecteur video natif expo-av dans exercices + seances
 
 ### 0.3 Configuration Backend
 
@@ -323,7 +325,7 @@
 ---
 
 ## PHASE 2 - NUTRITION (Semaines 9-12)
-### Statut: 75% Backend + Mobile implementes
+### Statut: 95% Backend + Mobile implementes
 
 ### 2.1 Journal Alimentaire
 
@@ -390,9 +392,12 @@
 - [x] [Authorize(Roles="Admin")] sur CRUD
 
 **Mobile (reste a faire):**
-- [ ] Upload 100 recettes (Lot 1) avec photos pro
-- [ ] Ecran liste recettes
-- [ ] Ecran detail recette (ingredients, etapes, macros)
+- [x] 443 photos recettes generees par IA (Flux Schnell) avec backgrounds varies
+- [x] Ecran liste recettes (filtres categorie + regime, recherche, tri Marocain>Arabe>Islamique)
+- [x] Ecran detail recette (ingredients, etapes, macros, photo hero)
+- [x] Selecteur de langue FR/Darija avec support RTL complet
+- [x] Traduction FR: 444 titres + ingredients + etapes + descriptions (GPT-4o-mini)
+- [x] Traduction Darija: 442 titres + ingredients + etapes + descriptions (GPT-4o-mini, prompt production-grade)
 - [ ] Videos preparation
 - [ ] Favoris
 - [ ] Ajout au journal (1 clic)
@@ -456,6 +461,9 @@
 - [x] Instructions FR + EN pour chaque exercice
 - [x] Tips coach FR + erreurs courantes FR
 - [x] 616 videos telecharges localement (servies via StaticFiles middleware)
+- [x] 619 thumbnails telecharges localement (/videos/thumbnails/)
+- [x] ZERO liens externes (ymove, BunnyCDN) dans la DB
+- [x] Docker volume persistant (bigboss-pgdata) + scripts backup/restore
 - [ ] Upload vers Cloudflare R2 (URLs permanentes - production)
 - [ ] Completer Darija pour 334 exercices
 - [ ] Validation kinesitherapeute
@@ -744,7 +752,7 @@
 | **Programmes** | **12** | **COMPLETE (NOUVEAU)** |
 | **TOTAL** | **70** | **COMPLETE** |
 
-### Infrastructure - 90% COMPLETE
+### Infrastructure - 95% COMPLETE
 
 - [x] PostgreSQL 16 (Docker)
 - [x] Database migrations (15 tables: 13 originales + Programme + ProgrammeSession)
@@ -764,14 +772,14 @@
 - [ ] Redis cache implementation
 - [ ] Firebase FCM push notifications
 
-### Mobile App - 96% COMPLETE
+### Mobile App - 98% COMPLETE
 
 - [x] Structure Expo Router (30+ ecrans)
 - [x] Auth: Login, Register, Onboarding Freeletics-style (12 etapes + splashs + emotionnels + loading)
 - [x] Dashboard Home Programme Personnalise (seance du jour, calendrier, progression, nutrition)
 - [x] Programme: detail, semaine, nutrition plan, celebration terminee
 - [x] Sessions: generation IA (OpenAI Premium / DB Free), workout actif, log sets, timer repos, bilan
-- [x] Exercices: bibliotheque 621 exercices, recherche, filtres, detail avec lecteur video HTML5
+- [x] Exercices: bibliotheque 621 exercices, recherche, filtres, detail avec lecteur video natif expo-av
 - [x] Nutrition: journal macros (MacroRing), scanner repas photo IA, ajouter repas
 - [x] Progression: mesures, photos (camera + pose), comparateur avant/apres, courbes 1RM, rapport
 - [x] Coach IA: chat connecte backend, quota, suggestions
@@ -779,8 +787,10 @@
 - [x] 7 Services API connectes au backend (+ programme.service.ts)
 - [x] 2 Stores Zustand (auth, session avec programmeContext)
 - [x] 6 Composants UI (Button, Input, Card, ProgressBar, SimpleChart, MacroRing, LineChart)
-- [x] Videos exercices dans les seances actives
-- [ ] Test sur appareil physique (EAS build)
+- [x] Videos exercices natif dans les seances actives (expo-av)
+- [x] Test sur appareil physique Android (EAS dev build + hot reload)
+- [x] EAS Build configure (development + preview profiles)
+- [x] Android SDK + Java JDK 17 installes sur WSL
 - [ ] Mode hors-ligne
 - [ ] Login Google/Apple OAuth
 
