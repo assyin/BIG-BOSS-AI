@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict aEbGlWOPeLXTIvEwtELy001rzmW4X9zJkU1fcsguNsUZhs7gXelFzKnkowm638c
+\restrict e3XVBedIEV876LmR7lS22WqxijTXtZc5nIpFt4UheRZIpnofofCgDgb9XEmsPUm
 
 -- Dumped from database version 16.13 (Debian 16.13-1.pgdg13+1)
 -- Dumped by pg_dump version 16.13 (Debian 16.13-1.pgdg13+1)
@@ -21,6 +21,30 @@ SET row_security = off;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: Achievements; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."Achievements" (
+    "Id" uuid NOT NULL,
+    "Key" text NOT NULL,
+    "Title" text NOT NULL,
+    "TitleAr" text,
+    "Description" text NOT NULL,
+    "DescriptionAr" text,
+    "IconUrl" text,
+    "Category" integer NOT NULL,
+    "TriggerType" text NOT NULL,
+    "TriggerValue" integer NOT NULL,
+    "PointsReward" integer NOT NULL,
+    "IsActive" boolean NOT NULL,
+    "SortOrder" integer NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."Achievements" OWNER TO bigboss;
 
 --
 -- Name: BodyStats; Type: TABLE; Schema: public; Owner: bigboss
@@ -96,6 +120,22 @@ CREATE TABLE public."CoachMessages" (
 ALTER TABLE public."CoachMessages" OWNER TO bigboss;
 
 --
+-- Name: FeatureFlags; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."FeatureFlags" (
+    "Id" uuid NOT NULL,
+    "Key" text NOT NULL,
+    "IsEnabled" boolean NOT NULL,
+    "Description" text NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "UpdatedByAdminId" uuid
+);
+
+
+ALTER TABLE public."FeatureFlags" OWNER TO bigboss;
+
+--
 -- Name: Foods; Type: TABLE; Schema: public; Owner: bigboss
 --
 
@@ -128,6 +168,23 @@ CREATE TABLE public."Foods" (
 
 
 ALTER TABLE public."Foods" OWNER TO bigboss;
+
+--
+-- Name: GamificationConfigs; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."GamificationConfigs" (
+    "Id" uuid NOT NULL,
+    "Key" text NOT NULL,
+    "Value" text NOT NULL,
+    "Description" text NOT NULL,
+    "Category" text NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "UpdatedByAdminId" uuid
+);
+
+
+ALTER TABLE public."GamificationConfigs" OWNER TO bigboss;
 
 --
 -- Name: Lives; Type: TABLE; Schema: public; Owner: bigboss
@@ -203,6 +260,27 @@ CREATE TABLE public."NutritionPlans" (
 
 
 ALTER TABLE public."NutritionPlans" OWNER TO bigboss;
+
+--
+-- Name: PointTransactions; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."PointTransactions" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Amount" integer NOT NULL,
+    "Type" integer NOT NULL,
+    "Reason" text NOT NULL,
+    "IdempotencyKey" text NOT NULL,
+    "RelatedEntityId" uuid,
+    "RelatedEntityType" text,
+    "BalanceAfter" integer NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "CreatedByAdminId" uuid
+);
+
+
+ALTER TABLE public."PointTransactions" OWNER TO bigboss;
 
 --
 -- Name: Products; Type: TABLE; Schema: public; Owner: bigboss
@@ -356,6 +434,21 @@ CREATE TABLE public."Recipes" (
 
 
 ALTER TABLE public."Recipes" OWNER TO bigboss;
+
+--
+-- Name: UserAchievements; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."UserAchievements" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "AchievementId" uuid NOT NULL,
+    "UnlockedAt" timestamp with time zone NOT NULL,
+    "PointsAwarded" integer NOT NULL
+);
+
+
+ALTER TABLE public."UserAchievements" OWNER TO bigboss;
 
 --
 -- Name: __EFMigrationsHistory; Type: TABLE; Schema: public; Owner: bigboss
@@ -546,11 +639,43 @@ CREATE TABLE public.users (
     "TargetWeightKg" numeric,
     "Tdee" numeric,
     "TrainingFrequency" integer DEFAULT 0 NOT NULL,
-    "WaistCm" numeric
+    "WaistCm" numeric,
+    "City" text,
+    "CurrentStreak" integer DEFAULT 0 NOT NULL,
+    "IsSuspended" boolean DEFAULT false NOT NULL,
+    "LastActivityDate" timestamp with time zone,
+    "LongestStreak" integer DEFAULT 0 NOT NULL,
+    "PointsBalance" integer DEFAULT 0 NOT NULL,
+    "ReferralCode" text,
+    "ReferredByUserId" uuid,
+    "SuspendedReason" text,
+    "TotalPointsEarned" integer DEFAULT 0 NOT NULL,
+    "TotalPointsSpent" integer DEFAULT 0 NOT NULL
 );
 
 
 ALTER TABLE public.users OWNER TO bigboss;
+
+--
+-- Data for Name: Achievements; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."Achievements" VALUES ('1700d833-6806-4563-b0d2-fb92713d5660', 'first_session', 'Premiere seance', 'أول حصة', 'Complete ta premiere seance', NULL, NULL, 5, 'sessions', 1, 10, true, 1, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('b236b14b-05cf-43f0-ab2e-c6b542d06474', 'sessions_10', '10 seances', '10 حصص', 'Complete 10 seances', NULL, NULL, 1, 'sessions', 10, 50, true, 2, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('967c6b93-7c62-4d08-81f0-3ce1beface80', 'sessions_50', '50 seances', '50 حصة', 'Complete 50 seances', NULL, NULL, 1, 'sessions', 50, 200, true, 3, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('2c71b40a-fe1c-4309-969c-b32112fc9af9', 'sessions_100', 'Centurion', 'المئة', 'Complete 100 seances', NULL, NULL, 5, 'sessions', 100, 500, true, 4, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('7e7b841f-df30-4717-be0d-733ab1e0dfb8', 'streak_7', 'Semaine parfaite', 'أسبوع كامل', '7 jours consecutifs', NULL, NULL, 1, 'streak', 7, 50, true, 10, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('d1ca4723-72d6-4ec5-aa92-f779c4d97b02', 'streak_30', 'Mois de fer', 'شهر ديال الحديد', '30 jours consecutifs', NULL, NULL, 1, 'streak', 30, 300, true, 11, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('349300d3-b9a1-4bc9-8da6-90654372d479', 'streak_100', 'Legende', 'أسطورة', '100 jours consecutifs', NULL, NULL, 5, 'streak', 100, 1000, true, 12, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('d96cb263-9812-4f23-ae36-c61b0724dab2', 'volume_1000', 'Tonne!', 'طن!', 'Souleve 1000 kg total', NULL, NULL, 3, 'volume', 1000, 50, true, 20, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('e3184831-48b0-48a1-b6b3-d1e3c80f28c6', 'volume_10000', 'Machine', 'ماكينة', 'Souleve 10000 kg total', NULL, NULL, 3, 'volume', 10000, 200, true, 21, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('a4aca5bf-64ca-45d1-a455-1bb6fd470c24', 'volume_100000', 'Titan', 'عملاق', 'Souleve 100000 kg total', NULL, NULL, 3, 'volume', 100000, 1000, true, 22, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('6b488f89-712d-4609-811a-59269218bb1a', 'first_pr', 'Premier Record', 'أول رقم قياسي', 'Bats ton premier record personnel', NULL, NULL, 2, 'pr_count', 1, 30, true, 30, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('1f5ec88a-ae92-4ca9-b80c-afa07c0ea9a8', 'pr_10', 'Recordman', 'صاحب الأرقام', 'Bats 10 records personnels', NULL, NULL, 2, 'pr_count', 10, 100, true, 31, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('2ae7feb0-ab45-4d8e-9d7a-aa2bfe65a4ba', 'first_meal', 'Nutritionniste', 'خبير التغذية', 'Log ton premier repas', NULL, NULL, 6, 'meals', 1, 5, true, 40, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('aa6cb561-16a4-4735-bf74-369bec826262', 'meals_100', 'Chef Big Boss', 'شاف بيگ بوس', 'Log 100 repas', NULL, NULL, 6, 'meals', 100, 100, true, 41, '2026-04-04 22:15:37.941924+00');
+INSERT INTO public."Achievements" VALUES ('6632d639-40f7-49b6-8741-3b9fef7b7a91', 'first_referral', 'Ambassadeur', 'سفير', 'Parraine ton premier ami', NULL, NULL, 4, 'referrals', 1, 50, true, 50, '2026-04-04 22:15:37.941924+00');
+
 
 --
 -- Data for Name: BodyStats; Type: TABLE DATA; Schema: public; Owner: bigboss
@@ -568,6 +693,21 @@ ALTER TABLE public.users OWNER TO bigboss;
 -- Data for Name: CoachMessages; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
+
+
+--
+-- Data for Name: FeatureFlags; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."FeatureFlags" VALUES ('ab55ec40-0967-439c-ab11-0ac729886784', 'coach_vocal', false, 'Coach vocal ElevenLabs', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('4889ead2-a40c-4b18-b1f5-53a53b1cc110', 'vision_posture', true, 'Vision posture MediaPipe', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('b08074e5-fe60-474c-98e2-b3d727482098', 'scan_repas', true, 'Scanner repas photo IA', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('5e948879-56bd-429a-a842-7d6deac55f44', 'challenges', true, 'Systeme de challenges', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('ef296913-5534-4b75-ad0e-45ab1da66208', 'affiliation', true, 'Programme affiliation', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('f537a766-b17f-46cd-844a-2fc83be642f3', 'feed_communaute', false, 'Feed social communaute', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('206316c3-284b-440a-bf62-b2b27173fa01', 'live_streaming', false, 'Live streaming', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('81d4e219-332e-472a-86e8-520d577f393e', 'boutique', true, 'Boutique de points', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('d290a7da-a0bf-4267-a129-c0893e2e3676', 'gamification', true, 'Systeme de points global', '2026-04-04 22:15:37.921595+00', NULL);
 
 
 --
@@ -666,6 +806,35 @@ INSERT INTO public."Foods" VALUES ('ee1075a9-b274-47db-8750-3af556551e75', '28ee
 
 
 --
+-- Data for Name: GamificationConfigs; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."GamificationConfigs" VALUES ('5872e6a8-fe20-4e79-a09d-046fc3035739', 'points.session_complete', '10', 'Points par seance completee', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('eed354bf-57a2-49f0-b9e3-141c847e8113', 'points.session_min_duration', '15', 'Duree min (minutes) pour valider', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('d600b0db-c60d-4c38-8a2a-9d77fe78b0f5', 'points.session_min_exercises', '3', 'Exercices min pour valider', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('badc2101-0c6e-4f9e-b10a-4f3f5d1899f6', 'points.session_max_daily', '3', 'Max seances recompensees/jour', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('28e58102-1902-45ea-8fc2-728714f1a4a0', 'points.pr_bonus', '30', 'Bonus record personnel', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('c479e462-059a-4b6a-ac33-4cf730b5bbf4', 'points.macros_respected', '15', 'Macros dans ±10% objectif', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('49de31ec-5d0e-4bea-9e11-6edee7edeed0', 'points.meal_logged', '5', 'Premier log repas du jour', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('b0924083-bea6-4082-b60b-17b2dd53bffd', 'points.meal_max_daily', '5', 'Max repas recompenses/jour', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('f2955021-d2d4-48b9-8d53-6277e377dec3', 'points.feed_shared', '5', 'Partage resultat (1x/jour)', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('909cead0-1aca-4707-be0e-0b187ec1d745', 'points.review_posted', '50', 'Avis 5 etoiles (1x/compte)', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('0ac6841c-2ef4-4e49-a536-a98d05584177', 'points.live_watched', '10', 'Live regarde (80%+)', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('08af2caf-bcde-49ff-9966-fb81c4a3a530', 'points.daily_cap', '200', 'Plafond journalier total', 'points', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('aab8f3fe-f8dd-4eff-8268-0c4b4c0fc669', 'points.affiliation_referrer', '200', 'Points pour le parrain', 'affiliation', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('4e4ecf8c-029c-4c0e-80d1-29f60c46021e', 'points.affiliation_referee', '50', 'Points pour le filleul', 'affiliation', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('fe91a47a-c8c5-4b2b-983e-2bc25e6b2fbb', 'points.challenge_completion', '500', 'Points fin de challenge', 'challenges', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('cf3903b2-6b37-4991-9459-a0de2480b0e8', 'streak.grace_period_hours', '36', 'Tolerance streak (heures)', 'streak', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('107c5a03-5092-4574-9d44-35db800e87be', 'streak.bonus_7d', '50', 'Bonus 7 jours consecutifs', 'streak', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('f5aabb5a-1fcd-4c4d-8f00-47f255112145', 'streak.bonus_30d', '300', 'Bonus 30 jours consecutifs', 'streak', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('ba2aad79-3d01-4afc-b76b-52ffab55d8d5', 'streak.bonus_100d', '1000', 'Bonus 100 jours consecutifs', 'streak', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('580cb2c3-a313-49eb-b8bc-653a617d0f17', 'affiliation.max_referrals_month', '20', 'Max parrainages/mois', 'affiliation', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('fc661586-c867-41a1-ac95-164980cd754d', 'anticheat.session_velocity_max', '5', 'Max sessions/24h avant flag', 'anticheat', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('dde2a61f-25ab-4769-8c76-adb942753fce', 'anticheat.referral_velocity_max', '5', 'Max parrainages/24h avant flag', 'anticheat', '2026-04-04 22:15:37.860568+00', NULL);
+INSERT INTO public."GamificationConfigs" VALUES ('646553a6-b1ec-4a4a-865c-1ceaa27883c3', 'anticheat.shop_high_value_threshold', '5000', 'Seuil validation admin redemption', 'anticheat', '2026-04-04 22:15:37.860568+00', NULL);
+
+
+--
 -- Data for Name: Lives; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -676,10 +845,17 @@ INSERT INTO public."Foods" VALUES ('ee1075a9-b274-47db-8750-3af556551e75', '28ee
 --
 
 INSERT INTO public."Meals" VALUES ('af53d8e6-74ff-4fec-b28a-2da6664a3def', 'b6f4284e-c222-436e-b311-c774c22fa3ca', 3, '2026-04-03 11:00:00+00', NULL, '[{"Name":"Beef (Imperial)","QuantityG":55,"Calories":150,"ProteinsG":14,"CarbsG":0,"FatsG":11}]', 150, 14, 0, 11, NULL, NULL, false, '2026-04-03 13:31:43.205827+00', '2026-04-03 13:31:43.205827+00');
+INSERT INTO public."Meals" VALUES ('b9ebb2ab-cc10-4a2e-bc15-27b366de03b1', 'b6f4284e-c222-436e-b311-c774c22fa3ca', 3, '2026-04-04 17:43:11.25+00', NULL, '[{"Name":"Msemen marocains avec sirop de dattes","QuantityG":1,"Calories":29,"ProteinsG":1,"CarbsG":5,"FatsG":1}]', 29, 1, 5, 1, NULL, NULL, false, '2026-04-04 17:43:12.051401+00', '2026-04-04 17:43:12.051401+00');
 
 
 --
 -- Data for Name: NutritionPlans; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: PointTransactions; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
 
@@ -1159,6 +1335,12 @@ INSERT INTO public."Recipes" VALUES ('59b6dac3-8c1e-4931-9e90-8d6837909cc3', 'Zu
 
 
 --
+-- Data for Name: UserAchievements; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
 -- Data for Name: __EFMigrationsHistory; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -1168,6 +1350,7 @@ INSERT INTO public."__EFMigrationsHistory" VALUES ('20260329113510_AddYMoveExerc
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260330112621_AddFoodsAndRecipeYMoveFields', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260330225645_PremiumOnboarding', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260331111408_AddProgrammes', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404221149_AddGamificationSystem', '8.0.2');
 
 
 --
@@ -1820,7 +2003,15 @@ INSERT INTO public.sessions VALUES ('591256b9-eee2-4249-adea-53057d11dc6a', 'b6f
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
-INSERT INTO public.users VALUES ('b6f4284e-c222-436e-b311-c774c22fa3ca', 'yassine@gmail.com', '$2a$11$v957a.FPsNYV2SVApbHueuoXxYs6cbGW/OrhrccymQZe4YlGpp8ka', 'Yassine', NULL, '1975-02-04 00:00:00+00', NULL, 88.00, 177.00, 'male', 'BuildStrength', 'Beginner', 1807, 'Free', NULL, 'fr', true, '2026-04-03 11:53:15.111125+00', '2026-04-04 13:30:38.607096+00', '2026-04-04 13:30:38.600256+00', 'mbPihqvUWfB7iSmQbFwLgs9WOaMfgXkZZuqv15ZNP5nRGIDpc9I1cQOaPRD74lNwZDxCJcyZckTEqp1a21fF2w==', '2026-05-04 13:30:38.600254+00', 0, 'lightly_active', 1827, NULL, 'supportive', 3032, 384, 88, 176, 'omnivore', '{Gluten}', '{Poignets}', false, 3, '{}', '{confidence,performance,family}', true, '2026-04-03 11:58:09.632679+00', '{moroccan}', '{}', 75, 'evening', '{}', 'Upper/Lower', 8, 8, NULL, 75, 2832, 4, NULL);
+INSERT INTO public.users VALUES ('b6f4284e-c222-436e-b311-c774c22fa3ca', 'yassine@gmail.com', '$2a$11$v957a.FPsNYV2SVApbHueuoXxYs6cbGW/OrhrccymQZe4YlGpp8ka', 'Yassine', NULL, '1975-02-04 00:00:00+00', NULL, 88.00, 177.00, 'male', 'BuildStrength', 'Beginner', 1807, 'Free', NULL, 'fr', true, '2026-04-03 11:53:15.111125+00', '2026-04-04 17:57:02.768696+00', '2026-04-04 17:18:09.375224+00', 'ZUTqjyO08U8hPSSdYdpouj7eamg0Mf2OpAxOTVfeA2U1LYj4txYEYeXRJ7D2o/147T5Tc/yzKSos1vKDjGxVqQ==', '2026-05-04 17:57:02.751077+00', 0, 'lightly_active', 1827, NULL, 'supportive', 3032, 384, 88, 176, 'omnivore', '{Gluten}', '{Poignets}', false, 3, '{}', '{confidence,performance,family}', true, '2026-04-03 11:58:09.632679+00', '{moroccan}', '{}', 75, 'evening', '{}', 'Upper/Lower', 8, 8, NULL, 75, 2832, 4, NULL, NULL, 0, false, NULL, 0, 0, NULL, NULL, NULL, 0, 0);
+
+
+--
+-- Name: Achievements PK_Achievements; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."Achievements"
+    ADD CONSTRAINT "PK_Achievements" PRIMARY KEY ("Id");
 
 
 --
@@ -1848,11 +2039,27 @@ ALTER TABLE ONLY public."CoachMessages"
 
 
 --
+-- Name: FeatureFlags PK_FeatureFlags; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."FeatureFlags"
+    ADD CONSTRAINT "PK_FeatureFlags" PRIMARY KEY ("Id");
+
+
+--
 -- Name: Foods PK_Foods; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
 ALTER TABLE ONLY public."Foods"
     ADD CONSTRAINT "PK_Foods" PRIMARY KEY ("Id");
+
+
+--
+-- Name: GamificationConfigs PK_GamificationConfigs; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."GamificationConfigs"
+    ADD CONSTRAINT "PK_GamificationConfigs" PRIMARY KEY ("Id");
 
 
 --
@@ -1877,6 +2084,14 @@ ALTER TABLE ONLY public."Meals"
 
 ALTER TABLE ONLY public."NutritionPlans"
     ADD CONSTRAINT "PK_NutritionPlans" PRIMARY KEY ("Id");
+
+
+--
+-- Name: PointTransactions PK_PointTransactions; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PointTransactions"
+    ADD CONSTRAINT "PK_PointTransactions" PRIMARY KEY ("Id");
 
 
 --
@@ -1917,6 +2132,14 @@ ALTER TABLE ONLY public."ProgressPhotos"
 
 ALTER TABLE ONLY public."Recipes"
     ADD CONSTRAINT "PK_Recipes" PRIMARY KEY ("Id");
+
+
+--
+-- Name: UserAchievements PK_UserAchievements; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."UserAchievements"
+    ADD CONSTRAINT "PK_UserAchievements" PRIMARY KEY ("Id");
 
 
 --
@@ -1988,6 +2211,13 @@ CREATE INDEX "IX_NutritionPlans_UserId" ON public."NutritionPlans" USING btree (
 
 
 --
+-- Name: IX_PointTransactions_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_PointTransactions_UserId" ON public."PointTransactions" USING btree ("UserId");
+
+
+--
 -- Name: IX_ProgrammeSessions_ProgrammeId; Type: INDEX; Schema: public; Owner: bigboss
 --
 
@@ -2013,6 +2243,20 @@ CREATE INDEX "IX_Programmes_UserId" ON public."Programmes" USING btree ("UserId"
 --
 
 CREATE INDEX "IX_ProgressPhotos_UserId" ON public."ProgressPhotos" USING btree ("UserId");
+
+
+--
+-- Name: IX_UserAchievements_AchievementId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_UserAchievements_AchievementId" ON public."UserAchievements" USING btree ("AchievementId");
+
+
+--
+-- Name: IX_UserAchievements_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_UserAchievements_UserId" ON public."UserAchievements" USING btree ("UserId");
 
 
 --
@@ -2146,6 +2390,14 @@ ALTER TABLE ONLY public."NutritionPlans"
 
 
 --
+-- Name: PointTransactions FK_PointTransactions_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PointTransactions"
+    ADD CONSTRAINT "FK_PointTransactions_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: ProgrammeSessions FK_ProgrammeSessions_Programmes_ProgrammeId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2178,6 +2430,22 @@ ALTER TABLE ONLY public."ProgressPhotos"
 
 
 --
+-- Name: UserAchievements FK_UserAchievements_Achievements_AchievementId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."UserAchievements"
+    ADD CONSTRAINT "FK_UserAchievements_Achievements_AchievementId" FOREIGN KEY ("AchievementId") REFERENCES public."Achievements"("Id") ON DELETE CASCADE;
+
+
+--
+-- Name: UserAchievements FK_UserAchievements_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."UserAchievements"
+    ADD CONSTRAINT "FK_UserAchievements_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: session_exercises FK_session_exercises_exercises_exercise_id; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2205,5 +2473,5 @@ ALTER TABLE ONLY public.sessions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict aEbGlWOPeLXTIvEwtELy001rzmW4X9zJkU1fcsguNsUZhs7gXelFzKnkowm638c
+\unrestrict e3XVBedIEV876LmR7lS22WqxijTXtZc5nIpFt4UheRZIpnofofCgDgb9XEmsPUm
 

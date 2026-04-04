@@ -130,6 +130,10 @@ export default function MainLayout() {
         name="sessions/coach-vision"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="points/history"
+        options={{ href: null }}
+      />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
     </Tabs>
   );

@@ -18,6 +18,7 @@ import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { useAuthStore } from '@/store/auth.store';
 import { useSessionStore } from '@/store/session.store';
+import { useGamificationStore } from '@/store/gamification.store';
 import ProgrammeService, {
   Programme,
   ProgrammeSession,
@@ -40,6 +41,7 @@ function jsToMondayIndex(jsDay: number): number {
 export default function HomeScreen() {
   const { profile, user, loadProfile, loadStats } = useAuthStore();
   const sessionStore = useSessionStore();
+  const { balance: gamifBalance, streak: gamifStreak, loadGamification } = useGamificationStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function HomeScreen() {
   }, []);
 
   const loadData = useCallback(async () => {
-    await Promise.all([loadProfile(), loadStats(), loadProgrammeData()]);
+    await Promise.all([loadProfile(), loadStats(), loadProgrammeData(), loadGamification()]);
   }, [loadProfile, loadStats, loadProgrammeData]);
 
   // Reload every time the screen receives focus
@@ -246,6 +248,31 @@ export default function HomeScreen() {
               <Text style={styles.avatarText}>{firstName.charAt(0).toUpperCase()}</Text>
             </TouchableOpacity>
           </View>
+
+          {/* ==================== GAMIFICATION WIDGETS ==================== */}
+          {gamifBalance && (
+            <TouchableOpacity
+              style={styles.gamifRow}
+              activeOpacity={0.7}
+              onPress={() => router.push('/(main)/points/history' as any)}
+            >
+              <View style={styles.gamifCard}>
+                <Ionicons name="star" size={20} color={Colors.warning} />
+                <Text style={styles.gamifValue}>{gamifBalance.balance}</Text>
+                <Text style={styles.gamifLabel}>Points</Text>
+              </View>
+              <View style={styles.gamifCard}>
+                <Ionicons name="flame" size={20} color={Colors.error} />
+                <Text style={styles.gamifValue}>{gamifStreak?.currentStreak || 0}</Text>
+                <Text style={styles.gamifLabel}>Streak</Text>
+              </View>
+              <View style={styles.gamifCard}>
+                <Ionicons name="trophy" size={20} color={Colors.primary} />
+                <Text style={styles.gamifValue}>{gamifBalance.totalEarned}</Text>
+                <Text style={styles.gamifLabel}>Total</Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
           {/* ==================== PAUSED BANNER ==================== */}
           {programme && programme.status === 'Paused' && (
@@ -642,6 +669,35 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.xl,
     fontWeight: Fonts.weight.bold,
     color: Colors.white,
+  },
+
+  // ---- Gamification widgets ----
+  gamifRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  gamifCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    gap: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  gamifValue: {
+    fontSize: Fonts.size.xl,
+    fontWeight: Fonts.weight.bold,
+    color: Colors.dark,
+  },
+  gamifLabel: {
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
   },
 
   // ---- Paused banner ----
