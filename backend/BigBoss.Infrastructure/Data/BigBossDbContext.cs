@@ -33,6 +33,8 @@ public class BigBossDbContext : DbContext
     public DbSet<Achievement> Achievements => Set<Achievement>();
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
     public DbSet<ChallengeParticipation> ChallengeParticipations => Set<ChallengeParticipation>();
+    public DbSet<ShopReward> ShopRewards => Set<ShopReward>();
+    public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict e3XVBedIEV876LmR7lS22WqxijTXtZc5nIpFt4UheRZIpnofofCgDgb9XEmsPUm
+\restrict ubeg1AyowFTnM0CvKjZogRY4HIeXrCC4IUhdg5gN91GqUYg1nMfxSXtNbc7jLVh
 
 -- Dumped from database version 16.13 (Debian 16.13-1.pgdg13+1)
 -- Dumped by pg_dump version 16.13 (Debian 16.13-1.pgdg13+1)
@@ -74,6 +74,27 @@ CREATE TABLE public."BodyStats" (
 ALTER TABLE public."BodyStats" OWNER TO bigboss;
 
 --
+-- Name: ChallengeParticipations; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."ChallengeParticipations" (
+    "Id" uuid NOT NULL,
+    "ChallengeId" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "JoinedAt" timestamp with time zone NOT NULL,
+    "CurrentProgress" numeric NOT NULL,
+    "IsCompleted" boolean NOT NULL,
+    "CompletedAt" timestamp with time zone,
+    "FinalRank" integer,
+    "PointsAwarded" integer NOT NULL,
+    "IsDisqualified" boolean NOT NULL,
+    "DisqualifyReason" text
+);
+
+
+ALTER TABLE public."ChallengeParticipations" OWNER TO bigboss;
+
+--
 -- Name: Challenges; Type: TABLE; Schema: public; Owner: bigboss
 --
 
@@ -92,7 +113,18 @@ CREATE TABLE public."Challenges" (
     "IsActive" boolean NOT NULL,
     "IsFeatured" boolean NOT NULL,
     "CreatedAt" timestamp with time zone NOT NULL,
-    "UpdatedAt" timestamp with time zone NOT NULL
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DescriptionAr" text,
+    "IsFinalized" boolean DEFAULT false NOT NULL,
+    "IsVisibleToFree" boolean DEFAULT false NOT NULL,
+    "MaxParticipants" integer,
+    "Metric" integer DEFAULT 0 NOT NULL,
+    "PointsForCompletion" integer DEFAULT 0 NOT NULL,
+    "PointsForParticipation" integer DEFAULT 0 NOT NULL,
+    "PointsForTop3" integer DEFAULT 0 NOT NULL,
+    "RequiredSubscriptionTier" integer,
+    "TargetValue" numeric,
+    "TitleAr" text
 );
 
 
@@ -436,6 +468,55 @@ CREATE TABLE public."Recipes" (
 ALTER TABLE public."Recipes" OWNER TO bigboss;
 
 --
+-- Name: RewardRedemptions; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."RewardRedemptions" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "ShopRewardId" uuid NOT NULL,
+    "PointsSpent" integer NOT NULL,
+    "Status" integer NOT NULL,
+    "RedemptionCode" text,
+    "ShippingAddress" text,
+    "AdminNotes" text,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "ProcessedAt" timestamp with time zone,
+    "ProcessedByAdminId" uuid
+);
+
+
+ALTER TABLE public."RewardRedemptions" OWNER TO bigboss;
+
+--
+-- Name: ShopRewards; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."ShopRewards" (
+    "Id" uuid NOT NULL,
+    "Title" text NOT NULL,
+    "Description" text NOT NULL,
+    "ImageUrl" text,
+    "Category" integer NOT NULL,
+    "PointsCost" integer NOT NULL,
+    "RealValueMad" numeric,
+    "Stock" integer,
+    "MaxPerUser" integer,
+    "RequiredSubscriptionTier" integer,
+    "IsActive" boolean NOT NULL,
+    "IsFeatured" boolean NOT NULL,
+    "ValidFrom" timestamp with time zone,
+    "ValidUntil" timestamp with time zone,
+    "RedemptionInstructions" text,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."ShopRewards" OWNER TO bigboss;
+
+--
 -- Name: UserAchievements; Type: TABLE; Schema: public; Owner: bigboss
 --
 
@@ -679,6 +760,12 @@ INSERT INTO public."Achievements" VALUES ('6632d639-40f7-49b6-8741-3b9fef7b7a91'
 
 --
 -- Data for Name: BodyStats; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: ChallengeParticipations; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
 
@@ -1335,6 +1422,25 @@ INSERT INTO public."Recipes" VALUES ('59b6dac3-8c1e-4931-9e90-8d6837909cc3', 'Zu
 
 
 --
+-- Data for Name: RewardRedemptions; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: ShopRewards; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."ShopRewards" VALUES ('47983b19-f85e-4852-b855-4f3c3a3c760c', 'Shaker Big Boss', 'Shaker de 700ml aux couleurs Big Boss Fitness', NULL, 2, 500, 50, 100, 1, NULL, true, true, NULL, NULL, 'Livraison gratuite au Maroc. Contacte le support avec ton code.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('9e8b9284-d22c-425d-af8e-dfd9fe3fd1b3', '1 Mois Premium Offert', 'Acces Premium pendant 1 mois complet', NULL, 4, 1000, 79, NULL, NULL, NULL, true, true, NULL, NULL, 'Active automatiquement dans les 24h.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('46c64cf2-b987-4ec8-9378-bae038c67c71', 'T-Shirt Big Boss', 'T-shirt coton premium avec logo Big Boss Fitness', NULL, 2, 2000, 150, 50, 1, NULL, true, false, NULL, NULL, 'Choisis ta taille en contactant le support.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('4a556a95-d395-4456-ad0a-51c7775b6779', 'Session Coaching 1-to-1', 'Session de coaching personnalise de 30 minutes', NULL, 5, 5000, 300, 10, NULL, NULL, true, false, NULL, NULL, 'Prends RDV via le support apres echange.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('9fcd6097-2db8-4347-a620-1668eb02741f', 'Reduction 20% Boutique', 'Code promo 20% valable 7 jours sur la boutique', NULL, 1, 300, 0, NULL, NULL, NULL, true, false, NULL, NULL, 'Utilise le code dans la boutique en ligne.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('fc40a09f-770a-48ec-9ea4-59a2142ded38', 'Bande de Resistance', 'Set de 3 bandes elastiques de resistance', NULL, 2, 800, 80, 30, 1, NULL, true, false, NULL, NULL, 'Livraison gratuite au Maroc.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+INSERT INTO public."ShopRewards" VALUES ('ab63060e-d3a2-40bb-be7a-4e5fc79ea503', 'Gourde Big Boss 1L', 'Gourde isotherme 1 litre avec logo', NULL, 2, 600, 60, 50, 1, NULL, true, false, NULL, NULL, 'Livraison gratuite au Maroc.', '2026-04-04 22:51:32.563702+00', '2026-04-04 22:51:32.563702+00');
+
+
+--
 -- Data for Name: UserAchievements; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -1351,6 +1457,8 @@ INSERT INTO public."__EFMigrationsHistory" VALUES ('20260330112621_AddFoodsAndRe
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260330225645_PremiumOnboarding', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260331111408_AddProgrammes', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404221149_AddGamificationSystem', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404223113_AddChallengeParticipation', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404224938_AddShopRewards', '8.0.2');
 
 
 --
@@ -2023,6 +2131,14 @@ ALTER TABLE ONLY public."BodyStats"
 
 
 --
+-- Name: ChallengeParticipations PK_ChallengeParticipations; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ChallengeParticipations"
+    ADD CONSTRAINT "PK_ChallengeParticipations" PRIMARY KEY ("Id");
+
+
+--
 -- Name: Challenges PK_Challenges; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2135,6 +2251,22 @@ ALTER TABLE ONLY public."Recipes"
 
 
 --
+-- Name: RewardRedemptions PK_RewardRedemptions; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."RewardRedemptions"
+    ADD CONSTRAINT "PK_RewardRedemptions" PRIMARY KEY ("Id");
+
+
+--
+-- Name: ShopRewards PK_ShopRewards; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ShopRewards"
+    ADD CONSTRAINT "PK_ShopRewards" PRIMARY KEY ("Id");
+
+
+--
 -- Name: UserAchievements PK_UserAchievements; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2187,6 +2319,20 @@ ALTER TABLE ONLY public.users
 --
 
 CREATE INDEX "IX_BodyStats_UserId" ON public."BodyStats" USING btree ("UserId");
+
+
+--
+-- Name: IX_ChallengeParticipations_ChallengeId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_ChallengeParticipations_ChallengeId" ON public."ChallengeParticipations" USING btree ("ChallengeId");
+
+
+--
+-- Name: IX_ChallengeParticipations_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_ChallengeParticipations_UserId" ON public."ChallengeParticipations" USING btree ("UserId");
 
 
 --
@@ -2243,6 +2389,20 @@ CREATE INDEX "IX_Programmes_UserId" ON public."Programmes" USING btree ("UserId"
 --
 
 CREATE INDEX "IX_ProgressPhotos_UserId" ON public."ProgressPhotos" USING btree ("UserId");
+
+
+--
+-- Name: IX_RewardRedemptions_ShopRewardId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_RewardRedemptions_ShopRewardId" ON public."RewardRedemptions" USING btree ("ShopRewardId");
+
+
+--
+-- Name: IX_RewardRedemptions_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_RewardRedemptions_UserId" ON public."RewardRedemptions" USING btree ("UserId");
 
 
 --
@@ -2366,6 +2526,22 @@ ALTER TABLE ONLY public."BodyStats"
 
 
 --
+-- Name: ChallengeParticipations FK_ChallengeParticipations_Challenges_ChallengeId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ChallengeParticipations"
+    ADD CONSTRAINT "FK_ChallengeParticipations_Challenges_ChallengeId" FOREIGN KEY ("ChallengeId") REFERENCES public."Challenges"("Id") ON DELETE CASCADE;
+
+
+--
+-- Name: ChallengeParticipations FK_ChallengeParticipations_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ChallengeParticipations"
+    ADD CONSTRAINT "FK_ChallengeParticipations_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: CoachMessages FK_CoachMessages_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2430,6 +2606,22 @@ ALTER TABLE ONLY public."ProgressPhotos"
 
 
 --
+-- Name: RewardRedemptions FK_RewardRedemptions_ShopRewards_ShopRewardId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."RewardRedemptions"
+    ADD CONSTRAINT "FK_RewardRedemptions_ShopRewards_ShopRewardId" FOREIGN KEY ("ShopRewardId") REFERENCES public."ShopRewards"("Id") ON DELETE CASCADE;
+
+
+--
+-- Name: RewardRedemptions FK_RewardRedemptions_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."RewardRedemptions"
+    ADD CONSTRAINT "FK_RewardRedemptions_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: UserAchievements FK_UserAchievements_Achievements_AchievementId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2473,5 +2665,5 @@ ALTER TABLE ONLY public.sessions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict e3XVBedIEV876LmR7lS22WqxijTXtZc5nIpFt4UheRZIpnofofCgDgb9XEmsPUm
+\unrestrict ubeg1AyowFTnM0CvKjZogRY4HIeXrCC4IUhdg5gN91GqUYg1nMfxSXtNbc7jLVh
 

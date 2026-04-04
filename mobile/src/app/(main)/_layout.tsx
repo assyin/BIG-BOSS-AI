@@ -138,6 +138,10 @@ export default function MainLayout() {
         name="challenges/index"
         options={{ href: null }}
       />
+      <Tabs.Screen
+        name="rewards/index"
+        options={{ href: null }}
+      />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
     </Tabs>
   );
