@@ -4,10 +4,10 @@
 ---
 
 **Projet**: Big Boss Fitness
-**Version**: 5.0 - GAMIFICATION + COMMUNITY + COACH VISION
+**Version**: 5.1 - INFRA COMPLETE (Redis + SignalR + Jobs)
 **Date**: 5 Avril 2026
 **Duree Totale Estimee**: 32-40 semaines
-**Statut Actuel**: 35+ TABLES DB - 130+ ENDPOINTS - 45+ ECRANS - COMMUNITY FEED LIVE
+**Statut Actuel**: 35+ TABLES - 135+ ENDPOINTS - 45+ ECRANS - REDIS + SIGNALR + BACKGROUND JOBS
 
 ---
 
