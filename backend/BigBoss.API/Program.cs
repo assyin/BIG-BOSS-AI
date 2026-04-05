@@ -232,6 +232,17 @@ if (Directory.Exists(videosPath))
     Log.Information("Serving local videos from {Path}", Path.GetFullPath(videosPath));
 }
 
+// Serve audio cache (ElevenLabs generated audio)
+var audioCachePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "audio-cache");
+Directory.CreateDirectory(audioCachePath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Path.GetFullPath(audioCachePath)),
+    RequestPath = "/audio-cache",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "audio/mpeg"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

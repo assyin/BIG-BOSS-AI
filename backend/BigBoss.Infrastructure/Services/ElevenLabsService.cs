@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -7,7 +9,8 @@ namespace BigBoss.Infrastructure.Services;
 public interface IElevenLabsService
 {
     Task<byte[]> GenerateSpeechAsync(string text);
-    Task<string> GenerateSpeechAndUploadAsync(string text, string fileName);
+    Task<string> GenerateSpeechUrlAsync(string text);
+    bool IsConfigured { get; }
 }
 
 public class ElevenLabsService : IElevenLabsService
@@ -16,6 +19,9 @@ public class ElevenLabsService : IElevenLabsService
     private readonly ILogger<ElevenLabsService> _logger;
     private readonly string _apiKey;
     private readonly string _voiceId;
+    private readonly string _audioDir;
+
+    public bool IsConfigured => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_voiceId);
 
     public ElevenLabsService(
         HttpClient httpClient,
@@ -27,15 +33,23 @@ public class ElevenLabsService : IElevenLabsService
         _apiKey = configuration["BBF_ELEVENLABS_API_KEY"] ?? "";
         _voiceId = configuration["BBF_ELEVENLABS_VOICE_ID"] ?? "";
 
-        _httpClient.BaseAddress = new Uri("https://api.elevenlabs.io/");
-        _httpClient.DefaultRequestHeaders.Add("xi-api-key", _apiKey);
+        // Store audio files locally
+        var projectRoot = Directory.GetCurrentDirectory();
+        _audioDir = Path.Combine(Directory.GetParent(projectRoot)?.FullName ?? projectRoot, "audio-cache");
+        Directory.CreateDirectory(_audioDir);
+
+        if (!string.IsNullOrEmpty(_apiKey))
+        {
+            _httpClient.BaseAddress = new Uri("https://api.elevenlabs.io/");
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("xi-api-key", _apiKey);
+        }
     }
 
     public async Task<byte[]> GenerateSpeechAsync(string text)
     {
-        if (string.IsNullOrEmpty(_apiKey) || string.IsNullOrEmpty(_voiceId))
+        if (!IsConfigured)
         {
-            _logger.LogWarning("ElevenLabs not configured, returning empty audio");
+            _logger.LogWarning("ElevenLabs not configured");
             return Array.Empty<byte>();
         }
 
@@ -46,8 +60,8 @@ public class ElevenLabsService : IElevenLabsService
             voice_settings = new
             {
                 stability = 0.5,
-                similarity_boost = 0.8,
-                style = 0.5,
+                similarity_boost = 0.85,
+                style = 0.4,
                 use_speaker_boost = true
             }
         };
@@ -57,26 +71,42 @@ public class ElevenLabsService : IElevenLabsService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            _logger.LogError("ElevenLabs API error: {StatusCode} - {Error}", response.StatusCode, error);
-            throw new HttpRequestException($"ElevenLabs API error: {response.StatusCode}");
+            _logger.LogError("ElevenLabs error: {StatusCode} - {Error}", response.StatusCode, error);
+            return Array.Empty<byte>();
         }
 
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    public async Task<string> GenerateSpeechAndUploadAsync(string text, string fileName)
+    /// <summary>
+    /// Generate speech and return a local URL. Uses cache based on text hash.
+    /// </summary>
+    public async Task<string> GenerateSpeechUrlAsync(string text)
     {
+        if (!IsConfigured) return "";
+
+        // Check cache
+        var hash = ComputeHash(text);
+        var fileName = $"{hash}.mp3";
+        var filePath = Path.Combine(_audioDir, fileName);
+        var url = $"/audio-cache/{fileName}";
+
+        if (File.Exists(filePath))
+            return url; // Already cached
+
+        // Generate
         var audioBytes = await GenerateSpeechAsync(text);
+        if (audioBytes.Length == 0) return "";
 
-        if (audioBytes.Length == 0)
-        {
-            return "";
-        }
+        await File.WriteAllBytesAsync(filePath, audioBytes);
+        _logger.LogInformation("Audio generated and cached: {Hash} ({Length} bytes)", hash, audioBytes.Length);
 
-        // TODO: Upload to Cloudflare R2 and return URL
-        // For now, return empty
-        _logger.LogInformation("Generated speech for: {Text}", text.Substring(0, Math.Min(50, text.Length)));
+        return url;
+    }
 
-        return "";
+    private static string ComputeHash(string text)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(text));
+        return Convert.ToHexString(bytes)[..16].ToLower();
     }
 }

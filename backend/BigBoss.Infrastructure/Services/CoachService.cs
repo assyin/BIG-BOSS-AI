@@ -14,6 +14,7 @@ public class CoachService : ICoachService
     private readonly IClaudeService _claudeService;
     private readonly OpenAIService _openAIService;
     private readonly IUserService _userService;
+    private readonly IElevenLabsService _elevenLabsService;
     private readonly ILogger<CoachService> _logger;
 
     // Basic responses for Free users when AI is unavailable
@@ -46,12 +47,14 @@ public class CoachService : ICoachService
         IClaudeService claudeService,
         OpenAIService openAIService,
         IUserService userService,
+        IElevenLabsService elevenLabsService,
         ILogger<CoachService> logger)
     {
         _context = context;
         _claudeService = claudeService;
         _openAIService = openAIService;
         _userService = userService;
+        _elevenLabsService = elevenLabsService;
         _logger = logger;
     }
 
@@ -143,9 +146,23 @@ public class CoachService : ICoachService
 
         var quota = await GetQuotaAsync(userId);
 
+        // Generate audio with ElevenLabs (Premium users only)
+        string? audioUrl = null;
+        if (_elevenLabsService.IsConfigured && user.SubscriptionTier != BigBoss.Core.Enums.SubscriptionTier.Free)
+        {
+            try
+            {
+                audioUrl = await _elevenLabsService.GenerateSpeechUrlAsync(aiContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to generate audio for coach message");
+            }
+        }
+
         return new CoachMessageResponse(
             Message: aiContent,
-            AudioUrl: null,
+            AudioUrl: audioUrl,
             Metadata: new CoachMessageMetadata(
                 ModelUsed: modelUsed,
                 TokensUsed: tokensUsed,

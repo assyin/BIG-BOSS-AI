@@ -221,6 +221,20 @@ export default function CoachScreen() {
           <Text style={[styles.messageText, isUser ? styles.userText : styles.aiText]}>
             {item.content}
           </Text>
+          {!isUser && item.audioUrl && (
+            <TouchableOpacity
+              style={styles.audioBtn}
+              onPress={() => {
+                const { Audio } = require('expo-av');
+                const sound = new Audio.Sound();
+                const url = item.audioUrl!.startsWith('http') ? item.audioUrl! : `${require('@/constants/api').API_CONFIG.BASE_URL}${item.audioUrl}`;
+                sound.loadAsync({ uri: url }).then(() => sound.playAsync());
+              }}
+            >
+              <Ionicons name="volume-high" size={16} color={Colors.primary} />
+              <Text style={styles.audioBtnText}>Ecouter</Text>
+            </TouchableOpacity>
+          )}
           <Text style={[styles.messageTime, isUser ? styles.userTime : styles.aiTime]}>
             {formatTime(item.createdAt)}
           </Text>
@@ -473,6 +487,22 @@ const styles = StyleSheet.create({
 
   // Typing
   typingRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingBottom: 8 },
+  audioBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255,107,43,0.1)',
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  audioBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
   typingBubble: {
     flexDirection: 'row', backgroundColor: Colors.white, borderRadius: 20, borderBottomLeftRadius: 6,
     paddingHorizontal: 16, paddingVertical: 12, gap: 5,

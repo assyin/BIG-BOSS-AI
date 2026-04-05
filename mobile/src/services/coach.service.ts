@@ -6,6 +6,7 @@ export interface CoachMessage {
   role: 'user' | 'assistant';
   content: string;
   createdAt: string;
+  audioUrl?: string | null;
 }
 
 export interface CoachQuota {
@@ -32,6 +33,7 @@ function mapMessage(raw: any, index?: number): CoachMessage {
     role: raw.role === 'assistant' || raw.role === 'Assistant' ? 'assistant' : 'user',
     content: raw.content || raw.Content || '',
     createdAt: raw.createdAt || raw.CreatedAt || new Date().toISOString(),
+    audioUrl: raw.audioUrl || raw.AudioUrl || null,
   };
 }
 
