@@ -213,6 +213,38 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Gamification */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Gamification</Text>
+          <View style={styles.settingsCard}>
+            <TouchableOpacity style={styles.gamifLink} onPress={() => router.push('/(main)/points/history' as any)}>
+              <Ionicons name="star" size={20} color={Colors.warning} />
+              <Text style={styles.gamifLinkText}>Mes Points</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gamifLink} onPress={() => router.push('/(main)/achievements' as any)}>
+              <Ionicons name="medal" size={20} color={Colors.primary} />
+              <Text style={styles.gamifLinkText}>Mes Badges</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gamifLink} onPress={() => router.push('/(main)/rewards' as any)}>
+              <Ionicons name="gift" size={20} color={Colors.success} />
+              <Text style={styles.gamifLinkText}>Boutique</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gamifLink} onPress={() => router.push('/(main)/challenges' as any)}>
+              <Ionicons name="flag" size={20} color={Colors.info} />
+              <Text style={styles.gamifLinkText}>Challenges</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.gamifLink, { borderBottomWidth: 0 }]} onPress={() => router.push('/(main)/affiliation' as any)}>
+              <Ionicons name="people" size={20} color={Colors.error} />
+              <Text style={styles.gamifLinkText}>Parrainage</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Parametres</Text>
@@ -402,6 +434,21 @@ const styles = StyleSheet.create({
   settingValue: {
     ...Typography.caption,
     color: Colors.gray,
+  },
+  gamifLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.background,
+    gap: 12,
+  },
+  gamifLinkText: {
+    flex: 1,
+    fontSize: Fonts.size.base,
+    fontWeight: Fonts.weight.medium,
+    color: Colors.dark,
   },
   logoutButton: {
     flexDirection: 'row',

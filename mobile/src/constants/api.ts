@@ -95,6 +95,37 @@ export const ENDPOINTS = {
     NUTRITION: (id: string) => `/api/programmes/${id}/nutrition`,
   },
 
+  // Gamification
+  POINTS: {
+    BALANCE: '/api/points/balance',
+    HISTORY: '/api/points/history',
+    SUMMARY: '/api/points/summary',
+    STREAK: '/api/points/streak',
+    CALENDAR: '/api/points/streak/calendar',
+  },
+  SHOP: {
+    REWARDS: '/api/shop/rewards',
+    REDEEM: '/api/shop/redeem',
+    REDEMPTIONS: '/api/shop/redemptions',
+  },
+  CHALLENGES_V2: {
+    JOIN: (id: string) => `/api/challenges/${id}/join`,
+    LEAVE: (id: string) => `/api/challenges/${id}/leave`,
+    MY_PROGRESS: (id: string) => `/api/challenges/${id}/my-progress`,
+    LEADERBOARD: (id: string) => `/api/challenges/${id}/leaderboard`,
+    MY_CHALLENGES: '/api/challenges/my-challenges',
+  },
+  ACHIEVEMENTS: {
+    LIST: '/api/achievements',
+    UNLOCKED: '/api/achievements/unlocked',
+    CHECK: '/api/achievements/check',
+  },
+  AFFILIATION: {
+    MY_CODE: '/api/affiliation/my-code',
+    STATS: '/api/affiliation/stats',
+    REFERRALS: '/api/affiliation/referrals',
+  },
+
   // Health
   HEALTH: '/health',
 } as const;
