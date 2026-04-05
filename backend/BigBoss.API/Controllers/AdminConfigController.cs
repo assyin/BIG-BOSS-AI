@@ -133,6 +133,26 @@ public class AdminConfigController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    // ─── CSV EXPORTS ───
+
+    [HttpGet("export/challenge/{challengeId}")]
+    public async Task<IActionResult> ExportChallenge(Guid challengeId)
+    {
+        var filePath = await BigBoss.API.Jobs.CsvExportService.ExportChallengeParticipantsAsync(_context, challengeId);
+        var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+        System.IO.File.Delete(filePath);
+        return File(bytes, "text/csv", $"challenge_{challengeId}.csv");
+    }
+
+    [HttpGet("export/points")]
+    public async Task<IActionResult> ExportPoints([FromQuery] Guid? userId = null)
+    {
+        var filePath = await BigBoss.API.Jobs.CsvExportService.ExportPointsTransactionsAsync(_context, userId);
+        var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+        System.IO.File.Delete(filePath);
+        return File(bytes, "text/csv", "points_export.csv");
+    }
 }
 
 public class UpdateConfigValueRequest { public string Value { get; set; } = string.Empty; }

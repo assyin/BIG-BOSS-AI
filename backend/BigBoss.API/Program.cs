@@ -158,6 +158,20 @@ builder.Services.AddScoped<ILiveService, LiveService>();
 builder.Services.AddScoped<INutritionPlanService, NutritionPlanService>();
 builder.Services.AddScoped<IProgrammeService, ProgrammeService>();
 
+// Redis
+var redisConnection = builder.Configuration["BBF_REDIS_CONNECTION"] ?? "localhost:6379";
+try
+{
+    var redis = StackExchange.Redis.ConnectionMultiplexer.Connect(redisConnection);
+    builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(redis);
+    builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+}
+catch
+{
+    // Redis not available - use no-op implementation
+    Log.Warning("Redis not available at {Connection}, caching disabled", redisConnection);
+}
+
 // Gamification services
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IGamificationConfigService, GamificationConfigService>();
@@ -169,6 +183,14 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IAffiliationService, AffiliationService>();
 builder.Services.AddScoped<IAntiCheatService, AntiCheatService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
+
+// SignalR
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<BigBoss.API.Hubs.AdminDashboardBroadcaster>();
+
+// Background jobs
+builder.Services.AddHostedService<BigBoss.API.Jobs.PointsReconciliationJob>();
+builder.Services.AddHostedService<BigBoss.API.Jobs.ChallengeFinalizationJob>();
 
 // Build app
 var app = builder.Build();
@@ -213,6 +235,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<BigBoss.API.Hubs.AdminDashboardHub>("/hubs/admin-dashboard");
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
