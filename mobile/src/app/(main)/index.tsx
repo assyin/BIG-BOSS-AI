@@ -475,21 +475,38 @@ export default function HomeScreen() {
                 <View style={styles.separatorLine} />
               </View>
 
-              {/* ---------- Challenges ---------- */}
-              <TouchableOpacity
-                style={styles.challengeLink}
-                activeOpacity={0.7}
-                onPress={() => router.push('/(main)/challenges' as any)}
-              >
-                <View style={styles.challengeLinkLeft}>
-                  <Ionicons name="flag" size={22} color={Colors.primary} />
-                  <View>
-                    <Text style={styles.challengeLinkTitle}>Challenges</Text>
-                    <Text style={styles.challengeLinkSub}>Rejoins un defi et gagne des points</Text>
+              {/* ---------- Challenges + Community ---------- */}
+              <View style={{ gap: 10, marginBottom: 16 }}>
+                <TouchableOpacity
+                  style={styles.challengeLink}
+                  activeOpacity={0.7}
+                  onPress={() => router.push('/(main)/challenges' as any)}
+                >
+                  <View style={styles.challengeLinkLeft}>
+                    <Ionicons name="flag" size={22} color={Colors.primary} />
+                    <View>
+                      <Text style={styles.challengeLinkTitle}>Challenges</Text>
+                      <Text style={styles.challengeLinkSub}>Rejoins un defi et gagne des points</Text>
+                    </View>
                   </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={Colors.lightGray} />
-              </TouchableOpacity>
+                  <Ionicons name="chevron-forward" size={18} color={Colors.lightGray} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.challengeLink}
+                  activeOpacity={0.7}
+                  onPress={() => router.push('/(main)/community' as any)}
+                >
+                  <View style={styles.challengeLinkLeft}>
+                    <Ionicons name="people" size={22} color={Colors.info} />
+                    <View>
+                      <Text style={styles.challengeLinkTitle}>Communaute</Text>
+                      <Text style={styles.challengeLinkSub}>Voir le feed et reagir</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={Colors.lightGray} />
+                </TouchableOpacity>
+              </View>
 
               {/* ---------- Seance libre ---------- */}
               <TouchableOpacity

@@ -168,6 +168,7 @@ builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IAffiliationService, AffiliationService>();
 builder.Services.AddScoped<IAntiCheatService, AntiCheatService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
 
 // Build app
 var app = builder.Build();

@@ -21,6 +21,7 @@ public class SessionService : ISessionService
     private readonly IChallengeParticipationService _challengeParticipationService;
     private readonly IAchievementService _achievementService;
     private readonly IAffiliationService _affiliationService;
+    private readonly IFeedService _feedService;
     private readonly ILogger<SessionService> _logger;
 
     public SessionService(
@@ -34,6 +35,7 @@ public class SessionService : ISessionService
         IChallengeParticipationService challengeParticipationService,
         IAchievementService achievementService,
         IAffiliationService affiliationService,
+        IFeedService feedService,
         ILogger<SessionService> logger)
     {
         _context = context;
@@ -46,6 +48,7 @@ public class SessionService : ISessionService
         _challengeParticipationService = challengeParticipationService;
         _achievementService = achievementService;
         _affiliationService = affiliationService;
+        _feedService = feedService;
         _logger = logger;
     }
 
@@ -539,6 +542,10 @@ public class SessionService : ISessionService
 
             // First session affiliation bonus
             await _affiliationService.ProcessFirstSessionBonusAsync(userId);
+
+            // Auto-post to feed
+            var statsText = $"{duration}min · {Math.Round(session.TotalVolumeKg ?? 0)}kg · {exerciseCount} exercices";
+            await _feedService.CreateAutoPostAsync(userId, PostType.SessionComplete, $"Seance terminee: {session.Title}", statsText, session.Id, "Session");
         }
         catch (Exception ex)
         {

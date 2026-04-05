@@ -43,6 +43,11 @@ public class BigBossDbContext : DbContext
     public DbSet<AppConfig> AppConfigs => Set<AppConfig>();
     public DbSet<ChallengeReward> ChallengeRewards => Set<ChallengeReward>();
 
+    // Community
+    public DbSet<Post> Posts => Set<Post>();
+    public DbSet<PostReaction> PostReactions => Set<PostReaction>();
+    public DbSet<PostComment> PostComments => Set<PostComment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
