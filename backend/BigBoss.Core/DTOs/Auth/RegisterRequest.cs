@@ -6,7 +6,8 @@ public record RegisterRequest(
     string Email,
     string Password,
     string Name,
-    string? Phone = null
+    string? Phone = null,
+    string? ReferralCode = null
 );
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>

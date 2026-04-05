@@ -11,15 +11,18 @@ public class AuthService : IAuthService
 {
     private readonly BigBossDbContext _context;
     private readonly ITokenService _tokenService;
+    private readonly IAffiliationService _affiliationService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         BigBossDbContext context,
         ITokenService tokenService,
+        IAffiliationService affiliationService,
         ILogger<AuthService> logger)
     {
         _context = context;
         _tokenService = tokenService;
+        _affiliationService = affiliationService;
         _logger = logger;
     }
 
@@ -54,6 +57,19 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("User registered: {Email}", user.Email);
+
+        // Process referral code if provided
+        if (!string.IsNullOrWhiteSpace(request.ReferralCode))
+        {
+            try
+            {
+                await _affiliationService.ProcessReferralAsync(user.Id, request.ReferralCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to process referral code {Code} for user {Email}", request.ReferralCode, user.Email);
+            }
+        }
 
         return new AuthResponse(
             AccessToken: accessToken,

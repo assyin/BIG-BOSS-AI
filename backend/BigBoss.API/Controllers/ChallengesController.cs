@@ -61,19 +61,7 @@ public class ChallengesController : ControllerBase
         return Ok(challenge);
     }
 
-    /// <summary>
-    /// Get challenge leaderboard
-    /// </summary>
-    [HttpGet("{id:guid}/leaderboard")]
-    public async Task<ActionResult<ChallengeLeaderboardDto>> GetLeaderboard(Guid id, [FromQuery] int top = 10)
-    {
-        var leaderboard = await _challengeService.GetLeaderboardAsync(id, top);
-
-        if (leaderboard == null)
-            return NotFound(new { message = "Challenge non trouvé" });
-
-        return Ok(leaderboard);
-    }
+    // Leaderboard moved to participation endpoints below
 
     /// <summary>
     /// Create a new challenge (Admin only)

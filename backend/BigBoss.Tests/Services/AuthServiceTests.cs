@@ -37,7 +37,7 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GetRefreshTokenExpiry())
             .Returns(DateTime.UtcNow.AddDays(30));
 
-        _authService = new AuthService(_context, _tokenServiceMock.Object, _loggerMock.Object);
+        _authService = new AuthService(_context, _tokenServiceMock.Object, new Mock<IAffiliationService>().Object, _loggerMock.Object);
     }
 
     [Fact]
