@@ -36,6 +36,12 @@ public class BigBossDbContext : DbContext
     public DbSet<ShopReward> ShopRewards => Set<ShopReward>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<AffiliationEvent> AffiliationEvents => Set<AffiliationEvent>();
+    public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
+    public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+    public DbSet<AffiliateProfile> AffiliateProfiles => Set<AffiliateProfile>();
+    public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
+    public DbSet<AppConfig> AppConfigs => Set<AppConfig>();
+    public DbSet<ChallengeReward> ChallengeRewards => Set<ChallengeReward>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
