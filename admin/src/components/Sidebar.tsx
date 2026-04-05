@@ -10,6 +10,12 @@ import {
   Trophy,
   Video,
   LogOut,
+  Star,
+  Gift,
+  Medal,
+  Users,
+  Shield,
+  Settings,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -19,6 +25,11 @@ const NAV_ITEMS = [
   { href: "/products", label: "Produits", icon: ShoppingBag },
   { href: "/challenges", label: "Challenges", icon: Trophy },
   { href: "/lives", label: "Lives", icon: Video },
+  { href: "/gamification", label: "Points & Config", icon: Star },
+  { href: "/shop", label: "Boutique Points", icon: Gift },
+  { href: "/achievements", label: "Badges", icon: Medal },
+  { href: "/affiliation", label: "Affiliation", icon: Users },
+  { href: "/anticheat", label: "Anti-Triche", icon: Shield },
 ];
 
 export default function Sidebar() {
