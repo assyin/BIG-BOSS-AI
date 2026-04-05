@@ -4,10 +4,10 @@
 ---
 
 **Projet**: Big Boss Fitness
-**Version**: 4.1 - GAMIFICATION 100% + RECETTES + COACH VISION
+**Version**: 5.0 - GAMIFICATION + COMMUNITY + COACH VISION
 **Date**: 5 Avril 2026
 **Duree Totale Estimee**: 32-40 semaines
-**Statut Actuel**: GAMIFICATION 16/16 ENTITES - 50+ ENDPOINTS - MOBILE 99% - ADMIN COMPLET
+**Statut Actuel**: 35+ TABLES DB - 130+ ENDPOINTS - 45+ ECRANS - COMMUNITY FEED LIVE
 
 ---
 
