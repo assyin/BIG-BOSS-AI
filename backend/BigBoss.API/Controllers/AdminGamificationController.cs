@@ -11,11 +11,13 @@ public class AdminGamificationController : ControllerBase
 {
     private readonly IGamificationConfigService _configService;
     private readonly IPointsService _pointsService;
+    private readonly IAntiCheatService _antiCheatService;
 
-    public AdminGamificationController(IGamificationConfigService configService, IPointsService pointsService)
+    public AdminGamificationController(IGamificationConfigService configService, IPointsService pointsService, IAntiCheatService antiCheatService)
     {
         _configService = configService;
         _pointsService = pointsService;
+        _antiCheatService = antiCheatService;
     }
 
     [HttpGet("config")]
@@ -77,6 +79,23 @@ public class AdminGamificationController : ControllerBase
         return Ok(result);
     }
 
+    // ─── ANTI-CHEAT ───
+
+    [HttpGet("anticheat/flagged")]
+    public async Task<IActionResult> GetFlaggedUsers([FromQuery] string? status = null)
+    {
+        var flagged = await _antiCheatService.GetFlaggedUsersAsync(status);
+        return Ok(flagged);
+    }
+
+    [HttpPost("anticheat/resolve")]
+    public async Task<IActionResult> ResolveFlag([FromBody] ResolveFlagRequest request)
+    {
+        var adminId = GetCurrentUserId();
+        await _antiCheatService.ResolveFlag(request.UserId, request.Resolution, adminId);
+        return Ok(new { message = $"User {request.Resolution}" });
+    }
+
     private Guid GetCurrentUserId()
     {
         var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -94,4 +113,10 @@ public class AdjustPointsRequest
     public Guid UserId { get; set; }
     public int Amount { get; set; }
     public string Reason { get; set; } = string.Empty;
+}
+
+public class ResolveFlagRequest
+{
+    public Guid UserId { get; set; }
+    public string Resolution { get; set; } = string.Empty; // "innocent", "disqualify", "ban"
 }

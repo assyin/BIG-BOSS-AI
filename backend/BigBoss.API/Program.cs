@@ -167,6 +167,7 @@ builder.Services.AddScoped<IChallengeParticipationService, ChallengeParticipatio
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IAffiliationService, AffiliationService>();
+builder.Services.AddScoped<IAntiCheatService, AntiCheatService>();
 
 // Build app
 var app = builder.Build();
