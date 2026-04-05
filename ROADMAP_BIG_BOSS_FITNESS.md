@@ -4,10 +4,10 @@
 ---
 
 **Projet**: Big Boss Fitness
-**Version**: 4.0 - GAMIFICATION COMPLETE
+**Version**: 4.1 - GAMIFICATION 100% + RECETTES + COACH VISION
 **Date**: 5 Avril 2026
 **Duree Totale Estimee**: 32-40 semaines
-**Statut Actuel**: GAMIFICATION 8/8 PHASES - MOBILE 99% - ADMIN GAMIFICATION COMPLETE
+**Statut Actuel**: GAMIFICATION 16/16 ENTITES - 50+ ENDPOINTS - MOBILE 99% - ADMIN COMPLET
 
 ---
 
@@ -27,15 +27,15 @@
 |                                                                            |
 |  PHASE 0          PHASE 1         PHASE 2         PHASE 3                  |
 |  SETUP            MVP CORE        NUTRITION       COACH & VOCAL            |
-|  [████████████]   [██████████]    [██████████]    [██░░░░░░░░]             |
+|  [████████████]   [██████████]    [██████████]    [████░░░░░░]             |
 |  Sem 1-2          Sem 3-8         Sem 9-12        Sem 13-16                |
-|  100% FAIT        98% FAIT        95% FAIT        15% FAIT                 |
+|  100% FAIT        99% FAIT        98% FAIT        35% FAIT                 |
 |                                                                            |
 |  PHASE 4          PHASE 5         PHASE 6         PHASE 7                  |
 |  CONTENU          COMMUNAUTE      VISION IA       BETA & LAUNCH            |
-|  [██████░░░░]     [███░░░░░░░]    [██░░░░░░░░]    [█░░░░░░░░░]             |
+|  [████████░░]     [████████░░]    [████░░░░░░]    [██░░░░░░░░]             |
 |  Sem 17-20        Sem 21-24       Sem 25-28       Sem 29-32                |
-|  55% FAIT         25% FAIT        15% FAIT        10% FAIT                 |
+|  80% FAIT         75% FAIT        35% FAIT        15% FAIT                 |
 |                                                                            |
 +===========================================================================+
 ```
@@ -772,21 +772,44 @@
 - [ ] Redis cache implementation
 - [ ] Firebase FCM push notifications
 
-### Mobile App - 98% COMPLETE
+### Gamification System - 100% COMPLETE (Avril 2026)
 
-- [x] Structure Expo Router (30+ ecrans)
-- [x] Auth: Login, Register, Onboarding Freeletics-style (12 etapes + splashs + emotionnels + loading)
-- [x] Dashboard Home Programme Personnalise (seance du jour, calendrier, progression, nutrition)
+**16 entites, 12 services, ~50 endpoints, 7 ecrans mobile, 5 pages admin**
+
+- [x] Systeme de points (ledger immutable, idempotence, daily cap, category limits)
+- [x] Streaks (grace period 36h, milestones 7/30/100j, bonus auto)
+- [x] Challenges avances (participation, leaderboard, progression auto, finalisation, rewards par rang)
+- [x] Boutique de points (7 recompenses, stock, redemption, refund, admin workflow)
+- [x] Achievements/Badges (15 badges, moteur auto-evaluation, progress bars, attribution manuelle)
+- [x] Affiliation/Parrainage (code 8 chars, 2-stage rewards, anti-fraude IP/velocity, first session bonus)
+- [x] Anti-triche (session validation, velocity check, flag system, admin resolve innocent/disqualify/ban)
+- [x] Config gamification (23 params configurables sans redeploiement, cache 5min)
+- [x] Feature flags (9 toggles: coach vocal, vision, scan, challenges, affiliation, feed, live, boutique, gamification)
+- [x] App config globale (tarifs, limites par plan, maintenance mode, force update, contenu FR/AR)
+- [x] Notification templates (6 templates FR+Darija: achievement, streak, challenge, reward, referral, weekly)
+- [x] Audit log admin (toutes actions admin tracees)
+- [x] Admin: config editor, shop management, badges gallery, affiliation dashboard, anti-triche flagged users
+- [x] Mobile: widgets points/streak sur Home, historique points, challenges, boutique, achievements, parrainage
+- [x] Integration session completion → points + streak + challenge progress + achievements + affiliation bonus
+- [x] Referral code dans inscription (RegisterRequest + AuthService)
+
+### Mobile App - 99% COMPLETE
+
+- [x] Structure Expo Router (40+ ecrans)
+- [x] Auth: Login, Register (avec referral code), Onboarding Freeletics-style (12 etapes)
+- [x] Dashboard Home: programme + gamification widgets (points/streak/total) + challenges link
 - [x] Programme: detail, semaine, nutrition plan, celebration terminee
-- [x] Sessions: generation IA (OpenAI Premium / DB Free), workout actif, log sets, timer repos, bilan
-- [x] Exercices: bibliotheque 621 exercices, recherche, filtres, detail avec lecteur video natif expo-av
-- [x] Nutrition: journal macros (MacroRing), scanner repas photo IA, ajouter repas
-- [x] Progression: mesures, photos (camera + pose), comparateur avant/apres, courbes 1RM, rapport
+- [x] Sessions: generation IA, workout actif, log sets, timer repos, bilan, Coach Vision (20 exercices calibres)
+- [x] Exercices: 621 exercices, recherche, filtres, video natif expo-av, 619 thumbnails locales
+- [x] Nutrition: journal macros, scanner repas photo IA, ajouter repas, Open Food Facts search, code-barres
+- [x] Recettes: 444 recettes, images AI, traduction FR+Darija, filtres categorie/regime, favoris, RTL, ajout journal 1 clic
+- [x] Progression: mesures, photos, graphiques reels (plus de MOCK)
 - [x] Coach IA: chat connecte backend, quota, suggestions
-- [x] Profil: vraies donnees, logout, delete account
-- [x] 7 Services API connectes au backend (+ programme.service.ts)
-- [x] 2 Stores Zustand (auth, session avec programmeContext)
-- [x] 6 Composants UI (Button, Input, Card, ProgressBar, SimpleChart, MacroRing, LineChart)
+- [x] Gamification: points history, challenges, boutique, achievements gallery, affiliation/parrainage
+- [x] Profil: donnees + menu gamification (5 liens: points, badges, boutique, challenges, parrainage)
+- [x] 12 Services API (auth, session, exercise, nutrition, programme, recipe, points, challenges, shop, coach, progress, affiliation)
+- [x] 4 Stores Zustand (auth, session, gamification, favorites)
+- [x] 8 Composants UI (Button, Input, Card, ProgressBar, SimpleChart, MacroRing, LineChart, pose-engine)
 - [x] Videos exercices natif dans les seances actives (expo-av)
 - [x] Test sur appareil physique Android (EAS dev build + hot reload)
 - [x] EAS Build configure (development + preview profiles)
