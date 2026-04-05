@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 6N2uZrRpVVc9dSGQ4xdJ3nnbhtMjaJyBLYDbwQWhRe17fVCIVunbBzcZNUByKyM
+\restrict ecj96P1m2KnQjT8ogNT0yPtM7CbbQUynO8aoTlgpjO4bvG8OKOIslCFbTNSURrL
 
 -- Dumped from database version 16.13 (Debian 16.13-1.pgdg13+1)
 -- Dumped by pg_dump version 16.13 (Debian 16.13-1.pgdg13+1)
@@ -47,6 +47,48 @@ CREATE TABLE public."Achievements" (
 ALTER TABLE public."Achievements" OWNER TO bigboss;
 
 --
+-- Name: AdminAuditLogs; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."AdminAuditLogs" (
+    "Id" uuid NOT NULL,
+    "AdminUserId" uuid NOT NULL,
+    "AdminEmail" text NOT NULL,
+    "Action" text NOT NULL,
+    "EntityType" text NOT NULL,
+    "EntityId" text,
+    "OldValueJson" text,
+    "NewValueJson" text,
+    "IpAddress" text,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."AdminAuditLogs" OWNER TO bigboss;
+
+--
+-- Name: AffiliateProfiles; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."AffiliateProfiles" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Level" integer NOT NULL,
+    "TotalReferrals" integer NOT NULL,
+    "ActiveReferrals" integer NOT NULL,
+    "TotalEarnings" numeric NOT NULL,
+    "PendingEarnings" numeric NOT NULL,
+    "AvailableForWithdrawal" numeric NOT NULL,
+    "CommissionPercent" numeric NOT NULL,
+    "BankName" text,
+    "BankAccount" text,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."AffiliateProfiles" OWNER TO bigboss;
+
+--
 -- Name: AffiliationEvents; Type: TABLE; Schema: public; Owner: bigboss
 --
 
@@ -65,6 +107,23 @@ CREATE TABLE public."AffiliationEvents" (
 
 
 ALTER TABLE public."AffiliationEvents" OWNER TO bigboss;
+
+--
+-- Name: AppConfigs; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."AppConfigs" (
+    "Id" uuid NOT NULL,
+    "Key" text NOT NULL,
+    "Value" text NOT NULL,
+    "Category" text NOT NULL,
+    "Description" text NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "UpdatedByAdminId" uuid
+);
+
+
+ALTER TABLE public."AppConfigs" OWNER TO bigboss;
 
 --
 -- Name: BodyStats; Type: TABLE; Schema: public; Owner: bigboss
@@ -113,6 +172,24 @@ CREATE TABLE public."ChallengeParticipations" (
 
 
 ALTER TABLE public."ChallengeParticipations" OWNER TO bigboss;
+
+--
+-- Name: ChallengeRewards; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."ChallengeRewards" (
+    "Id" uuid NOT NULL,
+    "ChallengeId" uuid NOT NULL,
+    "RankFrom" integer NOT NULL,
+    "RankTo" integer NOT NULL,
+    "RewardType" integer NOT NULL,
+    "RewardValue" numeric NOT NULL,
+    "Description" text NOT NULL,
+    "BonusPoints" integer NOT NULL
+);
+
+
+ALTER TABLE public."ChallengeRewards" OWNER TO bigboss;
 
 --
 -- Name: Challenges; Type: TABLE; Schema: public; Owner: bigboss
@@ -292,6 +369,28 @@ CREATE TABLE public."Meals" (
 ALTER TABLE public."Meals" OWNER TO bigboss;
 
 --
+-- Name: NotificationTemplates; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."NotificationTemplates" (
+    "Id" uuid NOT NULL,
+    "TriggerKey" text NOT NULL,
+    "TitleFr" text NOT NULL,
+    "TitleAr" text,
+    "BodyFr" text NOT NULL,
+    "BodyAr" text,
+    "IsActive" boolean NOT NULL,
+    "WithCoachVoice" boolean NOT NULL,
+    "TotalSent" integer NOT NULL,
+    "OpenRate" numeric NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."NotificationTemplates" OWNER TO bigboss;
+
+--
 -- Name: NutritionPlans; Type: TABLE; Schema: public; Owner: bigboss
 --
 
@@ -333,6 +432,60 @@ CREATE TABLE public."PointTransactions" (
 
 
 ALTER TABLE public."PointTransactions" OWNER TO bigboss;
+
+--
+-- Name: PostComments; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."PostComments" (
+    "Id" uuid NOT NULL,
+    "PostId" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Content" text NOT NULL,
+    "IsFlagged" boolean NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."PostComments" OWNER TO bigboss;
+
+--
+-- Name: PostReactions; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."PostReactions" (
+    "Id" uuid NOT NULL,
+    "PostId" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Type" integer NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."PostReactions" OWNER TO bigboss;
+
+--
+-- Name: Posts; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."Posts" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Type" integer NOT NULL,
+    "Content" text NOT NULL,
+    "ImageUrl" text,
+    "RelatedEntityId" uuid,
+    "RelatedEntityType" text,
+    "AutoTitle" text,
+    "AutoStats" text,
+    "IsActive" boolean NOT NULL,
+    "IsFlagged" boolean NOT NULL,
+    "FlagReason" text,
+    "CreatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."Posts" OWNER TO bigboss;
 
 --
 -- Name: Products; Type: TABLE; Schema: public; Owner: bigboss
@@ -550,6 +703,28 @@ CREATE TABLE public."UserAchievements" (
 
 
 ALTER TABLE public."UserAchievements" OWNER TO bigboss;
+
+--
+-- Name: WithdrawalRequests; Type: TABLE; Schema: public; Owner: bigboss
+--
+
+CREATE TABLE public."WithdrawalRequests" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Amount" numeric NOT NULL,
+    "Method" text NOT NULL,
+    "BankAccount" text,
+    "Status" integer NOT NULL,
+    "AdminNotes" text,
+    "RejectReason" text,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "ProcessedAt" timestamp with time zone,
+    "ProcessedByAdminId" uuid,
+    "AffiliateProfileId" uuid
+);
+
+
+ALTER TABLE public."WithdrawalRequests" OWNER TO bigboss;
 
 --
 -- Name: __EFMigrationsHistory; Type: TABLE; Schema: public; Owner: bigboss
@@ -779,9 +954,42 @@ INSERT INTO public."Achievements" VALUES ('6632d639-40f7-49b6-8741-3b9fef7b7a91'
 
 
 --
+-- Data for Name: AdminAuditLogs; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: AffiliateProfiles; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
 -- Data for Name: AffiliationEvents; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
+
+
+--
+-- Data for Name: AppConfigs; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."AppConfigs" VALUES ('9d4575f4-8c03-4ad6-add4-52bd00de527f', 'plans.premium_monthly_mad', '79', 'plans', 'Prix Premium mensuel en MAD', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('6a7c77e0-2370-4010-b046-fb4f12f1918e', 'plans.premium_annual_mad', '699', 'plans', 'Prix Premium annuel en MAD', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('5ab87848-a363-4230-8713-66a5c8a309ea', 'plans.elite_monthly_mad', '149', 'plans', 'Prix Elite mensuel en MAD', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('65d09c51-76a3-4105-8c34-a50911fa863b', 'plans.elite_annual_mad', '1299', 'plans', 'Prix Elite annuel en MAD', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('80d847c0-f598-409a-9125-2b27f9e7679a', 'plans.trial_days', '30', 'plans', 'Duree essai gratuit en jours', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('fbb9e59b-1fbe-409d-b264-52c68a677046', 'limits.free_coach_messages_day', '5', 'limits', 'Messages coach IA/jour (Free)', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('7ea8f8ca-e454-46f7-94b6-e7edbb860311', 'limits.premium_coach_messages_day', '50', 'limits', 'Messages coach IA/jour (Premium)', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('7c8a81a8-abea-40b7-b325-25ce0ef67084', 'limits.free_scan_repas_day', '2', 'limits', 'Scans repas/jour (Free)', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('10f132fd-77ce-40e8-be37-4a3392159a17', 'limits.premium_scan_repas_day', '10', 'limits', 'Scans repas/jour (Premium)', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('c4c9250a-3942-426f-80ae-5c792d0ca2a3', 'content.welcome_message_fr', 'Bienvenue chez Big Boss Fitness!', 'content', 'Message de bienvenue FR', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('319a823e-6376-4a23-a4ea-e006ccb3886b', 'content.welcome_message_ar', 'مرحبا بك في Big Boss Fitness!', 'content', 'Message de bienvenue AR', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('ce056097-e1c0-436e-a859-836752cd4b1b', 'maintenance.enabled', 'false', 'maintenance', 'Mode maintenance actif', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('68237c72-ec20-4cf3-9256-beace1fe581a', 'maintenance.message_fr', 'Maintenance en cours, retour bientot!', 'maintenance', 'Message maintenance FR', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('6cc4d855-655a-4ae4-a5f8-1c1092c913e1', 'maintenance.message_ar', 'صيانة جارية، نرجعو قريب!', 'maintenance', 'Message maintenance AR', '2026-04-05 10:53:06.953543+00', NULL);
+INSERT INTO public."AppConfigs" VALUES ('4c5442e8-7f24-4535-bdf8-93a633c16404', 'app.min_version', '1.0.0', 'maintenance', 'Version min requise (force update)', '2026-04-05 10:53:06.953543+00', NULL);
 
 
 --
@@ -792,6 +1000,12 @@ INSERT INTO public."Achievements" VALUES ('6632d639-40f7-49b6-8741-3b9fef7b7a91'
 
 --
 -- Data for Name: ChallengeParticipations; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: ChallengeRewards; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
 
@@ -817,10 +1031,10 @@ INSERT INTO public."FeatureFlags" VALUES ('4889ead2-a40c-4b18-b1f5-53a53b1cc110'
 INSERT INTO public."FeatureFlags" VALUES ('b08074e5-fe60-474c-98e2-b3d727482098', 'scan_repas', true, 'Scanner repas photo IA', '2026-04-04 22:15:37.921595+00', NULL);
 INSERT INTO public."FeatureFlags" VALUES ('5e948879-56bd-429a-a842-7d6deac55f44', 'challenges', true, 'Systeme de challenges', '2026-04-04 22:15:37.921595+00', NULL);
 INSERT INTO public."FeatureFlags" VALUES ('ef296913-5534-4b75-ad0e-45ab1da66208', 'affiliation', true, 'Programme affiliation', '2026-04-04 22:15:37.921595+00', NULL);
-INSERT INTO public."FeatureFlags" VALUES ('f537a766-b17f-46cd-844a-2fc83be642f3', 'feed_communaute', false, 'Feed social communaute', '2026-04-04 22:15:37.921595+00', NULL);
 INSERT INTO public."FeatureFlags" VALUES ('206316c3-284b-440a-bf62-b2b27173fa01', 'live_streaming', false, 'Live streaming', '2026-04-04 22:15:37.921595+00', NULL);
 INSERT INTO public."FeatureFlags" VALUES ('81d4e219-332e-472a-86e8-520d577f393e', 'boutique', true, 'Boutique de points', '2026-04-04 22:15:37.921595+00', NULL);
 INSERT INTO public."FeatureFlags" VALUES ('d290a7da-a0bf-4267-a129-c0893e2e3676', 'gamification', true, 'Systeme de points global', '2026-04-04 22:15:37.921595+00', NULL);
+INSERT INTO public."FeatureFlags" VALUES ('f537a766-b17f-46cd-844a-2fc83be642f3', 'feed_communaute', true, 'Feed social communaute', '2026-04-04 22:15:37.921595+00', NULL);
 
 
 --
@@ -962,6 +1176,18 @@ INSERT INTO public."Meals" VALUES ('b9ebb2ab-cc10-4a2e-bc15-27b366de03b1', 'b6f4
 
 
 --
+-- Data for Name: NotificationTemplates; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+INSERT INTO public."NotificationTemplates" VALUES ('77d7c000-65d4-4e9d-aaeb-87ffc8315263', 'achievement_unlocked', 'Badge debloque!', 'حصلت على شارة!', 'Tu as debloque un nouveau badge. Clique pour voir!', 'حصلتي على شارة جديدة. كليكي باش تشوف!', true, false, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+INSERT INTO public."NotificationTemplates" VALUES ('0268f2a5-314e-462f-9dc0-8df06d5d09dc', 'streak_risk', 'Ton streak est en danger!', 'الستريك ديالك في خطر!', 'Entraine-toi aujourd''hui pour garder ton streak de {streak} jours!', 'تمرن اليوم باش تحافظ على الستريك ديالك {streak} يوم!', true, true, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+INSERT INTO public."NotificationTemplates" VALUES ('c572f29f-2212-4a49-bd37-b3592ee16ace', 'challenge_ending', 'Challenge bientot termine!', 'التحدي غادي يسالي!', 'Le challenge {title} se termine dans {hours}h. Fonce!', 'التحدي {title} غادي يسالي فـ{hours} ساعات. سير!', true, false, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+INSERT INTO public."NotificationTemplates" VALUES ('e4db6345-d924-4464-a7e9-856a24ebc63b', 'reward_shipped', 'Recompense expediee!', 'المكافأة توصلات!', 'Ta recompense {title} a ete expediee. Code: {code}', 'المكافأة ديالك {title} توصلات. الكود: {code}', true, false, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+INSERT INTO public."NotificationTemplates" VALUES ('0dcb509d-8d4e-43c3-ab8a-ddb2113ad022', 'referral_bonus', 'Points de parrainage!', 'نقاط الإحالة!', 'Ton ami {name} a rejoint Big Boss! +{points} points pour toi!', 'صاحبك {name} دخل لـBig Boss! +{points} نقطة ليك!', true, false, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+INSERT INTO public."NotificationTemplates" VALUES ('ec9bf7e2-49e5-4ec8-b5eb-ad2fd1a2bf48', 'weekly_summary', 'Resume de ta semaine', 'ملخص الأسبوع ديالك', '{sessions} seances, {points} points gagnes cette semaine. Continue!', '{sessions} حصص, {points} نقطة ربحتي هاد الأسبوع. كمل!', true, false, 0, 0, '2026-04-05 10:53:06.904786+00', '2026-04-05 10:53:06.904786+00');
+
+
+--
 -- Data for Name: NutritionPlans; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -969,6 +1195,24 @@ INSERT INTO public."Meals" VALUES ('b9ebb2ab-cc10-4a2e-bc15-27b366de03b1', 'b6f4
 
 --
 -- Data for Name: PointTransactions; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: PostComments; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: PostReactions; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
+-- Data for Name: Posts; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
 
@@ -1473,6 +1717,12 @@ INSERT INTO public."ShopRewards" VALUES ('ab63060e-d3a2-40bb-be7a-4e5fc79ea503',
 
 
 --
+-- Data for Name: WithdrawalRequests; Type: TABLE DATA; Schema: public; Owner: bigboss
+--
+
+
+
+--
 -- Data for Name: __EFMigrationsHistory; Type: TABLE DATA; Schema: public; Owner: bigboss
 --
 
@@ -1486,6 +1736,8 @@ INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404221149_AddGamificati
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404223113_AddChallengeParticipation', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404224938_AddShopRewards', '8.0.2');
 INSERT INTO public."__EFMigrationsHistory" VALUES ('20260404234026_AddAffiliation', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260405105124_AddMissingGamificationEntities', '8.0.2');
+INSERT INTO public."__EFMigrationsHistory" VALUES ('20260405111016_AddCommunityFeed', '8.0.2');
 
 
 --
@@ -2150,11 +2402,35 @@ ALTER TABLE ONLY public."Achievements"
 
 
 --
+-- Name: AdminAuditLogs PK_AdminAuditLogs; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AdminAuditLogs"
+    ADD CONSTRAINT "PK_AdminAuditLogs" PRIMARY KEY ("Id");
+
+
+--
+-- Name: AffiliateProfiles PK_AffiliateProfiles; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AffiliateProfiles"
+    ADD CONSTRAINT "PK_AffiliateProfiles" PRIMARY KEY ("Id");
+
+
+--
 -- Name: AffiliationEvents PK_AffiliationEvents; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
 ALTER TABLE ONLY public."AffiliationEvents"
     ADD CONSTRAINT "PK_AffiliationEvents" PRIMARY KEY ("Id");
+
+
+--
+-- Name: AppConfigs PK_AppConfigs; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AppConfigs"
+    ADD CONSTRAINT "PK_AppConfigs" PRIMARY KEY ("Id");
 
 
 --
@@ -2171,6 +2447,14 @@ ALTER TABLE ONLY public."BodyStats"
 
 ALTER TABLE ONLY public."ChallengeParticipations"
     ADD CONSTRAINT "PK_ChallengeParticipations" PRIMARY KEY ("Id");
+
+
+--
+-- Name: ChallengeRewards PK_ChallengeRewards; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ChallengeRewards"
+    ADD CONSTRAINT "PK_ChallengeRewards" PRIMARY KEY ("Id");
 
 
 --
@@ -2230,6 +2514,14 @@ ALTER TABLE ONLY public."Meals"
 
 
 --
+-- Name: NotificationTemplates PK_NotificationTemplates; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."NotificationTemplates"
+    ADD CONSTRAINT "PK_NotificationTemplates" PRIMARY KEY ("Id");
+
+
+--
 -- Name: NutritionPlans PK_NutritionPlans; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2243,6 +2535,30 @@ ALTER TABLE ONLY public."NutritionPlans"
 
 ALTER TABLE ONLY public."PointTransactions"
     ADD CONSTRAINT "PK_PointTransactions" PRIMARY KEY ("Id");
+
+
+--
+-- Name: PostComments PK_PostComments; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostComments"
+    ADD CONSTRAINT "PK_PostComments" PRIMARY KEY ("Id");
+
+
+--
+-- Name: PostReactions PK_PostReactions; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostReactions"
+    ADD CONSTRAINT "PK_PostReactions" PRIMARY KEY ("Id");
+
+
+--
+-- Name: Posts PK_Posts; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."Posts"
+    ADD CONSTRAINT "PK_Posts" PRIMARY KEY ("Id");
 
 
 --
@@ -2310,6 +2626,14 @@ ALTER TABLE ONLY public."UserAchievements"
 
 
 --
+-- Name: WithdrawalRequests PK_WithdrawalRequests; Type: CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."WithdrawalRequests"
+    ADD CONSTRAINT "PK_WithdrawalRequests" PRIMARY KEY ("Id");
+
+
+--
 -- Name: __EFMigrationsHistory PK___EFMigrationsHistory; Type: CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2350,6 +2674,13 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: IX_AffiliateProfiles_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_AffiliateProfiles_UserId" ON public."AffiliateProfiles" USING btree ("UserId");
+
+
+--
 -- Name: IX_AffiliationEvents_RefereeId; Type: INDEX; Schema: public; Owner: bigboss
 --
 
@@ -2385,6 +2716,13 @@ CREATE INDEX "IX_ChallengeParticipations_UserId" ON public."ChallengeParticipati
 
 
 --
+-- Name: IX_ChallengeRewards_ChallengeId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_ChallengeRewards_ChallengeId" ON public."ChallengeRewards" USING btree ("ChallengeId");
+
+
+--
 -- Name: IX_CoachMessages_UserId; Type: INDEX; Schema: public; Owner: bigboss
 --
 
@@ -2410,6 +2748,41 @@ CREATE INDEX "IX_NutritionPlans_UserId" ON public."NutritionPlans" USING btree (
 --
 
 CREATE INDEX "IX_PointTransactions_UserId" ON public."PointTransactions" USING btree ("UserId");
+
+
+--
+-- Name: IX_PostComments_PostId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_PostComments_PostId" ON public."PostComments" USING btree ("PostId");
+
+
+--
+-- Name: IX_PostComments_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_PostComments_UserId" ON public."PostComments" USING btree ("UserId");
+
+
+--
+-- Name: IX_PostReactions_PostId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_PostReactions_PostId" ON public."PostReactions" USING btree ("PostId");
+
+
+--
+-- Name: IX_PostReactions_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_PostReactions_UserId" ON public."PostReactions" USING btree ("UserId");
+
+
+--
+-- Name: IX_Posts_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_Posts_UserId" ON public."Posts" USING btree ("UserId");
 
 
 --
@@ -2466,6 +2839,20 @@ CREATE INDEX "IX_UserAchievements_AchievementId" ON public."UserAchievements" US
 --
 
 CREATE INDEX "IX_UserAchievements_UserId" ON public."UserAchievements" USING btree ("UserId");
+
+
+--
+-- Name: IX_WithdrawalRequests_AffiliateProfileId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_WithdrawalRequests_AffiliateProfileId" ON public."WithdrawalRequests" USING btree ("AffiliateProfileId");
+
+
+--
+-- Name: IX_WithdrawalRequests_UserId; Type: INDEX; Schema: public; Owner: bigboss
+--
+
+CREATE INDEX "IX_WithdrawalRequests_UserId" ON public."WithdrawalRequests" USING btree ("UserId");
 
 
 --
@@ -2567,6 +2954,14 @@ CREATE INDEX "IX_users_subscription_tier" ON public.users USING btree (subscript
 
 
 --
+-- Name: AffiliateProfiles FK_AffiliateProfiles_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."AffiliateProfiles"
+    ADD CONSTRAINT "FK_AffiliateProfiles_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: AffiliationEvents FK_AffiliationEvents_users_RefereeId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2607,6 +3002,14 @@ ALTER TABLE ONLY public."ChallengeParticipations"
 
 
 --
+-- Name: ChallengeRewards FK_ChallengeRewards_Challenges_ChallengeId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."ChallengeRewards"
+    ADD CONSTRAINT "FK_ChallengeRewards_Challenges_ChallengeId" FOREIGN KEY ("ChallengeId") REFERENCES public."Challenges"("Id") ON DELETE CASCADE;
+
+
+--
 -- Name: CoachMessages FK_CoachMessages_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2636,6 +3039,46 @@ ALTER TABLE ONLY public."NutritionPlans"
 
 ALTER TABLE ONLY public."PointTransactions"
     ADD CONSTRAINT "FK_PointTransactions_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: PostComments FK_PostComments_Posts_PostId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostComments"
+    ADD CONSTRAINT "FK_PostComments_Posts_PostId" FOREIGN KEY ("PostId") REFERENCES public."Posts"("Id") ON DELETE CASCADE;
+
+
+--
+-- Name: PostComments FK_PostComments_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostComments"
+    ADD CONSTRAINT "FK_PostComments_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: PostReactions FK_PostReactions_Posts_PostId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostReactions"
+    ADD CONSTRAINT "FK_PostReactions_Posts_PostId" FOREIGN KEY ("PostId") REFERENCES public."Posts"("Id") ON DELETE CASCADE;
+
+
+--
+-- Name: PostReactions FK_PostReactions_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."PostReactions"
+    ADD CONSTRAINT "FK_PostReactions_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: Posts FK_Posts_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."Posts"
+    ADD CONSTRAINT "FK_Posts_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -2703,6 +3146,22 @@ ALTER TABLE ONLY public."UserAchievements"
 
 
 --
+-- Name: WithdrawalRequests FK_WithdrawalRequests_AffiliateProfiles_AffiliateProfileId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."WithdrawalRequests"
+    ADD CONSTRAINT "FK_WithdrawalRequests_AffiliateProfiles_AffiliateProfileId" FOREIGN KEY ("AffiliateProfileId") REFERENCES public."AffiliateProfiles"("Id");
+
+
+--
+-- Name: WithdrawalRequests FK_WithdrawalRequests_users_UserId; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
+--
+
+ALTER TABLE ONLY public."WithdrawalRequests"
+    ADD CONSTRAINT "FK_WithdrawalRequests_users_UserId" FOREIGN KEY ("UserId") REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: session_exercises FK_session_exercises_exercises_exercise_id; Type: FK CONSTRAINT; Schema: public; Owner: bigboss
 --
 
@@ -2730,5 +3189,5 @@ ALTER TABLE ONLY public.sessions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 6N2uZrRpVVc9dSGQ4xdJ3nnbhtMjaJyBLYDbwQWhRe17fVCIVunbBzcZNUByKyM
+\unrestrict ecj96P1m2KnQjT8ogNT0yPtM7CbbQUynO8aoTlgpjO4bvG8OKOIslCFbTNSURrL
 

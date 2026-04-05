@@ -9,4 +9,5 @@ public interface IAuthService
     Task<AuthResponse> RefreshTokenAsync(string refreshToken);
     Task RevokeRefreshTokenAsync(Guid userId);
     Task<bool> ValidateEmailAsync(string email);
+    Task<AuthResponse> GoogleLoginAsync(string idToken, string? referralCode = null);
 }

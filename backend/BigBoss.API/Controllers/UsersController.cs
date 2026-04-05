@@ -1,5 +1,6 @@
 using BigBoss.Core.DTOs.Users;
 using BigBoss.Core.Interfaces;
+using BigBoss.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +12,13 @@ namespace BigBoss.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IPushNotificationService _pushService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, IPushNotificationService pushService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _pushService = pushService;
         _logger = logger;
     }
 
@@ -88,6 +91,14 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("push-token")]
+    public async Task<IActionResult> SavePushToken([FromBody] PushTokenRequest request)
+    {
+        var userId = GetCurrentUserId();
+        await _pushService.SaveTokenAsync(userId, request.Token);
+        return Ok(new { message = "Token enregistre" });
+    }
+
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -98,3 +109,5 @@ public class UsersController : ControllerBase
         return userId;
     }
 }
+
+public class PushTokenRequest { public string Token { get; set; } = string.Empty; }

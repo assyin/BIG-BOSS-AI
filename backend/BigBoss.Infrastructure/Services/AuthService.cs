@@ -174,4 +174,81 @@ public class AuthService : IAuthService
     {
         return !await _context.Users.AnyAsync(u => u.Email == email.ToLower());
     }
+
+    public async Task<AuthResponse> GoogleLoginAsync(string idToken, string? referralCode = null)
+    {
+        // Verify Google token
+        string email, name;
+        try
+        {
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetStringAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}");
+            var googleData = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(response);
+            email = googleData.GetProperty("email").GetString()!.ToLower();
+            name = googleData.TryGetProperty("name", out var n) ? n.GetString() ?? email.Split('@')[0] : email.Split('@')[0];
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Token Google invalide: " + ex.Message);
+        }
+
+        // Check if user exists
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+        {
+            // Create new user
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = email,
+                Name = name,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()), // Random password
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var accessToken = _tokenService.GenerateAccessToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiry();
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Process referral
+            if (!string.IsNullOrWhiteSpace(referralCode))
+            {
+                try { await _affiliationService.ProcessReferralAsync(user.Id, referralCode); }
+                catch { }
+            }
+
+            _logger.LogInformation("Google user registered: {Email}", email);
+
+            return new AuthResponse(
+                AccessToken: accessToken,
+                RefreshToken: refreshToken,
+                ExpiresAt: _tokenService.GetAccessTokenExpiry(),
+                User: new UserBasicDto(user.Id, user.Email, user.Name, user.AvatarUrl, user.SubscriptionTier.ToString())
+            );
+        }
+        else
+        {
+            // Login existing user
+            var accessToken = _tokenService.GenerateAccessToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiry();
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Google user logged in: {Email}", email);
+
+            return new AuthResponse(
+                AccessToken: accessToken,
+                RefreshToken: refreshToken,
+                ExpiresAt: _tokenService.GetAccessTokenExpiry(),
+                User: new UserBasicDto(user.Id, user.Email, user.Name, user.AvatarUrl, user.SubscriptionTier.ToString())
+            );
+        }
+    }
 }

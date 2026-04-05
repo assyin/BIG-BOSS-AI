@@ -183,6 +183,7 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IAffiliationService, AffiliationService>();
 builder.Services.AddScoped<IAntiCheatService, AntiCheatService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 
 // SignalR
 builder.Services.AddSignalR();

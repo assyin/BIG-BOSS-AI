@@ -78,6 +78,23 @@ public class AuthController : ControllerBase
         return Ok(new { available = isAvailable });
     }
 
+    /// <summary>
+    /// Login/Register with Google OAuth token
+    /// </summary>
+    [HttpPost("google")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            var result = await _authService.GoogleLoginAsync(request.IdToken, request.ReferralCode);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -87,4 +104,10 @@ public class AuthController : ControllerBase
         }
         return userId;
     }
+}
+
+public class GoogleLoginRequest
+{
+    public string IdToken { get; set; } = string.Empty;
+    public string? ReferralCode { get; set; }
 }

@@ -94,6 +94,9 @@ public class User
     public string? ReferralCode { get; set; } // unique 8 chars
     public Guid? ReferredByUserId { get; set; }
 
+    // Push notifications
+    public string? PushToken { get; set; }
+
     // Moderation
     public bool IsSuspended { get; set; }
     public string? SuspendedReason { get; set; }

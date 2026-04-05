@@ -10,12 +10,14 @@ public class AchievementService : IAchievementService
 {
     private readonly BigBossDbContext _context;
     private readonly IPointsService _pointsService;
+    private readonly IPushNotificationService _pushService;
     private readonly ILogger<AchievementService> _logger;
 
-    public AchievementService(BigBossDbContext context, IPointsService pointsService, ILogger<AchievementService> logger)
+    public AchievementService(BigBossDbContext context, IPointsService pointsService, IPushNotificationService pushService, ILogger<AchievementService> logger)
     {
         _context = context;
         _pointsService = pointsService;
+        _pushService = pushService;
         _logger = logger;
     }
 
@@ -112,6 +114,15 @@ public class AchievementService : IAchievementService
                 }
 
                 _logger.LogInformation("Achievement unlocked: {Key} for user {UserId}", achievement.Key, userId);
+
+                // Push notification
+                try
+                {
+                    await _pushService.SendToUserAsync(userId,
+                        "Badge debloque! 🏆",
+                        $"{achievement.Title} - +{achievement.PointsReward} points");
+                }
+                catch { }
             }
         }
 
