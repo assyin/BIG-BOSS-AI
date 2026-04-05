@@ -700,9 +700,9 @@ export default function OnboardingScreen() {
         <View style={styles.splashTop}>
           <Image
             source={
-              splashIndex === 0 ? require('../../../assets/images/onboarding/splash_1.png') :
-              splashIndex === 1 ? require('../../../assets/images/onboarding/splash_2.png') :
-              require('../../../assets/images/onboarding/splash_3.png')
+              splashIndex === 0 ? require('../../../assets/images/onboarding/splash_1.jpg') :
+              splashIndex === 1 ? require('../../../assets/images/onboarding/splash_2.jpg') :
+              require('../../../assets/images/onboarding/splash_3.jpg')
             }
             style={styles.splashImage}
             resizeMode="cover"
@@ -1541,7 +1541,7 @@ export default function OnboardingScreen() {
   const renderEmotional1 = () => (
     <View style={styles.emotionalContainer}>
       <Image
-        source={require('../../../assets/images/onboarding/splash_4.png')}
+        source={require('../../../assets/images/onboarding/splash_4.jpg')}
         style={{ width: '100%', height: 200, borderRadius: 16, marginBottom: 24 }}
         resizeMode="cover"
       />
@@ -1605,7 +1605,7 @@ export default function OnboardingScreen() {
           backgroundColor: '#1A1A2E',
         }}>
           <Image
-            source={require('../../../assets/images/onboarding/splash_5.png')}
+            source={require('../../../assets/images/onboarding/splash_5.jpg')}
             style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
           />

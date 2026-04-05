@@ -17,9 +17,19 @@
       },
       "distribution": "internal"
     },
+    "preview-optimized": {
+      "android": {
+        "buildType": "apk",
+        "enableProguardInReleaseBuilds": true
+      },
+      "distribution": "internal"
+    },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_NO_DEV_CLIENT": "true"
       }
     }
   },
