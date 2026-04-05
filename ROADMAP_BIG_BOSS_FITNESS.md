@@ -4,10 +4,10 @@
 ---
 
 **Projet**: Big Boss Fitness
-**Version**: 6.0 - PUSH + OAUTH + INFRA COMPLETE
+**Version**: 6.1 - APK OPTIMISE + PUSH + OAUTH + INFRA
 **Date**: 5 Avril 2026
 **Duree Totale Estimee**: 32-40 semaines
-**Statut Actuel**: 35+ TABLES - 140+ ENDPOINTS - 45+ ECRANS - FCM + OAUTH + REDIS + SIGNALR
+**Statut Actuel**: 35+ TABLES - 140+ ENDPOINTS - 45+ ECRANS - APK OPTIMISE - PRET POUR LANCEMENT
 
 ---
 
