@@ -1,13 +1,27 @@
+// Big Boss Fitness — Typographie refonte marocaine
+// Source: DESIGN_REDESIGN_MOROCCAN.md section 4
+// Polices chargées dans app/_layout.tsx via @expo-google-fonts/{cairo,inter,tajawal}
+
 export const Fonts = {
-  // Font families
   family: {
-    regular: 'System',
-    medium: 'System',
-    semiBold: 'System',
-    bold: 'System',
+    // Body / UI (Latin) — Inter
+    regular: 'Inter_400Regular',
+    medium: 'Inter_500Medium',
+    semiBold: 'Inter_600SemiBold',
+    bold: 'Inter_700Bold',
+
+    // Display / Titres — Cairo (caractère maghrébin moderne)
+    displayRegular: 'Cairo_400Regular',
+    displayMedium: 'Cairo_500Medium',
+    displaySemiBold: 'Cairo_600SemiBold',
+    displayBold: 'Cairo_700Bold',
+
+    // Arabe / Darija — Tajawal
+    arRegular: 'Tajawal_400Regular',
+    arMedium: 'Tajawal_500Medium',
+    arBold: 'Tajawal_700Bold',
   },
 
-  // Font sizes
   size: {
     xs: 10,
     sm: 12,
@@ -21,14 +35,12 @@ export const Fonts = {
     '5xl': 48,
   },
 
-  // Line heights
   lineHeight: {
     tight: 1.1,
     normal: 1.4,
     relaxed: 1.6,
   },
 
-  // Font weights
   weight: {
     regular: '400' as const,
     medium: '500' as const,
@@ -37,46 +49,56 @@ export const Fonts = {
   },
 } as const;
 
-// Typography presets
+// Hiérarchie typographique (spec section 4.2)
 export const Typography = {
+  display: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 48,
+    lineHeight: 56,
+  },
   h1: {
-    fontSize: Fonts.size['4xl'],
-    fontWeight: Fonts.weight.bold,
-    lineHeight: Fonts.size['4xl'] * Fonts.lineHeight.tight,
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 32,
+    lineHeight: 40,
   },
   h2: {
-    fontSize: Fonts.size['3xl'],
-    fontWeight: Fonts.weight.bold,
-    lineHeight: Fonts.size['3xl'] * Fonts.lineHeight.tight,
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 24,
+    lineHeight: 32,
   },
   h3: {
-    fontSize: Fonts.size['2xl'],
-    fontWeight: Fonts.weight.semiBold,
-    lineHeight: Fonts.size['2xl'] * Fonts.lineHeight.tight,
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 20,
+    lineHeight: 28,
   },
   h4: {
-    fontSize: Fonts.size.xl,
-    fontWeight: Fonts.weight.semiBold,
-    lineHeight: Fonts.size.xl * Fonts.lineHeight.normal,
-  },
-  body: {
-    fontSize: Fonts.size.base,
-    fontWeight: Fonts.weight.regular,
-    lineHeight: Fonts.size.base * Fonts.lineHeight.normal,
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: 18,
+    lineHeight: 24,
   },
   bodyLarge: {
-    fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.regular,
-    lineHeight: Fonts.size.md * Fonts.lineHeight.normal,
+    fontFamily: Fonts.family.regular,
+    fontSize: 18,
+    lineHeight: 28,
+  },
+  body: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  bodySmall: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 14,
+    lineHeight: 20,
   },
   caption: {
-    fontSize: Fonts.size.sm,
-    fontWeight: Fonts.weight.regular,
-    lineHeight: Fonts.size.sm * Fonts.lineHeight.normal,
+    fontFamily: Fonts.family.medium,
+    fontSize: 12,
+    lineHeight: 16,
   },
   button: {
-    fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
-    lineHeight: Fonts.size.md * Fonts.lineHeight.tight,
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 16,
+    lineHeight: 18,
   },
 } as const;
