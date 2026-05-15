@@ -44,9 +44,9 @@ export default function DashboardPage() {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [exercisesRes, recipesRes, productsRes] = await Promise.allSettled([
-          axios.get("http://localhost:5000/api/exercises", { headers }),
-          axios.get("http://localhost:5000/api/recipes", { headers }),
-          axios.get("http://localhost:5000/api/products", { headers }),
+          axios.get("http://localhost:5050/api/exercises", { headers }),
+          axios.get("http://localhost:5050/api/recipes", { headers }),
+          axios.get("http://localhost:5050/api/products", { headers }),
         ]);
 
         setStats({

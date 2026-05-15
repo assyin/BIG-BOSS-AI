@@ -49,7 +49,7 @@ export default function ProductsPage() {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/products", {
+      const response = await axios.get("http://localhost:5050/api/products", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(response.data.items || response.data || []);
@@ -69,7 +69,7 @@ export default function ProductsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      await axios.delete(`http://localhost:5050/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchProducts();

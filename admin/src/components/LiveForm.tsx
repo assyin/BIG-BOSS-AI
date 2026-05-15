@@ -61,8 +61,8 @@ export default function LiveForm({ live, onClose, onSuccess }: Props) {
     try {
       const token = localStorage.getItem("token");
       const url = live?.id
-        ? `http://localhost:5000/api/lives/${live.id}`
-        : "http://localhost:5000/api/lives";
+        ? `http://localhost:5050/api/lives/${live.id}`
+        : "http://localhost:5050/api/lives";
 
       const method = live?.id ? "put" : "post";
 

@@ -76,7 +76,7 @@ export default function RecipesPage() {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/recipes", {
+      const response = await axios.get("http://localhost:5050/api/recipes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRecipes(response.data.items || response.data || []);
@@ -96,7 +96,7 @@ export default function RecipesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/recipes/${id}`, {
+      await axios.delete(`http://localhost:5050/api/recipes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchRecipes();
@@ -255,7 +255,7 @@ export default function RecipesPage() {
                         onClick={async () => {
                           try {
                             const token = localStorage.getItem("token");
-                            const res = await axios.get(`http://localhost:5000/api/recipes/${recipe.id}`, {
+                            const res = await axios.get(`http://localhost:5050/api/recipes/${recipe.id}`, {
                               headers: { Authorization: `Bearer ${token}` },
                             });
                             setEditingRecipe(res.data);

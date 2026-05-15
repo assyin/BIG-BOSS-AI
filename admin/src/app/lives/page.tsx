@@ -51,7 +51,7 @@ export default function LivesPage() {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/lives", {
+      const response = await axios.get("http://localhost:5050/api/lives", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLives(response.data.items || response.data || []);
@@ -71,7 +71,7 @@ export default function LivesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/lives/${id}`, {
+      await axios.delete(`http://localhost:5050/api/lives/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchLives();

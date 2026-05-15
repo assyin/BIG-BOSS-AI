@@ -57,8 +57,8 @@ export default function ProductForm({ product, onClose, onSuccess }: Props) {
     try {
       const token = localStorage.getItem("token");
       const url = product?.id
-        ? `http://localhost:5000/api/products/${product.id}`
-        : "http://localhost:5000/api/products";
+        ? `http://localhost:5050/api/products/${product.id}`
+        : "http://localhost:5050/api/products";
 
       const method = product?.id ? "put" : "post";
 

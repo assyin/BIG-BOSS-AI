@@ -169,8 +169,8 @@ export default function ExerciseForm({ exercise, onClose, onSuccess }: Props) {
     try {
       const token = localStorage.getItem("token");
       const url = exercise?.id
-        ? `http://localhost:5000/api/exercises/${exercise.id}`
-        : "http://localhost:5000/api/exercises";
+        ? `http://localhost:5050/api/exercises/${exercise.id}`
+        : "http://localhost:5050/api/exercises";
       const method = exercise?.id ? "put" : "post";
 
       await axios[method](url, formData, {

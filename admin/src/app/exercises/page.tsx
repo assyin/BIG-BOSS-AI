@@ -71,7 +71,7 @@ export default function ExercisesPage() {
       let totalPages = 1;
 
       do {
-        const response = await axios.get(`http://localhost:5000/api/exercises?PageSize=100&Page=${page}`, {
+        const response = await axios.get(`http://localhost:5050/api/exercises?PageSize=100&Page=${page}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const items = response.data.items || response.data || [];
@@ -131,7 +131,7 @@ export default function ExercisesPage() {
     if (!confirm("Supprimer cet exercice?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/exercises/${id}`, {
+      await axios.delete(`http://localhost:5050/api/exercises/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchExercises();
@@ -141,7 +141,7 @@ export default function ExercisesPage() {
   const handleEdit = async (exercise: Exercise) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/exercises/${exercise.id}`, {
+      const res = await axios.get(`http://localhost:5050/api/exercises/${exercise.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const d = res.data;

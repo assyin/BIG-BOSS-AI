@@ -5,6 +5,6 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
 
 export const getAuthHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   return token ? { Authorization: `Bearer ${token}` } : {};
 };

@@ -58,8 +58,8 @@ export default function ChallengeForm({ challenge, onClose, onSuccess }: Props) 
     try {
       const token = localStorage.getItem("token");
       const url = challenge?.id
-        ? `http://localhost:5000/api/challenges/${challenge.id}`
-        : "http://localhost:5000/api/challenges";
+        ? `http://localhost:5050/api/challenges/${challenge.id}`
+        : "http://localhost:5050/api/challenges";
 
       const method = challenge?.id ? "put" : "post";
 

@@ -50,7 +50,7 @@ export default function ChallengesPage() {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/challenges", {
+      const response = await axios.get("http://localhost:5050/api/challenges", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChallenges(response.data.items || response.data || []);
@@ -70,7 +70,7 @@ export default function ChallengesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/challenges/${id}`, {
+      await axios.delete(`http://localhost:5050/api/challenges/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchChallenges();

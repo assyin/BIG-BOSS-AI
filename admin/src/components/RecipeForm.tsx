@@ -113,8 +113,8 @@ export default function RecipeForm({ recipe, onClose, onSuccess }: Props) {
     try {
       const token = localStorage.getItem("token");
       const url = recipe?.id
-        ? `http://localhost:5000/api/recipes/${recipe.id}`
-        : "http://localhost:5000/api/recipes";
+        ? `http://localhost:5050/api/recipes/${recipe.id}`
+        : "http://localhost:5050/api/recipes";
 
       const method = recipe?.id ? "put" : "post";
 
