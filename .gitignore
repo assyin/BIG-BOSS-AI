@@ -58,3 +58,14 @@ coverage/
 # Videos (served locally, too large for git)
 videos/
 temp-expo/
+
+# Audio cache (TTS responses, regenerated on demand)
+backend/audio-cache/
+
+# Influencer audio - generated/intermediate files (only raw/ is tracked)
+influencer-audio/*.mp3
+influencer-audio/vocals/
+influencer-audio/filelist.txt
+
+# Temp/intermediate data
+gemini_input_list.txt
