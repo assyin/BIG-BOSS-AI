@@ -14,6 +14,8 @@ import { router } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
+import { Logo } from '@/components/brand/Logo';
+import { ZelligePattern } from '@/components/brand/ZelligePattern';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -42,15 +44,15 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.zelligeBanner} pointerEvents="none">
+        <ZelligePattern width={400} height={120} opacity={0.08} tileSize={70} />
+      </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
         <View style={styles.header}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>BB</Text>
-          </View>
-          <Text style={styles.title}>Big Boss Fitness</Text>
+          <Logo variant="full" size={70} />
           <Text style={styles.subtitle}>Connexion</Text>
         </View>
 
@@ -96,6 +98,9 @@ export default function LoginScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+      <View style={styles.madeIn}>
+        <Text style={styles.madeInText}>Made in Morocco 🇲🇦</Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -103,7 +108,16 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
+  },
+  zelligeBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    overflow: 'hidden',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
@@ -113,25 +127,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 40,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: Fonts.weight.bold,
-    color: Colors.white,
-  },
-  title: {
-    ...Typography.h3,
-    color: Colors.dark,
-    marginBottom: 8,
+    gap: 16,
   },
   subtitle: {
     ...Typography.bodyLarge,
@@ -147,21 +143,27 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: Colors.background,
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
     padding: 16,
     fontSize: Fonts.size.md,
+    fontFamily: Fonts.family.regular,
     color: Colors.dark,
     marginBottom: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
   },
   button: {
     backgroundColor: Colors.primary,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -169,7 +171,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.white,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.displaySemiBold,
+    letterSpacing: 0.5,
   },
   footer: {
     flexDirection: 'row',
@@ -183,6 +186,16 @@ const styles = StyleSheet.create({
   link: {
     ...Typography.body,
     color: Colors.primary,
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.semiBold,
+  },
+  madeIn: {
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  madeInText: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 12,
+    color: Colors.gray,
+    letterSpacing: 1.5,
   },
 });

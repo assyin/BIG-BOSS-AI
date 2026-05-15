@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/store/auth.store';
-import { Colors } from '@/constants/colors';
+import { SplashHero } from '@/components/brand/SplashHero';
 
 export default function Index() {
   const { isAuthenticated, isLoading, profile, checkAuth } = useAuthStore();
@@ -13,15 +12,10 @@ export default function Index() {
   }, []);
 
   if (!checked || isLoading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <SplashHero />;
   }
 
   if (isAuthenticated) {
-    // Check if onboarding is completed
     if (profile && !(profile as any).onboardingCompleted) {
       return <Redirect href="/(auth)/onboarding" />;
     }
@@ -30,12 +24,3 @@ export default function Index() {
 
   return <Redirect href="/(auth)/login" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.white,
-  },
-});
