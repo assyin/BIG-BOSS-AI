@@ -69,3 +69,6 @@ influencer-audio/filelist.txt
 
 # Temp/intermediate data
 gemini_input_list.txt
+
+# Windows NTFS alternate data streams (created when files are downloaded from internet)
+*:Zone.Identifier
