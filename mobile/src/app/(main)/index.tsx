@@ -10,6 +10,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +27,35 @@ import ProgrammeService, {
   ProgrammeSession,
   ProgrammeProgress,
 } from '@/services/programme.service';
+import RecipeService, { RecipeListItem } from '@/services/recipe.service';
+import api from '@/services/api';
+
+// Quotes motivantes darija (rotation quotidienne)
+const DARIJA_QUOTES = [
+  { ar: 'يالاه الوحش! 💪', fr: 'Allez champion !' },
+  { ar: 'شويا بشويا كتوصل', fr: 'Petit à petit on y arrive' },
+  { ar: 'الصبر مفتاح الفرج', fr: 'La patience est la clé' },
+  { ar: 'كل يوم خطوة قدام', fr: 'Chaque jour un pas en avant' },
+  { ar: 'ماكاينش مستحيل', fr: "Rien n'est impossible" },
+  { ar: 'القوة فالعزيمة', fr: 'La force est dans la volonté' },
+  { ar: 'انت أقوى من البارح', fr: "Tu es plus fort qu'hier" },
+];
+
+interface AchievementMini {
+  id: string;
+  title: string;
+  iconUrl: string | null;
+  category: number;
+  pointsReward: number;
+  unlockedAt: string | null;
+  isUnlocked: boolean;
+}
+
+const MOROCCAN_KEYWORDS = ['moroccan', 'marocain', 'tagine', 'couscous', 'harira', 'pastilla', 'baghrir', 'msemen', 'rfissa', 'briouate', 'zaalouk'];
+const isMoroccan = (title: string): boolean => {
+  const lower = (title || '').toLowerCase();
+  return MOROCCAN_KEYWORDS.some(kw => lower.includes(kw));
+};
 
 // ---------------------------------------------------------------------------
 // Day labels (Monday-first)
@@ -57,7 +87,21 @@ export default function HomeScreen() {
   const [starting, setStarting] = useState(false);
   const [resuming, setResuming] = useState(false);
 
+  // Rich Home data
+  const [moroccanRecipes, setMoroccanRecipes] = useState<RecipeListItem[]>([]);
+  const [recentAchievements, setRecentAchievements] = useState<AchievementMini[]>([]);
+  const [caloriesToday, setCaloriesToday] = useState<number>(0);
+
   const firstName = (user?.name || profile?.name || 'Champion').split(' ')[0];
+
+  // Stat aggregates
+  const totalSessions = profile?.stats?.totalSessions ?? 0;
+  const totalVolumeKg = profile?.stats?.totalVolumeKg ?? 0;
+  const personalRecords = profile?.stats?.personalRecordsCount ?? 0;
+
+  // Quote du jour (rotation par day-of-year)
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const quoteOfDay = DARIJA_QUOTES[dayOfYear % DARIJA_QUOTES.length];
 
   // -----------------------------------------------------------------------
   // Data loading
@@ -86,9 +130,44 @@ export default function HomeScreen() {
     }
   }, []);
 
+  const loadRichData = useCallback(async () => {
+    try {
+      // Moroccan recipes (top 8, filter by keywords, take first 6)
+      const allRecipes = await RecipeService.getAll().catch(() => [] as RecipeListItem[]);
+      const moroccan = allRecipes
+        .filter((r) => isMoroccan(r.titleFr))
+        .slice(0, 6);
+      setMoroccanRecipes(moroccan);
+    } catch (err) {
+      console.error('Failed to load moroccan recipes:', err);
+    }
+
+    try {
+      // Recent unlocked achievements (top 3)
+      const res = await api.get<AchievementMini[]>('/api/achievements');
+      const unlocked = (res.data || [])
+        .filter((a) => a.isUnlocked && a.unlockedAt)
+        .sort((a, b) => (b.unlockedAt || '').localeCompare(a.unlockedAt || ''))
+        .slice(0, 3);
+      setRecentAchievements(unlocked);
+    } catch {
+      // achievements optional
+    }
+
+    try {
+      // Calories consumed today
+      const today = new Date().toISOString().split('T')[0];
+      const day = await api.get<{ consumed?: { calories?: number } }>(`/api/nutrition/day?date=${today}`).catch(() => null);
+      const cal = day?.data?.consumed?.calories ?? 0;
+      setCaloriesToday(cal);
+    } catch {
+      setCaloriesToday(0);
+    }
+  }, []);
+
   const loadData = useCallback(async () => {
-    await Promise.all([loadProfile(), loadStats(), loadProgrammeData(), loadGamification()]);
-  }, [loadProfile, loadStats, loadProgrammeData]);
+    await Promise.all([loadProfile(), loadStats(), loadProgrammeData(), loadGamification(), loadRichData()]);
+  }, [loadProfile, loadStats, loadProgrammeData, loadRichData]);
 
   // Reload every time the screen receives focus
   useFocusEffect(
@@ -258,6 +337,17 @@ export default function HomeScreen() {
             </View>
           </LinearGradient>
 
+          {/* ==================== QUOTE DARIJA DU JOUR ==================== */}
+          <View style={styles.quoteCard}>
+            <View style={styles.quoteIcon}>
+              <Ionicons name="chatbubble-ellipses" size={18} color={Colors.goldDark} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.quoteAr}>{quoteOfDay.ar}</Text>
+              <Text style={styles.quoteFr}>{quoteOfDay.fr}</Text>
+            </View>
+          </View>
+
           {/* ==================== GAMIFICATION WIDGETS ==================== */}
           {gamifBalance && (
             <TouchableOpacity
@@ -266,22 +356,55 @@ export default function HomeScreen() {
               onPress={() => router.push('/(main)/points/history' as any)}
             >
               <View style={styles.gamifCard}>
-                <Ionicons name="star" size={20} color={Colors.warning} />
+                <Ionicons name="star" size={20} color={Colors.gold} />
                 <Text style={styles.gamifValue}>{gamifBalance.balance}</Text>
                 <Text style={styles.gamifLabel}>Points</Text>
               </View>
               <View style={styles.gamifCard}>
-                <Ionicons name="flame" size={20} color={Colors.error} />
+                <Ionicons name="flame" size={20} color={Colors.primary} />
                 <Text style={styles.gamifValue}>{gamifStreak?.currentStreak || 0}</Text>
                 <Text style={styles.gamifLabel}>Streak</Text>
               </View>
               <View style={styles.gamifCard}>
-                <Ionicons name="trophy" size={20} color={Colors.primary} />
+                <Ionicons name="trophy" size={20} color={Colors.goldDark} />
                 <Text style={styles.gamifValue}>{gamifBalance.totalEarned}</Text>
                 <Text style={styles.gamifLabel}>Total</Text>
               </View>
             </TouchableOpacity>
           )}
+
+          {/* ==================== STATS FITNESS (grid 2x2) ==================== */}
+          <Text style={styles.richSectionTitle}>Tes stats fitness</Text>
+          <View style={styles.statsGrid}>
+            <StatCard
+              icon="flame-outline"
+              iconColor={Colors.primary}
+              value={`${caloriesToday}`}
+              unit="kcal"
+              label="Calories aujourd'hui"
+            />
+            <StatCard
+              icon="barbell-outline"
+              iconColor={Colors.accent}
+              value={totalVolumeKg > 999 ? `${(totalVolumeKg / 1000).toFixed(1)}t` : `${Math.round(totalVolumeKg)}`}
+              unit={totalVolumeKg > 999 ? '' : 'kg'}
+              label="Volume total"
+            />
+            <StatCard
+              icon="trophy-outline"
+              iconColor={Colors.gold}
+              value={`${personalRecords}`}
+              unit="PR"
+              label="Records perso"
+            />
+            <StatCard
+              icon="checkmark-done-outline"
+              iconColor={Colors.secondary}
+              value={`${totalSessions}`}
+              unit=""
+              label="Séances totales"
+            />
+          </View>
 
           {/* ==================== PAUSED BANNER ==================== */}
           {programme && programme.status === 'Paused' && (
@@ -568,9 +691,112 @@ export default function HomeScreen() {
               )}
             </>
           )}
+
+          {/* ==================== RECETTES MAROCAINES SUGGÉRÉES ==================== */}
+          {moroccanRecipes.length > 0 && (
+            <View style={styles.recipesSection}>
+              <View style={styles.richSectionHeader}>
+                <Text style={styles.richSectionTitle}>Recettes marocaines 🇲🇦</Text>
+                <TouchableOpacity onPress={() => router.push('/(main)/nutrition/recipes' as any)}>
+                  <Text style={styles.seeAllLink}>Voir tout</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recipesScroll}
+              >
+                {moroccanRecipes.map((r) => (
+                  <TouchableOpacity
+                    key={r.id}
+                    style={styles.recipeCardMini}
+                    activeOpacity={0.85}
+                    onPress={() => router.push({ pathname: '/(main)/nutrition/recipe-detail', params: { id: r.id } } as any)}
+                  >
+                    {r.photoUrl ? (
+                      <Image source={{ uri: r.photoUrl }} style={styles.recipeCardImage} />
+                    ) : (
+                      <View style={[styles.recipeCardImage, styles.recipeCardPlaceholder]}>
+                        <Ionicons name="restaurant-outline" size={28} color={Colors.lightGray} />
+                      </View>
+                    )}
+                    <View style={styles.recipeCardMoroccanBadge}>
+                      <Text style={styles.recipeCardMoroccanText}>🇲🇦</Text>
+                    </View>
+                    <View style={styles.recipeCardBody}>
+                      <Text style={styles.recipeCardTitle} numberOfLines={2}>{r.titleFr}</Text>
+                      <View style={styles.recipeCardMeta}>
+                        <Ionicons name="flame-outline" size={12} color={Colors.primary} />
+                        <Text style={styles.recipeCardMetaText}>{r.caloriesPerServing} kcal</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* ==================== ACHIEVEMENTS RÉCEMMENT DÉBLOQUÉS ==================== */}
+          {recentAchievements.length > 0 && (
+            <View style={styles.achievementsSection}>
+              <View style={styles.richSectionHeader}>
+                <Text style={styles.richSectionTitle}>Tu as débloqué</Text>
+                <TouchableOpacity onPress={() => router.push('/(main)/achievements' as any)}>
+                  <Text style={styles.seeAllLink}>Voir tout</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.achievementsRow}>
+                {recentAchievements.map((a) => (
+                  <View key={a.id} style={styles.achievementCard}>
+                    <View style={styles.achievementBadge}>
+                      <Ionicons name="medal" size={22} color={Colors.gold} />
+                    </View>
+                    <Text style={styles.achievementTitle} numberOfLines={2}>{a.title}</Text>
+                    <Text style={styles.achievementPoints}>+{a.pointsReward} pts</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ==================== FOOTER MADE IN MOROCCO ==================== */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Made in Morocco 🇲🇦</Text>
+            <Text style={styles.footerSub}>شويا بشويا · BBF Atlas & Médina</Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Mini stat card component
+// ---------------------------------------------------------------------------
+function StatCard({
+  icon,
+  iconColor,
+  value,
+  unit,
+  label,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string;
+  value: string;
+  unit: string;
+  label: string;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <View style={[styles.statIcon, { backgroundColor: `${iconColor}15` }]}>
+        <Ionicons name={icon} size={18} color={iconColor} />
+      </View>
+      <View style={styles.statValueRow}>
+        <Text style={styles.statValue}>{value}</Text>
+        {unit && <Text style={styles.statUnit}>{unit}</Text>}
+      </View>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -731,6 +957,241 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.xl,
     color: Colors.white,
     letterSpacing: 0.5,
+  },
+
+  // ---- Quote darija ----
+  quoteCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: Colors.goldDim,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 162, 76, 0.25)',
+  },
+  quoteIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quoteAr: {
+    fontFamily: Fonts.family.arBold,
+    fontSize: Fonts.size.md,
+    color: Colors.dark,
+    marginBottom: 2,
+  },
+  quoteFr: {
+    fontSize: Fonts.size.xs,
+    color: Colors.medium,
+    fontStyle: 'italic',
+  },
+
+  // ---- Rich section common ----
+  richSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  richSectionTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.md,
+    color: Colors.dark,
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  seeAllLink: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.primary,
+  },
+
+  // ---- Stats fitness grid (2x2) ----
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  statValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size['2xl'],
+    color: Colors.dark,
+  },
+  statUnit: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.sm,
+    color: Colors.gray,
+  },
+  statLabel: {
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
+    marginTop: 2,
+  },
+
+  // ---- Recettes marocaines scroll ----
+  recipesSection: {
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  recipesScroll: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  recipeCardMini: {
+    width: 160,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  recipeCardImage: {
+    width: '100%',
+    height: 100,
+  },
+  recipeCardPlaceholder: {
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recipeCardMoroccanBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: Colors.goldDim,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  recipeCardMoroccanText: {
+    fontSize: Fonts.size.xs,
+  },
+  recipeCardBody: {
+    padding: 10,
+  },
+  recipeCardTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.dark,
+    lineHeight: 18,
+    marginBottom: 6,
+    minHeight: 36,
+  },
+  recipeCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  recipeCardMetaText: {
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
+  },
+
+  // ---- Achievements récents ----
+  achievementsSection: {
+    marginBottom: 20,
+  },
+  achievementsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  achievementCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.goldDim,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  achievementBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: Colors.goldDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+  },
+  achievementTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.dark,
+    textAlign: 'center',
+    lineHeight: 14,
+    minHeight: 28,
+  },
+  achievementPoints: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.goldDark,
+    marginTop: 4,
+  },
+
+  // ---- Footer made in Morocco ----
+  footer: {
+    alignItems: 'center',
+    marginTop: 24,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  footerText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
+    letterSpacing: 0.5,
+  },
+  footerSub: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: Colors.light,
+    marginTop: 4,
   },
 
   // ---- Gamification widgets ----
