@@ -22,6 +22,12 @@ out/
 .env.local
 .env.*.local
 
+# Credentials files (API keys etc — NEVER commit)
+credentiel.txt
+credentials.txt
+*.credentials
+secrets.txt
+
 # IDE
 .idea/
 .vscode/
