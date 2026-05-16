@@ -173,6 +173,14 @@ export default function ProfileScreen() {
           style={styles.headerGradient}
         >
           <ZelligePattern width={420} height={340} color={Colors.white} opacity={0.08} tileSize={56} />
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => router.push('/(main)/profile-edit' as any)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="create-outline" size={18} color={Colors.white} />
+            <Text style={styles.editBtnText}>Modifier</Text>
+          </TouchableOpacity>
           <View style={styles.profileHeader}>
             <View style={styles.avatarBorder}>
               <LinearGradient
@@ -220,11 +228,11 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Mon profil</Text>
             <View style={styles.settingsCard}>
-              {renderSettingRow('body-outline', 'Genre', profile.gender || '--')}
-              {renderSettingRow('fitness-outline', 'Objectif', profile.goal || '--')}
-              {renderSettingRow('trophy-outline', 'Niveau', profile.level || '--')}
-              {profile.weightKg != null && renderSettingRow('scale-outline', 'Poids', `${profile.weightKg} kg`)}
-              {profile.heightCm != null && renderSettingRow('resize-outline', 'Taille', `${profile.heightCm} cm`)}
+              {renderSettingRow('body-outline', 'Genre', profile.gender || '--', () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'gender' } } as any))}
+              {renderSettingRow('fitness-outline', 'Objectif', profile.goal || '--', () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'goal' } } as any))}
+              {renderSettingRow('trophy-outline', 'Niveau', profile.level || '--', () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'level' } } as any))}
+              {renderSettingRow('scale-outline', 'Poids', profile.weightKg != null ? `${profile.weightKg} kg` : '--', () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'weight' } } as any))}
+              {renderSettingRow('resize-outline', 'Taille', profile.heightCm != null ? `${profile.heightCm} cm` : '--', () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'height' } } as any))}
             </View>
           </View>
         )}
@@ -265,9 +273,18 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Parametres</Text>
           <View style={styles.settingsCard}>
-            {renderSettingRow('language-outline', 'Langue', profile?.preferredLanguage === 'fr' ? 'Francais' : profile?.preferredLanguage || 'Francais')}
-            {renderSettingRow('notifications-outline', 'Notifications', profile?.notificationsEnabled ? 'Actives' : 'Desactivees')}
-            {renderSettingRow('scale-outline', 'Unite de mesure', 'Kg / cm')}
+            {renderSettingRow(
+              'language-outline',
+              'Langue',
+              profile?.preferredLanguage === 'fr' ? 'Francais' : profile?.preferredLanguage === 'darija' ? 'الدارجة' : profile?.preferredLanguage === 'ar' ? 'العربية' : 'Francais',
+              () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'language' } } as any)
+            )}
+            {renderSettingRow(
+              'notifications-outline',
+              'Notifications',
+              profile?.notificationsEnabled ? 'Actives' : 'Desactivees',
+              () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'notifications' } } as any)
+            )}
           </View>
         </View>
 
@@ -321,6 +338,27 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     marginBottom: 18,
+  },
+  editBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 56 : 24,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    zIndex: 10,
+  },
+  editBtnText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.white,
+    letterSpacing: 0.3,
   },
   profileHeader: {
     alignItems: 'center',

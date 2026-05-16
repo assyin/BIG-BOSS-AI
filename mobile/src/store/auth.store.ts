@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { UserBasic, UserProfile, UserStats, LoginRequest, RegisterRequest } from '@/types/user.types';
+import { UserBasic, UserProfile, UserStats, LoginRequest, RegisterRequest, UpdateProfileRequest } from '@/types/user.types';
 import AuthService from '@/services/auth.service';
 import { handleApiError } from '@/services/api';
 
@@ -17,6 +17,7 @@ interface AuthState {
   logout: () => Promise<void>;
   loadProfile: () => Promise<void>;
   loadStats: () => Promise<void>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<void>;
   deleteAccount: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
   clearError: () => void;
@@ -114,6 +115,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ stats });
     } catch (err) {
       console.error('Failed to load stats:', err);
+    }
+  },
+
+  updateProfile: async (data: UpdateProfileRequest) => {
+    set({ isLoading: true, error: null });
+    try {
+      const profile = await AuthService.updateProfile(data);
+      set({
+        profile,
+        user: {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+          subscriptionTier: profile.subscriptionTier,
+        },
+        isLoading: false,
+      });
+    } catch (err) {
+      const message = extractErrorMessage(err, 'Impossible de mettre a jour le profil');
+      set({ isLoading: false, error: message });
+      throw new Error(message);
     }
   },
 

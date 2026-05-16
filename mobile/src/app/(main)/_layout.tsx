@@ -69,6 +69,10 @@ export default function MainLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="profile-edit"
+        options={{ href: null }}
+      />
       {/* Hidden sub-routes */}
       <Tabs.Screen
         name="nutrition/add-meal"
