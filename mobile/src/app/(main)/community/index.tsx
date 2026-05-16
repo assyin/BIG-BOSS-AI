@@ -4,6 +4,7 @@ import {
   Platform, ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -140,15 +141,23 @@ export default function CommunityScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Communaute</Text>
-        <TouchableOpacity onPress={() => setShowCompose(!showCompose)}>
-          <Ionicons name="add-circle" size={28} color={Colors.primary} />
+        <View>
+          <Text style={styles.headerTitle}>Communauté</Text>
+          <Text style={styles.headerSubtitle}>المجتمع</Text>
+        </View>
+        <TouchableOpacity onPress={() => setShowCompose(!showCompose)} style={styles.composeIconBtn}>
+          <Ionicons name="add" size={20} color={Colors.white} />
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       {/* Compose */}
       {showCompose && (
@@ -200,9 +209,37 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 12,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 16,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginTop: -2,
+  },
+  composeIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   composeCard: {
     backgroundColor: Colors.white, marginHorizontal: 20, borderRadius: 14, padding: 14, marginBottom: 12,
@@ -220,10 +257,27 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
   },
   postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: Fonts.size.md, fontWeight: Fonts.weight.bold, color: Colors.white },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary,
+    borderWidth: 1.5,
+    borderColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.md,
+    color: Colors.white,
+  },
   postHeaderInfo: { flex: 1 },
-  postUserName: { ...Typography.body, fontWeight: Fonts.weight.bold, color: Colors.dark },
+  postUserName: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.base,
+    color: Colors.dark,
+  },
   postTime: { ...Typography.caption, color: Colors.lightGray },
   typeBadge: { backgroundColor: Colors.primaryDim, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   typeBadgeText: { fontSize: Fonts.size.xs, fontWeight: Fonts.weight.semiBold, color: Colors.primary },
@@ -238,7 +292,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 3,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, backgroundColor: Colors.background,
   },
-  reactionBtnActive: { backgroundColor: Colors.primaryDim },
+  reactionBtnActive: {
+    backgroundColor: Colors.goldDim,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+  },
   reactionEmoji: { fontSize: 16 },
   reactionCount: { fontSize: Fonts.size.xs, fontWeight: Fonts.weight.bold, color: Colors.gray },
   commentBtn: {

@@ -4,6 +4,7 @@ import {
   TouchableOpacity, Platform, ActivityIndicator, RefreshControl, Alert, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -111,16 +112,24 @@ export default function RewardsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Boutique</Text>
+        <View>
+          <Text style={styles.headerTitle}>Boutique</Text>
+          <Text style={styles.headerSubtitle}>المتجر</Text>
+        </View>
         <View style={styles.balancePill}>
-          <Ionicons name="star" size={14} color={Colors.warning} />
+          <Ionicons name="star" size={14} color={Colors.gold} />
           <Text style={styles.balanceText}>{balance?.balance || 0}</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <FlatList
         data={rewards}
@@ -145,14 +154,41 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 12,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 16,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginTop: -2,
+  },
   balancePill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: Colors.warningLight, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  balanceText: { fontSize: Fonts.size.base, fontWeight: Fonts.weight.bold, color: Colors.warning },
+  balanceText: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.base,
+    color: Colors.white,
+  },
 
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   card: {
@@ -163,17 +199,48 @@ const styles = StyleSheet.create({
   cardImage: { width: 110, height: 140 },
   cardImagePlaceholder: { backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, padding: 14, justifyContent: 'space-between' },
-  cardTitle: { ...Typography.body, fontWeight: Fonts.weight.bold, color: Colors.dark },
+  cardTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.base,
+    color: Colors.dark,
+  },
   cardDesc: { ...Typography.caption, color: Colors.gray, marginVertical: 4, lineHeight: 16 },
   cardBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  priceBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  priceText: { fontSize: Fonts.size.base, fontWeight: Fonts.weight.bold, color: Colors.warning },
+  priceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.goldDim,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  priceText: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.goldDark,
+  },
   stockText: { ...Typography.caption, color: Colors.lightGray },
   redeemBtn: {
-    backgroundColor: Colors.primary, borderRadius: 10, paddingVertical: 8, alignItems: 'center',
+    backgroundColor: Colors.primary,
+    borderRadius: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  redeemBtnDisabled: { backgroundColor: Colors.lightGray },
-  redeemBtnText: { fontSize: Fonts.size.sm, fontWeight: Fonts.weight.bold, color: Colors.white },
+  redeemBtnDisabled: { backgroundColor: Colors.lightGray, shadowOpacity: 0 },
+  redeemBtnText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.white,
+    letterSpacing: 0.3,
+  },
 
   empty: { alignItems: 'center', paddingTop: 60, gap: 12 },
   emptyText: { ...Typography.body, color: Colors.gray },

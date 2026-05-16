@@ -4,6 +4,7 @@ import {
   TouchableOpacity, Platform, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -61,9 +62,9 @@ export default function AchievementsScreen() {
     <View style={[styles.card, item.isUnlocked && styles.cardUnlocked]}>
       <View style={[styles.iconCircle, item.isUnlocked ? styles.iconUnlocked : styles.iconLocked]}>
         <Ionicons
-          name={(item.isUnlocked ? 'trophy' : CATEGORY_ICONS[item.category] || 'star-outline') as any}
+          name={(item.isUnlocked ? 'medal' : CATEGORY_ICONS[item.category] || 'lock-closed-outline') as any}
           size={24}
-          color={item.isUnlocked ? Colors.warning : Colors.lightGray}
+          color={item.isUnlocked ? Colors.gold : Colors.lightGray}
         />
       </View>
       <View style={styles.cardInfo}>
@@ -84,7 +85,7 @@ export default function AchievementsScreen() {
         )}
       </View>
       <View style={styles.pointsBadge}>
-        <Ionicons name="star" size={12} color={item.isUnlocked ? Colors.warning : Colors.lightGray} />
+        <Ionicons name="star" size={12} color={item.isUnlocked ? Colors.gold : Colors.lightGray} />
         <Text style={[styles.pointsText, !item.isUnlocked && { color: Colors.lightGray }]}>{item.pointsReward}</Text>
       </View>
     </View>
@@ -100,13 +101,24 @@ export default function AchievementsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Achievements</Text>
-        <Text style={styles.headerCount}>{unlocked.length}/{achievements.length}</Text>
-      </View>
+        <View>
+          <Text style={styles.headerTitle}>Achievements</Text>
+          <Text style={styles.headerSubtitle}>الإنجازات</Text>
+        </View>
+        <View style={styles.headerCountPill}>
+          <Ionicons name="medal" size={14} color={Colors.gold} />
+          <Text style={styles.headerCount}>{unlocked.length}/{achievements.length}</Text>
+        </View>
+      </LinearGradient>
 
       <FlatList
         data={[...unlocked, ...locked]}
@@ -139,18 +151,62 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 12,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 16,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
-  headerCount: { ...Typography.body, color: Colors.gray },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginTop: -2,
+  },
+  headerCountPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  headerCount: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.white,
+  },
 
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16, paddingHorizontal: 20 },
   statCard: {
     flex: 1, backgroundColor: Colors.white, borderRadius: 14, padding: 16, alignItems: 'center',
+    borderTopWidth: 3,
+    borderTopColor: Colors.gold,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
-  statValue: { fontSize: Fonts.size.xl, fontWeight: Fonts.weight.bold, color: Colors.dark },
-  statLabel: { fontSize: Fonts.size.xs, color: Colors.gray, marginTop: 2 },
+  statValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.goldDark,
+  },
+  statLabel: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
+    marginTop: 2,
+  },
 
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   card: {
@@ -158,17 +214,32 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 14, marginBottom: 10, gap: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
-  cardUnlocked: { borderWidth: 1, borderColor: Colors.warningLight },
+  cardUnlocked: {
+    borderWidth: 1.5,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
 
   iconCircle: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  iconUnlocked: { backgroundColor: Colors.warningLight },
+  iconUnlocked: { backgroundColor: Colors.goldDim, borderWidth: 1, borderColor: Colors.gold },
   iconLocked: { backgroundColor: Colors.background },
 
   cardInfo: { flex: 1 },
-  cardTitle: { ...Typography.body, fontWeight: Fonts.weight.bold, color: Colors.dark },
+  cardTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.base,
+    color: Colors.dark,
+  },
   cardTitleLocked: { color: Colors.gray },
   cardDesc: { ...Typography.caption, color: Colors.lightGray, marginTop: 2 },
-  unlockedDate: { ...Typography.caption, color: Colors.success, marginTop: 4 },
+  unlockedDate: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.xs,
+    color: Colors.goldDark,
+    marginTop: 4,
+  },
 
   progressSection: { marginTop: 6 },
   progressBarBg: { height: 6, backgroundColor: Colors.background, borderRadius: 3, overflow: 'hidden' },
@@ -176,5 +247,9 @@ const styles = StyleSheet.create({
   progressText: { ...Typography.caption, color: Colors.gray, textAlign: 'right', marginTop: 2, fontSize: 10 },
 
   pointsBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  pointsText: { fontSize: Fonts.size.sm, fontWeight: Fonts.weight.bold, color: Colors.warning },
+  pointsText: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.goldDark,
+  },
 });
