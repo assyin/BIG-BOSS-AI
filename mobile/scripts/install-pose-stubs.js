@@ -26,6 +26,9 @@ const STUB_PACKAGES = [
   // Stub OK pour POC Jour 1 (modèle re-download à chaque cold start, ~3-5s).
   // À installer pour de vrai au prochain rebuild EAS pour activer le cache.
   '@react-native-async-storage/async-storage',
+  // tfjs-react-native demande react-native-fs pour bundler modèles en assets.
+  // Non utilisé (on télécharge MoveNet via réseau), stub safe.
+  'react-native-fs',
 ];
 
 const NODE_MODULES = path.resolve(__dirname, '..', 'node_modules');
