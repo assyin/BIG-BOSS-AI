@@ -15,6 +15,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { Logo } from '@/components/brand/Logo';
+import { ZelligePattern } from '@/components/brand/ZelligePattern';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -43,13 +44,20 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Zellige banner subtle en haut */}
+      <View style={styles.zelligeBanner}>
+        <ZelligePattern width={500} height={180} color={Colors.primary} opacity={0.06} tileSize={48} />
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
       >
         <View style={styles.header}>
           <Logo variant="full" size={70} />
-          <Text style={styles.subtitle}>Connexion</Text>
+          <Text style={styles.welcome}>Bienvenue</Text>
+          <Text style={styles.welcomeAr}>مرحبا بك</Text>
+          <Text style={styles.subtitle}>Heureux de te revoir, champion 💪</Text>
         </View>
 
         <View style={styles.form}>
@@ -96,6 +104,7 @@ export default function LoginScreen() {
       </KeyboardAvoidingView>
       <View style={styles.madeIn}>
         <Text style={styles.madeInText}>Made in Morocco 🇲🇦</Text>
+        <Text style={styles.madeInSub}>شويا بشويا</Text>
       </View>
     </SafeAreaView>
   );
@@ -111,9 +120,10 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 120,
+    height: 180,
     overflow: 'hidden',
     alignItems: 'center',
+    pointerEvents: 'none',
   },
   content: {
     flex: 1,
@@ -123,11 +133,27 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 40,
-    gap: 16,
+    gap: 8,
+  },
+  welcome: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 28,
+    color: Colors.dark,
+    marginTop: 12,
+    letterSpacing: 0.3,
+  },
+  welcomeAr: {
+    fontFamily: Fonts.family.arBold,
+    fontSize: 20,
+    color: Colors.goldDark,
+    marginTop: -2,
   },
   subtitle: {
-    ...Typography.bodyLarge,
-    color: Colors.gray,
+    fontFamily: Fonts.family.regular,
+    fontSize: Fonts.size.base,
+    color: Colors.medium,
+    marginTop: 4,
+    textAlign: 'center',
   },
   form: {
     width: '100%',
@@ -189,9 +215,15 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   madeInText: {
-    fontFamily: Fonts.family.regular,
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: 12,
-    color: Colors.gray,
+    color: Colors.medium,
     letterSpacing: 1.5,
+  },
+  madeInSub: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: 12,
+    color: Colors.light,
+    marginTop: 2,
   },
 });
