@@ -22,6 +22,10 @@ const STUB_PACKAGES = [
   '@mediapipe/selfie_segmentation',
   '@mediapipe/objectron',
   '@tensorflow/tfjs-backend-webgpu',
+  // tfjs-react-native demande async-storage pour cache modèles ML.
+  // Stub OK pour POC Jour 1 (modèle re-download à chaque cold start, ~3-5s).
+  // À installer pour de vrai au prochain rebuild EAS pour activer le cache.
+  '@react-native-async-storage/async-storage',
 ];
 
 const NODE_MODULES = path.resolve(__dirname, '..', 'node_modules');
@@ -67,7 +71,30 @@ for (const pkg of STUB_PACKAGES) {
       2,
     ) + '\n',
   );
-  fs.writeFileSync(indexPath, 'module.exports = {};\n');
+  // Special stub for async-storage: expose no-op AsyncStorage API
+  // so TF.js can require it without crashing at runtime.
+  const isAsyncStorage = pkg === '@react-native-async-storage/async-storage';
+  const stubBody = isAsyncStorage
+    ? `// no-op AsyncStorage stub (Sprint 1.4 POC). Cache modèles désactivé.
+const stub = {
+  getItem: async () => null,
+  setItem: async () => {},
+  removeItem: async () => {},
+  clear: async () => {},
+  getAllKeys: async () => [],
+  multiGet: async () => [],
+  multiSet: async () => {},
+  multiRemove: async () => {},
+  mergeItem: async () => {},
+  multiMerge: async () => {},
+  flushGetRequests: () => {},
+};
+module.exports = stub;
+module.exports.default = stub;
+`
+    : 'module.exports = {};\n';
+
+  fs.writeFileSync(indexPath, stubBody);
   created++;
 }
 
