@@ -94,10 +94,9 @@ export default function CoachVisionScreen() {
   const [phase, setPhase] = useState('neutral');
   const [showExercisePicker, setShowExercisePicker] = useState(!exerciseName);
 
-  // ─── Sprint 1.4 Jour 1: TF.js + MoveNet integration ───
+  // ─── Sprint 1.4 Jour 1+2: TF.js + MoveNet integration ───
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
   const cameraRef = useRef<CameraView>(null);
 
   // Load TF.js + MoveNet at mount (background, ~3-5s on first run)
@@ -121,43 +120,97 @@ export default function CoachVisionScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  // POC Jour 1: capture single frame + run inference + log keypoints to feedback
-  const handleTestDetection = useCallback(async () => {
-    if (!cameraRef.current || !modelReady || scanning) return;
-    setScanning(true);
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-        quality: 0.4,
-        skipProcessing: true,
-      });
-      if (!photo?.base64) {
-        setCurrentFeedback([{ type: 'error', message: 'Pas de capture', messageAr: 'ما تصورتش' }]);
-        return;
+  // Sprint 1.4 Jour 2: boucle continue d'inférence + branchement pose-engine
+  // Démarrée quand isActive + modelReady + exerciseConfig OK
+  useEffect(() => {
+    if (!isActive || !modelReady || !exerciseConfig || !cameraRef.current) return;
+
+    let cancelled = false;
+    let prevPhase = 'neutral';
+    const scoresWindow: number[] = []; // moyenne mobile sur 10 frames
+    let tickCount = 0;
+    let totalLatency = 0;
+
+    const tick = async () => {
+      if (cancelled || !cameraRef.current) return;
+
+      try {
+        const t0 = Date.now();
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+          quality: 0.35,
+          skipProcessing: true,
+        });
+        if (!photo?.base64 || cancelled) return;
+
+        const keypoints = await inferFromBase64(photo.base64);
+        const latency = Date.now() - t0;
+        if (cancelled) return;
+
+        if (!keypoints) {
+          setCurrentFeedback([
+            { type: 'warning', message: `Aucune pose (${latency}ms) — recule pour cadrer ton corps`, messageAr: 'رجع لور باش يبان الجسد كامل' },
+          ]);
+        } else {
+          // Apply pose-engine
+          const issues = exerciseConfig.checkPoints(keypoints);
+          const repResult = exerciseConfig.detectRep(keypoints, prevPhase);
+          prevPhase = repResult.phase;
+
+          if (repResult.counted) {
+            setRepCount((r) => r + 1);
+          }
+          setPhase(repResult.phase);
+
+          // Score: 100 - (errors * 25) - (warnings * 10), moving avg sur 10
+          const errCount = issues.filter((i) => i.type === 'error').length;
+          const warnCount = issues.filter((i) => i.type === 'warning').length;
+          const frameScore = Math.max(0, 100 - errCount * 25 - warnCount * 10);
+          scoresWindow.push(frameScore);
+          if (scoresWindow.length > 10) scoresWindow.shift();
+          const avgScore = Math.round(scoresWindow.reduce((a, b) => a + b, 0) / scoresWindow.length);
+          setFormScore(avgScore);
+
+          // Feedback: si issues, montre les 2 plus urgentes (errors d'abord)
+          if (issues.length > 0) {
+            const sorted = [
+              ...issues.filter((i) => i.type === 'error'),
+              ...issues.filter((i) => i.type === 'warning'),
+              ...issues.filter((i) => i.type === 'good'),
+            ].slice(0, 2);
+            setCurrentFeedback(sorted);
+          } else {
+            setCurrentFeedback([{ type: 'good', message: 'Bonne forme ! 💪', messageAr: 'شكل مزيان 💪' }]);
+          }
+
+          // Debug log every 20 frames
+          tickCount++;
+          totalLatency += latency;
+          if (tickCount % 20 === 0) {
+            console.log(`[loop] ${tickCount} frames, avg latency ${Math.round(totalLatency / tickCount)}ms, reps=${repResult.counted ? 'YES' : 'no'}, phase=${repResult.phase}`);
+          }
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          console.error('[loop] tick failed:', err?.message || err);
+        }
+      } finally {
+        if (!cancelled) {
+          // Schedule next tick (setTimeout récursif vs setInterval = pas d'overlap si tick lent)
+          setTimeout(tick, 100);
+        }
       }
-      const t0 = Date.now();
-      const keypoints = await inferFromBase64(photo.base64);
-      const elapsed = Date.now() - t0;
-      if (!keypoints) {
-        setCurrentFeedback([{ type: 'warning', message: `Aucune pose détectée (${elapsed}ms)`, messageAr: 'ما لقيتش الجسد' }]);
-        return;
-      }
-      const nose = keypoints[KEYPOINTS.NOSE];
-      const lShoulder = keypoints[KEYPOINTS.LEFT_SHOULDER];
-      const visible = keypoints.filter((kp) => kp.score > 0.3).length;
-      setCurrentFeedback([
-        { type: 'good', message: `✓ ${visible}/17 keypoints (${elapsed}ms)` },
-        { type: 'good', message: `Nez: (${Math.round(nose.x)}, ${Math.round(nose.y)}) conf=${nose.score.toFixed(2)}` },
-        { type: 'good', message: `Épaule G: (${Math.round(lShoulder.x)}, ${Math.round(lShoulder.y)}) conf=${lShoulder.score.toFixed(2)}` },
-      ]);
-      console.log('[CoachVision] keypoints:', keypoints);
-    } catch (err: any) {
-      setCurrentFeedback([{ type: 'error', message: `Erreur: ${err?.message || err}` }]);
-      console.error('[CoachVision] detection failed:', err);
-    } finally {
-      setScanning(false);
-    }
-  }, [modelReady, scanning]);
+    };
+
+    // Démarre la première inférence (warmup gracieux)
+    console.log('[CoachVision] starting detection loop');
+    tick();
+
+    return () => {
+      cancelled = true;
+      console.log('[CoachVision] stopping detection loop');
+    };
+  }, [isActive, modelReady, exerciseConfig]);
 
   const availableExercises = Object.entries(EXERCISE_CONFIGS).map(([key, config]) => ({
     key,
@@ -346,7 +399,7 @@ export default function CoachVisionScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Sprint 1.4 Jour 1: bouton POC test détection */}
+            {/* Sprint 1.4 Jour 2: status modèle (loading / ready / error) */}
             <View style={styles.testDetectionRow}>
               {!modelReady && !modelError && (
                 <View style={styles.modelLoadingPill}>
@@ -360,21 +413,11 @@ export default function CoachVisionScreen() {
                   <Text style={styles.modelLoadingText}>{modelError}</Text>
                 </View>
               )}
-              {modelReady && (
-                <TouchableOpacity
-                  style={[styles.testDetectionBtn, scanning && { opacity: 0.5 }]}
-                  onPress={handleTestDetection}
-                  disabled={scanning}
-                >
-                  {scanning ? (
-                    <ActivityIndicator size="small" color={Colors.white} />
-                  ) : (
-                    <Ionicons name="scan" size={20} color={Colors.white} />
-                  )}
-                  <Text style={styles.testDetectionText}>
-                    {scanning ? 'Analyse...' : 'Tester détection (POC)'}
-                  </Text>
-                </TouchableOpacity>
+              {modelReady && isActive && (
+                <View style={[styles.modelLoadingPill, { backgroundColor: 'rgba(74,124,89,0.85)' }]}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.modelLoadingText}>Détection live · {phase}</Text>
+                </View>
               )}
             </View>
           </View>
@@ -507,6 +550,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.family.displayMedium,
     fontSize: Fonts.size.sm,
     color: Colors.white,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.white,
   },
   testDetectionBtn: {
     flexDirection: 'row',
