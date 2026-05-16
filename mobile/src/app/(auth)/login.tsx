@@ -15,7 +15,6 @@ import { useAuthStore } from '@/store/auth.store';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { Logo } from '@/components/brand/Logo';
-import { ZelligePattern } from '@/components/brand/ZelligePattern';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -44,9 +43,6 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.zelligeBanner} pointerEvents="none">
-        <ZelligePattern width={400} height={120} opacity={0.08} tileSize={70} />
-      </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
