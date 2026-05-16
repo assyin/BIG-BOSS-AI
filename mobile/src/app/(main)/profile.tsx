@@ -12,10 +12,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { useAuthStore } from '@/store/auth.store';
+import { ZelligePattern } from '@/components/brand/ZelligePattern';
 
 export default function ProfileScreen() {
   const { user, profile, stats, logout, deleteAccount, loadProfile, loadStats, isLoading } = useAuthStore();
@@ -55,12 +57,6 @@ export default function ProfileScreen() {
   const totalVolume = totalVolumeKg
     ? `${(totalVolumeKg / 1000).toFixed(1)}t`
     : '0 kg';
-
-  const tierColors: Record<string, string> = {
-    Free: Colors.gray,
-    Premium: Colors.primary,
-    Elite: Colors.warning,
-  };
 
   const handleLogout = async () => {
     if (Platform.OS === 'web') {
@@ -169,17 +165,37 @@ export default function ProfileScreen() {
           />
         }
       >
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>{initials}</Text>
+        {/* Profile Header — gradient coucher de soleil médina + zellige subtil */}
+        <LinearGradient
+          colors={Colors.gradientHero as unknown as readonly [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <ZelligePattern width={420} height={340} color={Colors.white} opacity={0.08} tileSize={56} />
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarBorder}>
+              <LinearGradient
+                colors={Colors.gradientPrimary as unknown as readonly [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.avatarCircle}
+              >
+                <Text style={styles.avatarText}>{initials}</Text>
+              </LinearGradient>
+            </View>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.email}>{email}</Text>
+            <View style={styles.tierBadge}>
+              <Ionicons
+                name={tier === 'Free' ? 'star-outline' : 'star'}
+                size={14}
+                color={tier === 'Free' ? Colors.white : Colors.gold}
+              />
+              <Text style={styles.tierText}>{tier}</Text>
+            </View>
           </View>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.email}>{email}</Text>
-          <View style={[styles.tierBadge, { backgroundColor: (tierColors[tier] || Colors.gray) + '20' }]}>
-            <Text style={[styles.tierText, { color: tierColors[tier] || Colors.gray }]}>{tier}</Text>
-          </View>
-        </View>
+        </LinearGradient>
 
         {/* Stats */}
         <View style={styles.statsRow}>
@@ -297,50 +313,75 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-    paddingTop: Platform.OS === 'android' ? 48 : 16,
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === 'android' ? 56 : 24,
+    paddingBottom: 32,
+    overflow: 'hidden',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    marginBottom: 18,
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 24,
     paddingHorizontal: 20,
   },
-  avatarCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: Colors.primary,
+  avatarBorder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
-    shadowColor: Colors.primary,
+    shadowColor: Colors.gold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  avatarCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarText: {
+    fontFamily: Fonts.family.displayBold,
     fontSize: Fonts.size['3xl'],
-    fontWeight: Fonts.weight.bold,
     color: Colors.white,
+    letterSpacing: 1,
   },
   name: {
-    ...Typography.h3,
-    color: Colors.dark,
+    ...Typography.h2,
+    color: Colors.white,
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   email: {
     ...Typography.body,
-    color: Colors.gray,
-    marginBottom: 12,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 14,
   },
   tierBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 6,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   tierText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.sm,
-    fontWeight: Fonts.weight.semiBold,
+    color: Colors.white,
+    letterSpacing: 0.4,
   },
   statsRow: {
     flexDirection: 'row',
@@ -360,9 +401,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: Fonts.size.base,
-    fontWeight: Fonts.weight.bold,
-    color: Colors.dark,
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.md,
+    color: Colors.goldDark,
     marginBottom: 4,
     textAlign: 'center',
   },
@@ -381,11 +422,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    ...Typography.caption,
-    color: Colors.gray,
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     marginBottom: 10,
     marginLeft: 4,
   },
@@ -461,9 +502,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   logoutText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.error,
+    letterSpacing: 0.3,
   },
   deleteLink: {
     alignItems: 'center',
