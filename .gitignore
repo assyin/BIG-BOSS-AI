@@ -72,3 +72,8 @@ gemini_input_list.txt
 
 # Windows NTFS alternate data streams (created when files are downloaded from internet)
 *:Zone.Identifier
+
+# Local error screenshots (debugging only)
+error.jpeg
+error.png
+error.jpg

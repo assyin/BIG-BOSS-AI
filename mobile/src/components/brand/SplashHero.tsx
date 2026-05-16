@@ -1,14 +1,12 @@
 /**
- * SplashHero — Écran de loading premium "Atlas & Médina"
+ * SplashHero — Écran de loading "Atlas & Médina"
  *
- * Affiché pendant le chargement initial de l'app (après le splash natif).
- * Background : gradient terre Marrakech → safran
- * Pattern : zellige subtil
- * Logo : étoile zellige + BB + tagline Darija
+ * Note: utilise un fond solide (Colors.primary) au lieu du gradient
+ * tant que l'APK n'a pas expo-linear-gradient compilé en natif.
+ * Quand on rebuild l'APK avec expo-linear-gradient, on pourra remettre le gradient.
  */
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Logo } from './Logo';
 import { ZelligePattern } from './ZelligePattern';
@@ -18,13 +16,6 @@ const { width, height } = Dimensions.get('window');
 export const SplashHero: React.FC = () => {
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={Colors.gradientHero as any}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {/* Zellige pattern overlay */}
       <View style={StyleSheet.absoluteFillObject}>
         <ZelligePattern
           width={width}
@@ -34,7 +25,6 @@ export const SplashHero: React.FC = () => {
           tileSize={70}
         />
       </View>
-      {/* Logo + tagline */}
       <View style={styles.center}>
         <Logo size={140} variant="splash" />
       </View>
