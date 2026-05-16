@@ -4,30 +4,47 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// ─── Sprint 1.4 ─── Stub MediaPipe imports
-// @tensorflow-models/pose-detection's ESM entry imports @mediapipe/pose,
-// @mediapipe/hands, @mediapipe/face_mesh, etc. for BlazePose/HandTracking
-// backends — we use ONLY MoveNet in React Native, so we alias these to
-// an empty module to avoid Metro resolution errors.
+// ─── Sprint 1.4 — Coach Vision ───
+//
+// Problème: @tensorflow-models/pose-detection charge @mediapipe/* (BlazePose
+// backend, web-only) et @tensorflow/tfjs-backend-webgpu (web-only) même si
+// on utilise ONLY MoveNet en React Native. Ces deps n'existent pas en RN.
+//
+// Solution: intercepter chaque résolution via resolveRequest et retourner
+// un module vide (empty-module.js) pour ces packages. C'est plus robuste
+// que extraNodeModules qui peut être contourné par certains imports.
+
 const STUB = path.resolve(__dirname, 'empty-module.js');
 
-config.resolver.extraNodeModules = {
-  ...(config.resolver.extraNodeModules || {}),
-  // MediaPipe stubs (BlazePose / hands / face — pas utilisés, MoveNet only)
-  '@mediapipe/pose': STUB,
-  '@mediapipe/hands': STUB,
-  '@mediapipe/face_mesh': STUB,
-  '@mediapipe/face_detection': STUB,
-  '@mediapipe/holistic': STUB,
-  '@mediapipe/selfie_segmentation': STUB,
-  '@mediapipe/objectron': STUB,
-  // TF.js WebGPU backend stub (web-only, pas dispo en React Native)
-  '@tensorflow/tfjs-backend-webgpu': STUB,
+const STUB_PACKAGES = [
+  '@mediapipe/pose',
+  '@mediapipe/hands',
+  '@mediapipe/face_mesh',
+  '@mediapipe/face_detection',
+  '@mediapipe/holistic',
+  '@mediapipe/selfie_segmentation',
+  '@mediapipe/objectron',
+  '@tensorflow/tfjs-backend-webgpu',
+  '@tensorflow/tfjs-backend-wasm',
+];
+
+const upstreamResolveRequest = config.resolver.resolveRequest;
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (STUB_PACKAGES.some((pkg) => moduleName === pkg || moduleName.startsWith(pkg + '/'))) {
+    return {
+      type: 'sourceFile',
+      filePath: STUB,
+    };
+  }
+  if (upstreamResolveRequest) {
+    return upstreamResolveRequest(context, moduleName, platform);
+  }
+  // Use Metro's default resolution
+  return context.resolveRequest(context, moduleName, platform);
 };
 
-// Force Metro à privilégier le sourceField 'main' (CommonJS) sur 'module' (ESM bundle)
-// pour @tensorflow-models/pose-detection: le bundle ESM tire toutes les deps optionnelles
-// même si on n'utilise que MoveNet.
+// Force Metro à privilégier le main field (CommonJS) sur module (ESM bundle)
 config.resolver.resolverMainFields = ['react-native', 'main', 'browser'];
 
 module.exports = config;
