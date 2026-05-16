@@ -16,6 +16,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
@@ -259,6 +260,7 @@ export default function CoachScreen() {
           <Ionicons name="fitness" size={48} color={Colors.primary} />
         </View>
         <Text style={styles.emptyTitle}>Salut! Je suis Big Boss 💪</Text>
+        <Text style={styles.emptyTitleAr}>السلام! أنا بيغ بوس</Text>
         <Text style={styles.emptyText}>
           Ton coach IA personnel. Pose-moi tes questions sur l'entrainement, la nutrition ou la recuperation.
         </Text>
@@ -291,8 +293,13 @@ export default function CoachScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Header avec gradient subtle */}
+        <LinearGradient
+          colors={Colors.gradientHero as unknown as readonly [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
           <View style={styles.headerLeft}>
             <View style={styles.headerIcon}>
               <Ionicons name="fitness" size={20} color={Colors.white} />
@@ -301,7 +308,7 @@ export default function CoachScreen() {
               <Text style={styles.headerTitle}>Coach Big Boss</Text>
               <View style={styles.headerStatusRow}>
                 <View style={styles.onlineDot} />
-                <Text style={styles.headerSub}>En ligne</Text>
+                <Text style={styles.headerSub}>En ligne · كوتشك الشخصي</Text>
               </View>
             </View>
           </View>
@@ -327,10 +334,10 @@ export default function CoachScreen() {
               style={styles.menuButton}
               onPress={() => setShowMenu(!showMenu)}
             >
-              <Ionicons name="ellipsis-vertical" size={20} color={Colors.dark} />
+              <Ionicons name="ellipsis-vertical" size={20} color={Colors.white} />
             </TouchableOpacity>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Menu dropdown */}
         {showMenu && (
@@ -405,37 +412,66 @@ export default function CoachScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F0F5' },
+  container: { flex: 1, backgroundColor: Colors.background },
 
-  // Header
+  // Header gradient médina
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 44 : 12, paddingBottom: 12,
-    backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border,
+    paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 44 : 12, paddingBottom: 14,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerIcon: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.primaryDark,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    alignItems: 'center', justifyContent: 'center',
   },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: Colors.dark },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.lg,
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   headerStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#34C759' },
-  headerSub: { fontSize: 12, color: '#34C759', fontWeight: '500' },
+  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: Colors.accent },
+  headerSub: {
+    fontFamily: Fonts.family.regular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.9)',
+  },
 
   quotaBadge: {
-    backgroundColor: Colors.primaryDim, borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 12,
     paddingHorizontal: 10, paddingVertical: 4,
   },
-  quotaText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  quotaText: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.white,
+  },
 
   historyButton: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: Colors.primaryDim, borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 16,
     paddingHorizontal: 12, paddingVertical: 6,
   },
-  historyButtonText: { fontSize: 12, fontWeight: '600', color: Colors.primary },
+  historyButtonText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.white,
+  },
   menuButton: { padding: 8, borderRadius: 20 },
 
   // Menu dropdown
@@ -473,12 +509,27 @@ const styles = StyleSheet.create({
     marginRight: 8, marginTop: 4,
   },
   messageBubble: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10, flexShrink: 1 },
-  userBubble: { backgroundColor: Colors.primary, borderBottomRightRadius: 6 },
-  aiBubble: {
-    backgroundColor: Colors.white, borderBottomLeftRadius: 6,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+  userBubble: {
+    backgroundColor: Colors.primary,
+    borderBottomRightRadius: 6,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  messageText: { fontSize: 15, lineHeight: 22 },
+  aiBubble: {
+    backgroundColor: Colors.white,
+    borderBottomLeftRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.gold,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  messageText: { fontFamily: Fonts.family.regular, fontSize: 15, lineHeight: 22 },
   userText: { color: Colors.white },
   aiText: { color: Colors.dark },
   messageTime: { fontSize: 10, marginTop: 4 },
@@ -511,13 +562,17 @@ const styles = StyleSheet.create({
   typingDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: Colors.gray },
 
   // Quick suggestions
-  quickSuggestions: { maxHeight: 44, backgroundColor: '#F0F0F5' },
+  quickSuggestions: { maxHeight: 44, backgroundColor: Colors.background },
   quickSuggestionsContent: { paddingHorizontal: 12, paddingVertical: 6, gap: 8 },
   quickChip: {
     backgroundColor: Colors.white, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
     borderWidth: 1, borderColor: Colors.border, marginRight: 8,
   },
-  quickChipText: { fontSize: 13, color: Colors.primary, fontWeight: '500' },
+  quickChipText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 13,
+    color: Colors.primary,
+  },
 
   // Input Area
   inputArea: {
@@ -526,32 +581,85 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row', alignItems: 'flex-end',
-    backgroundColor: '#F0F0F5', borderRadius: 24,
+    backgroundColor: Colors.background, borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
     paddingLeft: 16, paddingRight: 4, paddingVertical: 4, minHeight: 48,
   },
   textInput: { flex: 1, fontSize: 15, color: Colors.dark, maxHeight: 100, paddingVertical: 8 },
   sendButton: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sendButtonDisabled: { backgroundColor: Colors.border },
+  sendButtonDisabled: { backgroundColor: Colors.border, shadowOpacity: 0 },
 
   // Empty state
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   emptyIconBox: {
     width: 88, height: 88, borderRadius: 44,
-    backgroundColor: Colors.primaryDim, alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+    backgroundColor: Colors.primaryDim,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  emptyTitle: { fontSize: 22, fontWeight: '700', color: Colors.dark, marginBottom: 8 },
-  emptyText: { fontSize: 15, color: Colors.gray, textAlign: 'center', lineHeight: 22, marginBottom: 4 },
-  emptySubtext: { fontSize: 13, color: Colors.primary, fontWeight: '600', marginBottom: 24 },
-  loadingText: { fontSize: 14, color: Colors.gray, marginTop: 12 },
+  emptyTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size['2xl'],
+    color: Colors.dark,
+    marginBottom: 4,
+  },
+  emptyTitleAr: {
+    fontFamily: Fonts.family.arBold,
+    fontSize: Fonts.size.lg,
+    color: Colors.goldDark,
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 15,
+    color: Colors.medium,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 13,
+    color: Colors.primary,
+    marginBottom: 24,
+  },
+  loadingText: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 14,
+    color: Colors.gray,
+    marginTop: 12,
+  },
 
   // Suggestions grid
   suggestionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, width: '100%', justifyContent: 'center' },
   suggestionCard: {
     backgroundColor: Colors.white, borderRadius: 14, padding: 14, width: '47%',
     borderWidth: 1, borderColor: Colors.border, alignItems: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  suggestionText: { fontSize: 13, color: Colors.dark, fontWeight: '500', lineHeight: 18 },
+  suggestionText: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: 13,
+    color: Colors.dark,
+    lineHeight: 18,
+  },
 });
