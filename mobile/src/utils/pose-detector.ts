@@ -5,11 +5,17 @@
  *   1. initTfjs() — wait for TF runtime ready + set backend
  *   2. loadMoveNet() — create singleton detector
  *   3. inferFromBase64() — JPEG b64 → tensor → 17 keypoints
+ *
+ * Native (iOS/Android) only — Platform.OS === 'web' returns gracefully
+ * because @tensorflow/tfjs-react-native is mobile-only.
  */
+import { Platform } from 'react-native';
 import * as tf from '@tensorflow/tfjs';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import { decodeJpeg } from '@tensorflow/tfjs-react-native';
 import type { Keypoint } from './pose-engine';
+
+const IS_WEB = Platform.OS === 'web';
 
 let _initialized = false;
 let _detector: posedetection.PoseDetector | null = null;
@@ -20,9 +26,11 @@ let _loadPromise: Promise<posedetection.PoseDetector> | null = null;
  * Call once at app/screen mount before anything else.
  */
 export async function initTfjs(): Promise<void> {
+  if (IS_WEB) {
+    throw new Error('Coach Vision est disponible uniquement sur mobile (iOS/Android), pas sur le web.');
+  }
   if (_initialized) return;
   await tf.ready();
-  // RN backend is auto-selected; log for debugging
   console.log('[pose-detector] tf.ready, backend =', tf.getBackend());
   _initialized = true;
 }

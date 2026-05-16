@@ -30,17 +30,22 @@ const STUB_PACKAGES = [
 
 const upstreamResolveRequest = config.resolver.resolveRequest;
 
+// Web-only stubs: tfjs-react-native est uniquement pour iOS/Android, il faut
+// le stub côté bundle web sinon ça casse les imports natifs (TextEncoder, etc.).
+const WEB_ONLY_STUBS = [
+  '@tensorflow/tfjs-react-native',
+];
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (STUB_PACKAGES.some((pkg) => moduleName === pkg || moduleName.startsWith(pkg + '/'))) {
-    return {
-      type: 'sourceFile',
-      filePath: STUB,
-    };
+    return { type: 'sourceFile', filePath: STUB };
+  }
+  if (platform === 'web' && WEB_ONLY_STUBS.some((pkg) => moduleName === pkg || moduleName.startsWith(pkg + '/'))) {
+    return { type: 'sourceFile', filePath: STUB };
   }
   if (upstreamResolveRequest) {
     return upstreamResolveRequest(context, moduleName, platform);
   }
-  // Use Metro's default resolution
   return context.resolveRequest(context, moduleName, platform);
 };
 
