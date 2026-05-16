@@ -373,6 +373,34 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
 
+          {/* ==================== QUICK ACTIONS (toujours visibles) ==================== */}
+          <View style={styles.quickActionsRow}>
+            <QuickAction
+              icon="medal-outline"
+              iconColor={Colors.gold}
+              label="Badges"
+              onPress={() => router.push('/(main)/achievements' as any)}
+            />
+            <QuickAction
+              icon="gift-outline"
+              iconColor={Colors.primary}
+              label="Boutique"
+              onPress={() => router.push('/(main)/rewards' as any)}
+            />
+            <QuickAction
+              icon="people-outline"
+              iconColor={Colors.secondary}
+              label="Communauté"
+              onPress={() => router.push('/(main)/community' as any)}
+            />
+            <QuickAction
+              icon="flag-outline"
+              iconColor={Colors.accent}
+              label="Challenges"
+              onPress={() => router.push('/(main)/challenges' as any)}
+            />
+          </View>
+
           {/* ==================== STATS FITNESS (grid 2x2) ==================== */}
           <Text style={styles.richSectionTitle}>Tes stats fitness</Text>
           <View style={styles.statsGrid}>
@@ -771,6 +799,30 @@ export default function HomeScreen() {
 }
 
 // ---------------------------------------------------------------------------
+// Quick action button
+// ---------------------------------------------------------------------------
+function QuickAction({
+  icon,
+  iconColor,
+  label,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.quickAction} onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.quickActionIcon, { backgroundColor: `${iconColor}15`, borderColor: iconColor }]}>
+        <Ionicons name={icon} size={22} color={iconColor} />
+      </View>
+      <Text style={styles.quickActionLabel} numberOfLines={1}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Mini stat card component
 // ---------------------------------------------------------------------------
 function StatCard({
@@ -1011,6 +1063,33 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.sm,
     color: Colors.primary,
+  },
+
+  // ---- Quick actions row ----
+  quickActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 20,
+  },
+  quickAction: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  quickActionIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  quickActionLabel: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.dark,
+    textAlign: 'center',
   },
 
   // ---- Stats fitness grid (2x2) ----
