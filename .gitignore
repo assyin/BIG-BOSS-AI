@@ -73,10 +73,10 @@ gemini_input_list.txt
 # Windows NTFS alternate data streams (created when files are downloaded from internet)
 *:Zone.Identifier
 
-# Local error screenshots (debugging only)
-*.jpeg
-*.png
-*.jpg
+# Local screenshots accidentally dropped at REPO ROOT (not assets in subdirs)
+/*.jpeg
+/*.jpg
+/*.png
 
 # WhatsApp shared images dropped in repo
 WhatsApp Image*
