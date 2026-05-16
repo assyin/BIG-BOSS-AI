@@ -19,8 +19,7 @@
     },
     "preview-optimized": {
       "android": {
-        "buildType": "apk",
-        "enableProguardInReleaseBuilds": true
+        "buildType": "apk"
       },
       "distribution": "internal"
     },
