@@ -10,7 +10,7 @@ export default function MainLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: '#999',
+        tabBarInactiveTintColor: Colors.gray,
         tabBarLabelStyle: styles.tabLabel,
         tabBarStyle: styles.tabBar,
       }}
@@ -165,7 +165,7 @@ export default function MainLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     height: Platform.OS === 'ios' ? 88 : 110,
@@ -176,6 +176,6 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: Fonts.size.xs,
-    fontWeight: Fonts.weight.medium,
+    fontFamily: Fonts.family.medium,
   },
 });

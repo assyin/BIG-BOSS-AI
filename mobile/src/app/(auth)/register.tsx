@@ -15,6 +15,7 @@ import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/brand/Logo';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function RegisterScreen() {
@@ -73,10 +74,7 @@ export default function RegisterScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>BB</Text>
-            </View>
-            <Text style={styles.title}>Big Boss Fitness</Text>
+            <Logo variant="full" size={64} />
             <Text style={styles.subtitle}>Creer un compte</Text>
           </View>
 
@@ -137,6 +135,10 @@ export default function RegisterScreen() {
                 <Text style={styles.link}>Se connecter</Text>
               </TouchableOpacity>
             </View>
+
+            <View style={styles.madeIn}>
+              <Text style={styles.madeInText}>Made in Morocco 🇲🇦</Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -147,7 +149,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
   flex: {
     flex: 1,
@@ -160,20 +162,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 32,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: Fonts.weight.bold,
-    color: Colors.white,
+    gap: 14,
   },
   title: {
     ...Typography.h3,
@@ -199,6 +188,16 @@ const styles = StyleSheet.create({
   link: {
     ...Typography.body,
     color: Colors.primary,
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.semiBold,
+  },
+  madeIn: {
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  madeInText: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 12,
+    color: Colors.gray,
+    letterSpacing: 1.5,
   },
 });
