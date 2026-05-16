@@ -37,26 +37,28 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
   },
 
   // Variants
   default: {
-    backgroundColor: Colors.white,
-  },
-  outlined: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  outlined: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+  },
   elevated: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     shadowColor: Colors.dark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 5,
   },
 
   // Padding

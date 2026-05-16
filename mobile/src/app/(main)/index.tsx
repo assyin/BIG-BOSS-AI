@@ -231,7 +231,7 @@ export default function HomeScreen() {
           {/* ==================== HEADER ==================== */}
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.greeting}>Salut {firstName} !</Text>
+              <Text style={styles.greeting}>السلام {firstName} 👋</Text>
               {programme && programme.status === 'Active' && (
                 <Text style={styles.subGreeting}>
                   Semaine {progress?.currentWeek ?? programme.currentWeek}/
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   greeting: {
-    ...Typography.h3,
+    ...Typography.h2,
     color: Colors.dark,
   },
   subGreeting: {
@@ -697,6 +697,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
+    borderWidth: 2,
+    borderColor: Colors.gold,
   },
   avatarText: {
     fontSize: Fonts.size.xl,

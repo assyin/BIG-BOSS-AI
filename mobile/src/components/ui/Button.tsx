@@ -76,19 +76,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 14,
   },
 
   // Variants
   primary: {
     backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   secondary: {
     backgroundColor: Colors.dark,
   },
   outline: {
     backgroundColor: 'transparent',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: Colors.primary,
   },
   ghost: {
@@ -119,7 +124,8 @@ const styles = StyleSheet.create({
 
   // Text styles
   text: {
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.displaySemiBold,
+    letterSpacing: 0.3,
   },
   text_primary: {
     color: Colors.white,
