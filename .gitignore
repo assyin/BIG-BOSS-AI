@@ -74,9 +74,9 @@ gemini_input_list.txt
 *:Zone.Identifier
 
 # Local error screenshots (debugging only)
-error.jpeg
-error.png
-error.jpg
+*.jpeg
+*.png
+*.jpg
 
 # WhatsApp shared images dropped in repo
 WhatsApp Image*
