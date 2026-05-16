@@ -35,12 +35,29 @@ const GOAL_OPTIONS: { value: UserGoal; label: string }[] = [
   { value: 'Recomposition', label: 'Recomposition' },
 ];
 
+// Backend .NET enums are numeric (no JsonStringEnumConverter configured)
+const GOAL_TO_INT: Record<UserGoal, number> = {
+  BuildMuscle: 1,
+  LoseFat: 2,
+  BuildStrength: 3,
+  Endurance: 4,
+  Maintenance: 5,
+  Recomposition: 6,
+};
+
 const LEVEL_OPTIONS: { value: DifficultyLevel; label: string }[] = [
   { value: 'Beginner', label: 'Débutant' },
   { value: 'Intermediate', label: 'Intermédiaire' },
   { value: 'Advanced', label: 'Avancé' },
   { value: 'Expert', label: 'Expert' },
 ];
+
+const LEVEL_TO_INT: Record<DifficultyLevel, number> = {
+  Beginner: 1,
+  Intermediate: 2,
+  Advanced: 3,
+  Expert: 4,
+};
 
 const LANGUAGE_OPTIONS: { value: Language; label: string; native: string }[] = [
   { value: 'fr', label: 'Français', native: 'Français' },
@@ -83,8 +100,8 @@ export default function ProfileEditScreen() {
       Alert.alert('Poids invalide', 'Entre 20 et 300 kg.');
       return;
     }
-    if (h !== undefined && (isNaN(h) || h < 80 || h > 250)) {
-      Alert.alert('Taille invalide', 'Entre 80 et 250 cm.');
+    if (h !== undefined && (isNaN(h) || h < 100 || h > 250)) {
+      Alert.alert('Taille invalide', 'Entre 100 et 250 cm.');
       return;
     }
     if (!name.trim()) {
@@ -97,8 +114,8 @@ export default function ProfileEditScreen() {
       weightKg: w,
       heightCm: h,
       gender: gender ?? undefined,
-      goal,
-      level,
+      goal: GOAL_TO_INT[goal],
+      level: LEVEL_TO_INT[level],
       preferredLanguage: language,
       notificationsEnabled: notif,
     };
