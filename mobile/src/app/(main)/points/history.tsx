@@ -4,6 +4,7 @@ import {
   TouchableOpacity, Platform, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -91,18 +92,26 @@ export default function PointsHistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mes Points</Text>
+        <View>
+          <Text style={styles.headerTitle}>Mes Points</Text>
+          <Text style={styles.headerSubtitle}>نقاطك</Text>
+        </View>
         <View style={{ width: 24 }} />
-      </View>
+      </LinearGradient>
 
       {/* Balance card */}
       {balance && (
         <View style={styles.balanceCard}>
-          <Ionicons name="star" size={32} color={Colors.warning} />
+          <Ionicons name="star" size={32} color={Colors.gold} />
           <Text style={styles.balanceValue}>{balance.balance}</Text>
           <Text style={styles.balanceLabel}>points disponibles</Text>
           <View style={styles.balanceStats}>
@@ -147,23 +156,61 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 12,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 16,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginTop: -2,
+  },
 
   balanceCard: {
     backgroundColor: Colors.white, borderRadius: 20, margin: 20, marginTop: 0,
-    padding: 24, alignItems: 'center', shadowColor: '#000',
+    padding: 24, alignItems: 'center',
+    borderTopWidth: 3,
+    borderTopColor: Colors.gold,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
-  balanceValue: { fontSize: 40, fontWeight: Fonts.weight.bold, color: Colors.dark, marginTop: 8 },
+  balanceValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 40,
+    color: Colors.goldDark,
+    marginTop: 8,
+  },
   balanceLabel: { ...Typography.body, color: Colors.gray, marginBottom: 16 },
   balanceStats: { flexDirection: 'row', width: '100%' },
   balanceStat: { flex: 1, alignItems: 'center', paddingVertical: 8 },
-  balanceStatValue: { fontSize: Fonts.size.lg, fontWeight: Fonts.weight.bold, color: Colors.dark },
+  balanceStatValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.lg,
+    color: Colors.dark,
+  },
   balanceStatLabel: { fontSize: Fonts.size.xs, color: Colors.gray, marginTop: 2 },
 
-  sectionTitle: { ...Typography.h4, color: Colors.dark, paddingHorizontal: 20, marginBottom: 8 },
+  sectionTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
 
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   txRow: {

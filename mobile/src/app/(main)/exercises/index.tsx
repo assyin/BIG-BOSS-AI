@@ -14,6 +14,7 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
@@ -186,11 +187,17 @@ export default function ExercisesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Header gradient */}
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <View>
           <Text style={styles.headerTitle}>Exercices</Text>
-          <Text style={styles.headerCount}>{filtered.length} exercices{selectedMuscle !== 'all' || selectedDifficulty !== 'all' ? ' (filtre)' : ''}</Text>
+          <Text style={styles.headerSubtitleAr}>التمارين</Text>
+          <Text style={styles.headerCount}>{filtered.length} exercices{selectedMuscle !== 'all' || selectedDifficulty !== 'all' ? ' (filtré)' : ''}</Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -198,10 +205,10 @@ export default function ExercisesScreen() {
             onPress={() => setViewMode(viewMode === 'grouped' ? 'list' : 'grouped')}
           >
             <Ionicons name={viewMode === 'grouped' ? 'list' : 'grid-outline'} size={18}
-              color={viewMode === 'grouped' ? Colors.white : Colors.dark} />
+              color={Colors.white} />
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Search */}
       <View style={styles.searchWrap}>
@@ -353,17 +360,43 @@ const styles = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 44 : 12, paddingBottom: 8,
-    backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 44 : 12, paddingBottom: 14,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 8,
   },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: Colors.dark },
-  headerCount: { fontSize: 13, color: Colors.gray, marginTop: 2 },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 24,
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitleAr: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.sm,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: -2,
+  },
+  headerCount: {
+    fontFamily: Fonts.family.regular,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
+  },
   headerActions: { flexDirection: 'row', gap: 8 },
   viewToggle: {
-    width: 36, height: 36, borderRadius: 10, backgroundColor: '#F0F0F5',
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center', justifyContent: 'center',
   },
-  viewToggleActive: { backgroundColor: Colors.primary },
+  viewToggleActive: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderColor: Colors.white,
+  },
   filterToggle: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     height: 36, borderRadius: 10, backgroundColor: '#F0F0F5',

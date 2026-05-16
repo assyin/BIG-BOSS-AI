@@ -4,6 +4,7 @@ import {
   TouchableOpacity, Platform, ActivityIndicator, RefreshControl, Share, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -73,13 +74,21 @@ export default function AffiliationScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Parrainage</Text>
+        <View>
+          <Text style={styles.headerTitle}>Parrainage</Text>
+          <Text style={styles.headerSubtitle}>إحالة الأصدقاء</Text>
+        </View>
         <View style={{ width: 24 }} />
-      </View>
+      </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadData(); setRefreshing(false); }} tintColor={Colors.primary} />}>
@@ -190,16 +199,60 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 12,
+    paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 48 : 12, paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 16,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
+  headerTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginTop: -2,
+  },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
 
   codeCard: {
-    backgroundColor: Colors.primary, borderRadius: 20, padding: 28, alignItems: 'center', marginBottom: 16,
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+    padding: 28,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  codeLabel: { fontSize: Fonts.size.xs, fontWeight: Fonts.weight.bold, color: 'rgba(255,255,255,0.7)', letterSpacing: 2, marginBottom: 8 },
-  codeValue: { fontSize: 32, fontWeight: Fonts.weight.bold, color: Colors.white, letterSpacing: 4, marginBottom: 4 },
+  codeLabel: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  codeValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 32,
+    color: Colors.gold,
+    letterSpacing: 4,
+    marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   codeHint: { fontSize: Fonts.size.sm, color: 'rgba(255,255,255,0.6)', marginBottom: 16 },
   shareBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

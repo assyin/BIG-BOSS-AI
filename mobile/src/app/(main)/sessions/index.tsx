@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
@@ -154,9 +155,15 @@ export default function SessionsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Mes Seances</Text>
-      </View>
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerContainer}
+      >
+        <Text style={styles.headerTitle}>Mes Séances</Text>
+        <Text style={styles.headerSubtitle}>حصصك</Text>
+      </LinearGradient>
 
       <View style={styles.generateRow}>
         <Button
@@ -232,11 +239,22 @@ const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? 48 : 16,
-    paddingBottom: 4,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTitle: {
     ...Typography.h2,
-    color: Colors.dark,
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.sm,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
   },
   generateRow: {
     paddingHorizontal: 20,
