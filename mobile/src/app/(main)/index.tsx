@@ -12,11 +12,13 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { useAuthStore } from '@/store/auth.store';
+import { ZelligePattern } from '@/components/brand/ZelligePattern';
 import { useSessionStore } from '@/store/session.store';
 import { useGamificationStore } from '@/store/gamification.store';
 import ProgrammeService, {
@@ -228,26 +230,33 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.webWrapper}>
-          {/* ==================== HEADER ==================== */}
-          <View style={styles.header}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.greeting}>السلام {firstName} 👋</Text>
-              {programme && programme.status === 'Active' && (
-                <Text style={styles.subGreeting}>
-                  Semaine {progress?.currentWeek ?? programme.currentWeek}/
-                  {progress?.durationWeeks ?? programme.durationWeeks} -{' '}
-                  {programme.title}
-                </Text>
-              )}
-              {!programme && <Text style={styles.subGreeting}>Pret a commencer ?</Text>}
+          {/* ==================== HEADER — gradient médina + zellige ==================== */}
+          <LinearGradient
+            colors={Colors.gradientHero as unknown as readonly [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerGradient}
+          >
+            <ZelligePattern width={420} height={160} color={Colors.white} opacity={0.07} tileSize={52} />
+            <View style={styles.header}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.greeting}>السلام {firstName} 👋</Text>
+                {programme && programme.status === 'Active' && (
+                  <Text style={styles.subGreeting}>
+                    Semaine {progress?.currentWeek ?? programme.currentWeek}/
+                    {progress?.durationWeeks ?? programme.durationWeeks} - {programme.title}
+                  </Text>
+                )}
+                {!programme && <Text style={styles.subGreeting}>Pret a commencer ?</Text>}
+              </View>
+              <TouchableOpacity
+                style={styles.avatarCircle}
+                onPress={() => router.push('/(main)/profile')}
+              >
+                <Text style={styles.avatarText}>{firstName.charAt(0).toUpperCase()}</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.avatarCircle}
-              onPress={() => router.push('/(main)/profile')}
-            >
-              <Text style={styles.avatarText}>{firstName.charAt(0).toUpperCase()}</Text>
-            </TouchableOpacity>
-          </View>
+          </LinearGradient>
 
           {/* ==================== GAMIFICATION WIDGETS ==================== */}
           {gamifBalance && (
@@ -540,9 +549,9 @@ export default function HomeScreen() {
 
                   {/* Macro mini bars */}
                   <View style={styles.macrosRow}>
-                    <MacroBar label="P" value={programme.dailyProtein} color={Colors.primary} unit="g" />
-                    <MacroBar label="G" value={programme.dailyCarbs} color={Colors.warning} unit="g" />
-                    <MacroBar label="L" value={programme.dailyFat} color={Colors.info} unit="g" />
+                    <MacroBar label="P" value={programme.dailyProtein} color={Colors.accent} unit="g" />
+                    <MacroBar label="G" value={programme.dailyCarbs} color={Colors.secondary} unit="g" />
+                    <MacroBar label="L" value={programme.dailyFat} color={Colors.gold} unit="g" />
                   </View>
 
                   {/* Today's meal suggestions */}
@@ -664,7 +673,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 48 : 16,
+    paddingTop: 0,
     paddingBottom: 40,
   },
   webWrapper: {
@@ -673,37 +682,55 @@ const styles = StyleSheet.create({
     alignSelf: 'center' as const,
   },
 
-  // ---- Header ----
+  // ---- Header gradient (médina sunset + zellige) ----
+  headerGradient: {
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 56 : 24,
+    paddingBottom: 24,
+    marginBottom: 20,
+    overflow: 'hidden',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
   },
   greeting: {
     ...Typography.h2,
-    color: Colors.dark,
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   subGreeting: {
     ...Typography.body,
-    color: Colors.gray,
+    color: 'rgba(255,255,255,0.92)',
     marginTop: 4,
   },
   avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.primary,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: Colors.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
   },
   avatarText: {
+    fontFamily: Fonts.family.displayBold,
     fontSize: Fonts.size.xl,
-    fontWeight: Fonts.weight.bold,
     color: Colors.white,
+    letterSpacing: 0.5,
   },
 
   // ---- Gamification widgets ----
@@ -812,12 +839,14 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
 
-  // ---- Today session card ----
+  // ---- Today session card (top accent gold safran) ----
   todayCard: {
     backgroundColor: Colors.white,
     borderRadius: 20,
     padding: 22,
     marginBottom: 20,
+    borderTopWidth: 3,
+    borderTopColor: Colors.gold,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -825,10 +854,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   todayLabel: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.xs,
-    fontWeight: Fonts.weight.bold,
-    color: Colors.primary,
-    letterSpacing: 1.2,
+    color: Colors.goldDark,
+    letterSpacing: 1.5,
     marginBottom: 6,
   },
   todayTitle: {
