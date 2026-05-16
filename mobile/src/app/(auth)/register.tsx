@@ -103,7 +103,7 @@ export default function RegisterScreen() {
 
             <Input
               label="Mot de passe"
-              placeholder="Min. 6 caracteres"
+              placeholder="Min. 8 caracteres (Aa1)"
               leftIcon="lock-closed-outline"
               value={password}
               onChangeText={setPassword}
