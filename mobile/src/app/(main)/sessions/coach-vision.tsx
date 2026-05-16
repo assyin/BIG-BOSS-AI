@@ -8,6 +8,7 @@ import {
   Platform,
   Dimensions,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,10 +18,12 @@ import { Fonts, Typography } from '@/constants/fonts';
 import {
   EXERCISE_CONFIGS,
   calculateFormScore,
+  KEYPOINTS,
   type Keypoint,
   type FeedbackItem,
   type ExerciseConfig,
 } from '@/utils/pose-engine';
+import { initTfjs, loadMoveNet, inferFromBase64 } from '@/utils/pose-detector';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -90,6 +93,71 @@ export default function CoachVisionScreen() {
   const [exerciseConfig, setExerciseConfig] = useState<ExerciseConfig | null>(null);
   const [phase, setPhase] = useState('neutral');
   const [showExercisePicker, setShowExercisePicker] = useState(!exerciseName);
+
+  // ─── Sprint 1.4 Jour 1: TF.js + MoveNet integration ───
+  const [modelReady, setModelReady] = useState(false);
+  const [modelError, setModelError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const cameraRef = useRef<CameraView>(null);
+
+  // Load TF.js + MoveNet at mount (background, ~3-5s on first run)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await initTfjs();
+        await loadMoveNet('lightning');
+        if (!cancelled) {
+          setModelReady(true);
+          console.log('[CoachVision] MoveNet ready');
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setModelError(err?.message || 'Failed to load pose model');
+          console.error('[CoachVision] load failed:', err);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // POC Jour 1: capture single frame + run inference + log keypoints to feedback
+  const handleTestDetection = useCallback(async () => {
+    if (!cameraRef.current || !modelReady || scanning) return;
+    setScanning(true);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.4,
+        skipProcessing: true,
+      });
+      if (!photo?.base64) {
+        setCurrentFeedback([{ type: 'error', message: 'Pas de capture', messageAr: 'ما تصورتش' }]);
+        return;
+      }
+      const t0 = Date.now();
+      const keypoints = await inferFromBase64(photo.base64);
+      const elapsed = Date.now() - t0;
+      if (!keypoints) {
+        setCurrentFeedback([{ type: 'warning', message: `Aucune pose détectée (${elapsed}ms)`, messageAr: 'ما لقيتش الجسد' }]);
+        return;
+      }
+      const nose = keypoints[KEYPOINTS.NOSE];
+      const lShoulder = keypoints[KEYPOINTS.LEFT_SHOULDER];
+      const visible = keypoints.filter((kp) => kp.score > 0.3).length;
+      setCurrentFeedback([
+        { type: 'good', message: `✓ ${visible}/17 keypoints (${elapsed}ms)` },
+        { type: 'good', message: `Nez: (${Math.round(nose.x)}, ${Math.round(nose.y)}) conf=${nose.score.toFixed(2)}` },
+        { type: 'good', message: `Épaule G: (${Math.round(lShoulder.x)}, ${Math.round(lShoulder.y)}) conf=${lShoulder.score.toFixed(2)}` },
+      ]);
+      console.log('[CoachVision] keypoints:', keypoints);
+    } catch (err: any) {
+      setCurrentFeedback([{ type: 'error', message: `Erreur: ${err?.message || err}` }]);
+      console.error('[CoachVision] detection failed:', err);
+    } finally {
+      setScanning(false);
+    }
+  }, [modelReady, scanning]);
 
   const availableExercises = Object.entries(EXERCISE_CONFIGS).map(([key, config]) => ({
     key,
@@ -199,6 +267,7 @@ export default function CoachVisionScreen() {
       {/* Camera */}
       <View style={styles.cameraContainer}>
         <CameraView
+          ref={cameraRef}
           style={styles.camera}
           facing="front"
         >
@@ -275,6 +344,38 @@ export default function CoachVisionScreen() {
                 <Ionicons name="swap-horizontal" size={20} color={Colors.white} />
                 <Text style={styles.switchExText}>Changer exercice</Text>
               </TouchableOpacity>
+            </View>
+
+            {/* Sprint 1.4 Jour 1: bouton POC test détection */}
+            <View style={styles.testDetectionRow}>
+              {!modelReady && !modelError && (
+                <View style={styles.modelLoadingPill}>
+                  <ActivityIndicator size="small" color={Colors.white} />
+                  <Text style={styles.modelLoadingText}>Chargement MoveNet...</Text>
+                </View>
+              )}
+              {modelError && (
+                <View style={[styles.modelLoadingPill, { backgroundColor: 'rgba(180,40,58,0.8)' }]}>
+                  <Ionicons name="alert-circle" size={16} color={Colors.white} />
+                  <Text style={styles.modelLoadingText}>{modelError}</Text>
+                </View>
+              )}
+              {modelReady && (
+                <TouchableOpacity
+                  style={[styles.testDetectionBtn, scanning && { opacity: 0.5 }]}
+                  onPress={handleTestDetection}
+                  disabled={scanning}
+                >
+                  {scanning ? (
+                    <ActivityIndicator size="small" color={Colors.white} />
+                  ) : (
+                    <Ionicons name="scan" size={20} color={Colors.white} />
+                  )}
+                  <Text style={styles.testDetectionText}>
+                    {scanning ? 'Analyse...' : 'Tester détection (POC)'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </CameraView>
@@ -384,4 +485,47 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 16,
   },
   switchExText: { fontSize: Fonts.size.sm, color: Colors.white },
+
+  // Sprint 1.4 Jour 1
+  testDetectionRow: {
+    position: 'absolute',
+    bottom: 130,
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  modelLoadingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  modelLoadingText: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.sm,
+    color: Colors.white,
+  },
+  testDetectionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.gold,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  testDetectionText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.white,
+    letterSpacing: 0.3,
+  },
 });
