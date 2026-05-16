@@ -123,7 +123,7 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<BigBoss.Core.DTOs.Auth.RegisterRequestValidator>();
 
 // CORS
-var allowedOrigins = builder.Configuration["BBF_ALLOWED_ORIGINS"]?.Split(',') ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:8081" };
+var allowedOrigins = builder.Configuration["BBF_ALLOWED_ORIGINS"]?.Split(',') ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:8081", "http://localhost:8082" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowApp", policy =>

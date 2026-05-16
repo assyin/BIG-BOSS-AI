@@ -4,3 +4,8 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+# Playwright visual check artifacts
+tests/screens/
+test-results/
+playwright-report/
