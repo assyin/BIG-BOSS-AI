@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/colors';
@@ -21,6 +22,7 @@ import ProgrammeService, {
   ProgrammeSession,
   ProgrammeProgress,
 } from '@/services/programme.service';
+import { ZelligePattern } from '@/components/brand/ZelligePattern';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -176,14 +178,22 @@ export default function ProgrammeDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/')}>
-          <Ionicons name="arrow-back" size={24} color={Colors.dark} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Mon Programme</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      {/* Header gradient médina */}
+      <LinearGradient
+        colors={Colors.gradientHero as unknown as readonly [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <ZelligePattern width={420} height={120} color={Colors.white} opacity={0.07} tileSize={50} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/')}>
+            <Ionicons name="arrow-back" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>Mon Programme</Text>
+          <View style={{ width: 24 }} />
+        </View>
+      </LinearGradient>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -207,7 +217,12 @@ export default function ProgrammeDetailScreen() {
                 </View>
 
                 <View style={styles.progressBarBg}>
-                  <View style={[styles.progressBarFill, { width: `${Math.min(progress.progressPercent, 100)}%` }]} />
+                  <LinearGradient
+                    colors={Colors.gradientPrimary as unknown as readonly [string, string]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.progressBarFill, { width: `${Math.min(progress.progressPercent, 100)}%` }]}
+                  />
                 </View>
                 <Text style={styles.progressText}>{Math.round(progress.progressPercent)}% complete</Text>
               </>
@@ -329,38 +344,58 @@ const styles = StyleSheet.create({
   emptyText: { ...Typography.body, color: Colors.gray },
   linkText: { ...Typography.body, color: Colors.primary, fontWeight: Fonts.weight.semiBold },
 
+  headerGradient: {
+    paddingTop: Platform.OS === 'android' ? 48 : 12,
+    paddingBottom: 16,
+    overflow: 'hidden',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 48 : 12,
-    paddingBottom: 12,
-    backgroundColor: Colors.background,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark, flex: 1, textAlign: 'center' },
+  headerTitle: {
+    ...Typography.h3,
+    color: Colors.white,
+    flex: 1,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
 
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
   webWrapper: { width: '100%', maxWidth: 500, alignSelf: 'center' as const },
 
-  // Info card
+  // Info card — top accent gold safran
   infoCard: {
     backgroundColor: Colors.white,
     borderRadius: 20,
     padding: 22,
     marginBottom: 16,
+    borderTopWidth: 3,
+    borderTopColor: Colors.gold,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 3,
   },
-  programmeTitle: { ...Typography.h3, color: Colors.dark, marginBottom: 4 },
+  programmeTitle: { ...Typography.h2, color: Colors.dark, marginBottom: 4 },
   programmeSplit: { ...Typography.body, color: Colors.gray, marginBottom: 16 },
 
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
   statBox: { alignItems: 'center' },
-  statValue: { ...Typography.h4, color: Colors.dark },
+  statValue: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.lg,
+    color: Colors.goldDark,
+  },
   statLabel: { ...Typography.caption, color: Colors.gray, marginTop: 2 },
 
   progressBarBg: {
@@ -371,7 +406,6 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: 8,
-    backgroundColor: Colors.primary,
     borderRadius: 4,
   },
   progressText: { ...Typography.caption, color: Colors.gray, textAlign: 'right', marginTop: 4 },
@@ -395,7 +429,16 @@ const styles = StyleSheet.create({
   },
   actionBtnText: { ...Typography.body, fontWeight: Fonts.weight.semiBold },
 
-  sectionTitle: { ...Typography.h4, color: Colors.dark, marginBottom: 12 },
+  sectionTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
 
   // Week card
   weekCard: {
@@ -411,7 +454,11 @@ const styles = StyleSheet.create({
   },
   weekCardCurrent: {
     borderWidth: 1.5,
-    borderColor: Colors.primary,
+    borderColor: Colors.gold,
+    backgroundColor: Colors.goldDim,
+    shadowColor: Colors.gold,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   weekHeader: {
     flexDirection: 'row',
@@ -421,15 +468,24 @@ const styles = StyleSheet.create({
   },
   weekHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   weekHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  weekTitle: { ...Typography.bodyLarge, fontWeight: Fonts.weight.semiBold, color: Colors.dark },
-  weekTitleCurrent: { color: Colors.primary },
-  currentBadge: {
-    backgroundColor: Colors.primaryDim,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  weekTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.md,
+    color: Colors.dark,
   },
-  currentBadgeText: { fontSize: Fonts.size.xs, fontWeight: Fonts.weight.semiBold, color: Colors.primary },
+  weekTitleCurrent: { color: Colors.goldDark },
+  currentBadge: {
+    backgroundColor: Colors.gold,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  currentBadgeText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.white,
+    letterSpacing: 0.4,
+  },
   weekCount: { ...Typography.caption, color: Colors.gray },
 
   weekSessions: {
@@ -449,6 +505,10 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.background,
   },
   sessionInfo: { flex: 1 },
-  sessionTitle: { ...Typography.body, fontWeight: Fonts.weight.semiBold, color: Colors.dark },
+  sessionTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.base,
+    color: Colors.dark,
+  },
   sessionMeta: { ...Typography.caption, color: Colors.gray, marginTop: 2 },
 });
