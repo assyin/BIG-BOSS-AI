@@ -127,10 +127,6 @@ export default function MainLayout() {
         options={{ href: null }}
       />
       <Tabs.Screen
-        name="sessions/coach-vision"
-        options={{ href: null }}
-      />
-      <Tabs.Screen
         name="points/history"
         options={{ href: null }}
       />
@@ -147,7 +143,19 @@ export default function MainLayout() {
         options={{ href: null }}
       />
       <Tabs.Screen
+        name="challenges/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="rewards/index"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="rewards/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="rewards/history"
         options={{ href: null }}
       />
       <Tabs.Screen
@@ -156,6 +164,18 @@ export default function MainLayout() {
       />
       <Tabs.Screen
         name="affiliation/index"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="lives/index"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="lives/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="programme/schedule"
         options={{ href: null }}
       />
       {/* coach/history is handled by coach/_layout.tsx Stack */}
