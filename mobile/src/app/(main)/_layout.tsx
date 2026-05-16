@@ -34,29 +34,11 @@ export default function MainLayout() {
         }}
       />
       <Tabs.Screen
-        name="exercises"
-        options={{
-          title: 'Exercices',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="nutrition"
         options={{
           title: 'Nutrition',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="nutrition-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="progress"
-        options={{
-          title: 'Progres',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trending-up-outline" size={size} color={color} />
           ),
         }}
       />
@@ -68,6 +50,15 @@ export default function MainLayout() {
             <Ionicons name="chatbubble-outline" size={size} color={color} />
           ),
         }}
+      />
+      {/* Hidden from tab bar — accessible via deep links / sub-menus */}
+      <Tabs.Screen
+        name="exercises"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="profile"

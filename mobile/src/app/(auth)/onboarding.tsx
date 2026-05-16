@@ -674,21 +674,21 @@ export default function OnboardingScreen() {
   const SPLASH_DATA = [
     {
       icon: 'barbell' as const,
-      title: 'Ton Coach IA personnel',
-      desc: 'Un programme d\'entrainement personnalise, concu par l\'IA et adapte a tes objectifs',
+      title: 'Ton coach IA personnel',
+      desc: 'Programme d\'entrainement et nutrition concu par l\'IA, adapte a tes objectifs. Made in Morocco 🇲🇦',
       button: 'Continuer',
     },
     {
       icon: 'walk' as const,
       title: '15 minutes par jour suffisent',
-      desc: 'Meme quelques minutes d\'activite physique produisent des resultats incroyables sur la sante',
+      desc: 'شويا بشويا — petit a petit, ton corps se transforme. Meme courte, une seance reguliere change tout.',
       button: 'Continuer',
     },
     {
       icon: 'fitness' as const,
-      title: 'En salle ou a la maison, avec ou sans equipement',
-      desc: 'Des seances adaptees a ton environnement pour progresser partout',
-      button: 'Pret a commencer?',
+      title: 'Salle, dar, plage — partout',
+      desc: 'Programmes adaptes a ton materiel et ton environnement, que tu sois a Casa, Marrakech ou ailleurs.',
+      button: 'Yallah, on commence!',
     },
   ];
 
@@ -2060,7 +2060,7 @@ const styles = StyleSheet.create({
   // ─── SPLASH ───
   splashContainer: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
   splashTop: {
     height: SCREEN_HEIGHT * 0.45,
@@ -2088,7 +2088,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 107, 43, 0.3)',
+    backgroundColor: 'rgba(200, 75, 49, 0.35)', // Terre Marrakech overlay
   },
   splashDiagonal: {
     position: 'absolute',
@@ -2096,7 +2096,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 0,
     transform: [{ skewY: '-3deg' }],
@@ -2110,16 +2110,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   splashTitle: {
-    fontSize: 28,
-    fontWeight: Fonts.weight.bold,
+    fontSize: 30,
+    fontFamily: Fonts.family.displayBold,
     color: Colors.dark,
-    marginBottom: 12,
+    marginBottom: 14,
+    lineHeight: 36,
   },
   splashDesc: {
     fontSize: 16,
+    fontFamily: Fonts.family.regular,
     color: Colors.gray,
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   splashDots: {
     flexDirection: 'row',
@@ -2132,8 +2134,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
   },
   splashDotActive: {
-    width: 24,
-    backgroundColor: Colors.primary,
+    width: 28,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.gold, // Safran accent for active dot
   },
   splashBottom: {
     paddingHorizontal: 24,
@@ -3211,7 +3215,8 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: {
     fontSize: 16,
-    fontWeight: Fonts.weight.bold,
+    fontFamily: Fonts.family.displaySemiBold,
+    letterSpacing: 0.3,
     color: Colors.white,
   },
 });
