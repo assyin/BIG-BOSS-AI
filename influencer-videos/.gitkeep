@@ -1,0 +1,11 @@
+# Dossier de réception des vidéos influenceur
+
+Quand l'influenceur livre les 100 vidéos `INF_<muscle>_<slug>.mp4`,
+colle-les ici puis run :
+
+    py scripts/upload_influencer_videos.py           # dry-run preview
+    py scripts/upload_influencer_videos.py --apply   # vraiment upload + DB
+
+Doc complète : scripts/README_INFLUENCER_WORKFLOW.md
+
+Les fichiers .mp4 dans ce dossier sont gitignored (trop lourds pour git).

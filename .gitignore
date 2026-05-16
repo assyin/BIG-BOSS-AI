@@ -64,6 +64,8 @@ coverage/
 # Videos (served locally, too large for git)
 videos/
 temp-expo/
+influencer-videos/*.mp4
+influencer-videos/*.mov
 
 # Audio cache (TTS responses, regenerated on demand)
 backend/audio-cache/
