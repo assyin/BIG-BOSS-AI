@@ -293,9 +293,9 @@ export default function AddMealScreen() {
                   {searchResults.map((item) => (
                     <TouchableOpacity key={`${item.type}-${item.id}`} style={styles.resultItem}
                       onPress={() => selectItem(item)} activeOpacity={0.7}>
-                      <View style={[styles.resultIcon, { backgroundColor: item.type === 'food' ? '#E8F5E9' : '#FFF3E0' }]}>
+                      <View style={[styles.resultIcon, { backgroundColor: item.type === 'food' ? Colors.accentDim : Colors.goldDim }]}>
                         <Ionicons name={item.type === 'food' ? 'leaf-outline' : 'restaurant-outline'}
-                          size={16} color={item.type === 'food' ? '#4CAF50' : '#FF9800'} />
+                          size={16} color={item.type === 'food' ? Colors.accent : Colors.goldDark} />
                       </View>
                       <View style={styles.resultInfo}>
                         <Text style={styles.resultName} numberOfLines={1}>{item.nameFr || item.name}</Text>
@@ -361,15 +361,15 @@ export default function AddMealScreen() {
                   <Text style={styles.macroCardValue}>{calories || '0'}</Text>
                   <Text style={styles.macroCardLabel}>Calories</Text>
                 </View>
-                <View style={[styles.macroCard, { borderTopColor: '#4CAF50' }]}>
+                <View style={[styles.macroCard, { borderTopColor: Colors.accent }]}>
                   <Text style={styles.macroCardValue}>{proteins || '0'}g</Text>
                   <Text style={styles.macroCardLabel}>Proteines</Text>
                 </View>
-                <View style={[styles.macroCard, { borderTopColor: '#2196F3' }]}>
+                <View style={[styles.macroCard, { borderTopColor: Colors.secondary }]}>
                   <Text style={styles.macroCardValue}>{carbs || '0'}g</Text>
                   <Text style={styles.macroCardLabel}>Glucides</Text>
                 </View>
-                <View style={[styles.macroCard, { borderTopColor: '#FF9800' }]}>
+                <View style={[styles.macroCard, { borderTopColor: Colors.gold }]}>
                   <Text style={styles.macroCardValue}>{fats || '0'}g</Text>
                   <Text style={styles.macroCardLabel}>Lipides</Text>
                 </View>
@@ -400,13 +400,13 @@ export default function AddMealScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F0F5' },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 40 : 8, paddingBottom: 12,
   },
   backBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.dark },
+  headerTitle: { ...Typography.h3, color: Colors.dark },
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
 
   // Meal type
@@ -417,7 +417,11 @@ const styles = StyleSheet.create({
   },
   mealChipActive: { backgroundColor: Colors.primaryDim, borderColor: Colors.primary },
   mealChipEmoji: { fontSize: 18, marginBottom: 4 },
-  mealChipText: { fontSize: 11, fontWeight: '600', color: Colors.gray },
+  mealChipText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: 11,
+    color: Colors.gray,
+  },
   mealChipTextActive: { color: Colors.primary },
 
   // Labels
@@ -437,7 +441,7 @@ const styles = StyleSheet.create({
 
   // Results
   resultsList: { marginTop: 8, borderRadius: 14, overflow: 'hidden', backgroundColor: Colors.white },
-  resultItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' },
+  resultItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.border },
   resultIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   resultInfo: { flex: 1 },
   resultName: { fontSize: 14, fontWeight: '600', color: Colors.dark },
@@ -487,6 +491,16 @@ const styles = StyleSheet.create({
   addBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: Colors.primary, borderRadius: 14, paddingVertical: 16, marginTop: 24,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  addBtnText: { fontSize: 16, fontWeight: '700', color: Colors.white },
+  addBtnText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.md,
+    color: Colors.white,
+    letterSpacing: 0.3,
+  },
 });

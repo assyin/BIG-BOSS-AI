@@ -253,7 +253,10 @@ export default function NutritionScreen() {
         }
       >
         {/* Header */}
-        <Text style={styles.headerTitle}>Nutrition</Text>
+        <View style={styles.headerBlock}>
+          <Text style={styles.headerTitle}>Nutrition</Text>
+          <Text style={styles.headerSubtitle}>تغذيتك اليوم</Text>
+        </View>
 
         {loading && !refreshing && (
           <View style={{ paddingVertical: 12, alignItems: 'center' }}>
@@ -292,7 +295,7 @@ export default function NutritionScreen() {
               size={62}
               strokeWidth={5}
               progress={consumed.proteinsG / targets.proteinsG}
-              color="#4CAF50"
+              color={Colors.accent}
               label="Proteines"
               current={consumed.proteinsG}
               target={targets.proteinsG}
@@ -302,7 +305,7 @@ export default function NutritionScreen() {
               size={62}
               strokeWidth={5}
               progress={consumed.carbsG / targets.carbsG}
-              color="#2196F3"
+              color={Colors.secondary}
               label="Glucides"
               current={consumed.carbsG}
               target={targets.carbsG}
@@ -312,7 +315,7 @@ export default function NutritionScreen() {
               size={62}
               strokeWidth={5}
               progress={consumed.fatsG / targets.fatsG}
-              color="#FF9800"
+              color={Colors.gold}
               label="Lipides"
               current={consumed.fatsG}
               target={targets.fatsG}
@@ -331,7 +334,7 @@ export default function NutritionScreen() {
               <View style={styles.mealSectionHeader}>
                 <View style={styles.mealSectionLeft}>
                   <View style={styles.mealSectionIcon}>
-                    <Ionicons name={section.icon} size={18} color={Colors.primary} />
+                    <Ionicons name={section.icon} size={18} color={Colors.accent} />
                   </View>
                   <Text style={styles.mealSectionTitle}>{section.label}</Text>
                   {totalCalories > 0 && (
@@ -398,7 +401,7 @@ export default function NutritionScreen() {
             activeOpacity={0.85}
           >
             <Ionicons name="book-outline" size={22} color={Colors.warning} />
-            <Text style={styles.recipesButtonText}>Decouvrir les recettes</Text>
+            <Text style={styles.recipesButtonText}>Recettes marocaines</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -548,10 +551,18 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 48 : 16,
     paddingBottom: 32,
   },
-  headerTitle: {
-    ...Typography.h3,
-    color: Colors.dark,
+  headerBlock: {
     marginBottom: 20,
+  },
+  headerTitle: {
+    ...Typography.h2,
+    color: Colors.dark,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.md,
+    color: Colors.medium,
+    marginTop: 2,
   },
 
   // Date Selector
@@ -632,13 +643,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: Colors.primaryDim,
+    backgroundColor: Colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
   mealSectionTitle: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.dark,
   },
   mealSectionCalories: {
@@ -723,9 +734,10 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   scanButtonText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.white,
+    letterSpacing: 0.3,
   },
   manualButton: {
     flexDirection: 'row',
@@ -739,9 +751,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   manualButtonText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.primary,
+    letterSpacing: 0.3,
   },
   recipesButton: {
     flexDirection: 'row',
@@ -755,9 +768,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.warningLight,
   },
   recipesButtonText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
-    color: Colors.warning,
+    color: Colors.goldDark,
+    letterSpacing: 0.3,
   },
 
   // Scanning overlay

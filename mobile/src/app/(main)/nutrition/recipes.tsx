@@ -157,6 +157,11 @@ export default function RecipesScreen() {
           </View>
         </View>
         <View style={styles.tagRow}>
+          {getRecipePriority(item.titleFr) === 0 && (
+            <View style={styles.moroccanBadge}>
+              <Text style={styles.moroccanBadgeText}>🇲🇦 Marocain</Text>
+            </View>
+          )}
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryBadgeText}>
               {CATEGORY_LABELS[item.category] || 'Autre'}
@@ -184,7 +189,10 @@ export default function RecipesScreen() {
         <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.replace('/nutrition'))}>
           <Ionicons name="arrow-back" size={24} color={Colors.dark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Recettes</Text>
+        <View style={styles.headerTitleBlock}>
+          <Text style={styles.headerTitle}>Recettes</Text>
+          <Text style={styles.headerSubtitle}>وصفات</Text>
+        </View>
         <TouchableOpacity onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}>
           <Ionicons
             name={showFavoritesOnly ? 'heart' : 'heart-outline'}
@@ -291,7 +299,16 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 48 : 12,
     paddingBottom: 8,
   },
-  headerTitle: { ...Typography.h4, color: Colors.dark },
+  headerTitleBlock: {
+    alignItems: 'center',
+  },
+  headerTitle: { ...Typography.h3, color: Colors.dark },
+  headerSubtitle: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
+    marginTop: -2,
+  },
   headerCount: { ...Typography.body, color: Colors.gray },
 
   searchContainer: {
@@ -350,18 +367,18 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   filterChipText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.sm,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.gray,
   },
   filterChipTextSmall: {
+    fontFamily: Fonts.family.displayMedium,
     fontSize: Fonts.size.xs,
-    fontWeight: Fonts.weight.medium,
     color: Colors.gray,
   },
   filterChipTextActive: {
+    fontFamily: Fonts.family.displayBold,
     color: Colors.white,
-    fontWeight: Fonts.weight.bold,
   },
 
   listContent: {
@@ -397,8 +414,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   recipeTitle: {
-    ...Typography.body,
-    fontWeight: Fonts.weight.semiBold,
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.md,
+    lineHeight: 22,
     color: Colors.dark,
     marginBottom: 6,
   },
@@ -431,6 +449,19 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.xs,
     fontWeight: Fonts.weight.semiBold,
     color: Colors.primary,
+  },
+  moroccanBadge: {
+    backgroundColor: Colors.goldDim,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+  },
+  moroccanBadgeText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xs,
+    color: Colors.goldDark,
   },
   dietBadge: {
     borderRadius: 8,

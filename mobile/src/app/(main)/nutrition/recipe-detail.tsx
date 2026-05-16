@@ -17,6 +17,12 @@ import { Fonts, Typography } from '@/constants/fonts';
 import RecipeService, { RecipeDetail, CATEGORY_LABELS } from '@/services/recipe.service';
 import { useFavoritesStore } from '@/store/favorites.store';
 
+const MOROCCAN_KEYWORDS = ['moroccan', 'marocain', 'tagine', 'couscous', 'harira', 'pastilla', 'baghrir', 'msemen', 'rfissa', 'briouate', 'zaalouk', 'chermoula', 'taktouka'];
+const isMoroccanRecipe = (title: string): boolean => {
+  const lower = (title || '').toLowerCase();
+  return MOROCCAN_KEYWORDS.some(kw => lower.includes(kw));
+};
+
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
@@ -103,6 +109,11 @@ export default function RecipeDetailScreen() {
 
           {/* Tags row */}
           <View style={styles.tagsRow}>
+            {isMoroccanRecipe((recipe as any).title || recipe.titleFr) && (
+              <View style={styles.moroccanBadge}>
+                <Text style={styles.moroccanBadgeText}>🇲🇦 Recette Marocaine</Text>
+              </View>
+            )}
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryBadgeText}>
                 {CATEGORY_LABELS[recipe.category] || 'Autre'}
@@ -128,10 +139,10 @@ export default function RecipeDetailScreen() {
           <View style={styles.macrosCard}>
             <Text style={styles.macrosTitle}>Valeurs nutritionnelles / portion</Text>
             <View style={styles.macrosRow}>
-              <MacroCircle label="Calories" value={`${recipe.caloriesPerServing}`} unit="kcal" color={Colors.dark} />
-              <MacroCircle label="Proteines" value={`${Math.round(recipe.proteinsGPerServing)}`} unit="g" color={Colors.primary} />
-              <MacroCircle label="Glucides" value={`${Math.round(recipe.carbsGPerServing)}`} unit="g" color={Colors.warning} />
-              <MacroCircle label="Lipides" value={`${Math.round(recipe.fatsGPerServing)}`} unit="g" color={Colors.info} />
+              <MacroCircle label="Calories" value={`${recipe.caloriesPerServing}`} unit="kcal" color={Colors.primary} />
+              <MacroCircle label="Proteines" value={`${Math.round(recipe.proteinsGPerServing)}`} unit="g" color={Colors.accent} />
+              <MacroCircle label="Glucides" value={`${Math.round(recipe.carbsGPerServing)}`} unit="g" color={Colors.secondary} />
+              <MacroCircle label="Lipides" value={`${Math.round(recipe.fatsGPerServing)}`} unit="g" color={Colors.gold} />
             </View>
           </View>
 
@@ -324,7 +335,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  title: { ...Typography.h3, color: Colors.dark, marginBottom: 12 },
+  title: { ...Typography.h2, color: Colors.dark, marginBottom: 12 },
 
   // Language selector
   langSelector: {
@@ -344,8 +355,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   langBtnText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.base,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.gray,
   },
   langBtnTextActive: {
@@ -370,6 +381,19 @@ const styles = StyleSheet.create({
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 },
   categoryBadge: { backgroundColor: Colors.primaryDim, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
   categoryBadgeText: { fontSize: Fonts.size.sm, fontWeight: Fonts.weight.semiBold, color: Colors.primary },
+  moroccanBadge: {
+    backgroundColor: Colors.goldDim,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+  },
+  moroccanBadgeText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.goldDark,
+  },
   dietBadge: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
   dietBadgeText: { fontSize: Fonts.size.sm, fontWeight: Fonts.weight.semiBold },
 
@@ -466,8 +490,9 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   addToJournalText: {
+    fontFamily: Fonts.family.displaySemiBold,
     fontSize: Fonts.size.md,
-    fontWeight: Fonts.weight.semiBold,
     color: Colors.white,
+    letterSpacing: 0.3,
   },
 });
