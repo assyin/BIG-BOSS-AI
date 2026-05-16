@@ -11,13 +11,15 @@ public class StreakService : IStreakService
     private readonly BigBossDbContext _context;
     private readonly IPointsService _pointsService;
     private readonly IGamificationConfigService _config;
+    private readonly IPushNotificationService _pushService;
     private readonly ILogger<StreakService> _logger;
 
-    public StreakService(BigBossDbContext context, IPointsService pointsService, IGamificationConfigService config, ILogger<StreakService> logger)
+    public StreakService(BigBossDbContext context, IPointsService pointsService, IGamificationConfigService config, IPushNotificationService pushService, ILogger<StreakService> logger)
     {
         _context = context;
         _pointsService = pointsService;
         _config = config;
+        _pushService = pushService;
         _logger = logger;
     }
 
@@ -131,6 +133,21 @@ public class StreakService : IStreakService
                     Reason = $"Streak {streak} jours!",
                     IdempotencyKey = $"streak_bonus:{userId}:{streak}"
                 });
+            }
+
+            // Push notification for milestone (non-blocking)
+            try
+            {
+                var emoji = streak switch { 7 => "🔥", 30 => "💪", 100 => "🏆", _ => "✨" };
+                await _pushService.SendToUserAsync(userId,
+                    $"{emoji} Streak {streak} jours !",
+                    bonus > 0
+                        ? $"Bravo champion ! +{bonus} points bonus"
+                        : $"Continue comme ça, tu es un vrai bekhi !");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send streak milestone push for user {UserId}", userId);
             }
         }
     }

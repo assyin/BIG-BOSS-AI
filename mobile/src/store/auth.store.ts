@@ -2,6 +2,14 @@ import { create } from 'zustand';
 import { UserBasic, UserProfile, UserStats, LoginRequest, RegisterRequest, UpdateProfileRequest } from '@/types/user.types';
 import AuthService from '@/services/auth.service';
 import { handleApiError } from '@/services/api';
+import NotificationsService from '@/services/notifications.service';
+
+// Fire-and-forget push token registration (non blocking).
+function registerPushQuiet() {
+  NotificationsService.registerAsync().catch((err) => {
+    console.log('[push] register skipped:', err?.message || err);
+  });
+}
 
 interface AuthState {
   user: UserBasic | null;
@@ -47,6 +55,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       // Load full profile and stats
       await Promise.all([get().loadProfile(), get().loadStats()]);
+      // Register push token (non blocking)
+      registerPushQuiet();
     } catch (err) {
       const message = extractErrorMessage(err, 'Email ou mot de passe incorrect');
       set({
@@ -66,6 +76,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+      // Register push token (non blocking)
+      registerPushQuiet();
     } catch (err) {
       const message = extractErrorMessage(err, "Impossible de creer le compte");
       set({
@@ -178,6 +190,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
         // Load stats in background
         get().loadStats();
+        // Register push token (non blocking)
+        registerPushQuiet();
         return true;
       } catch {
         set({ isAuthenticated: false, isLoading: false });
