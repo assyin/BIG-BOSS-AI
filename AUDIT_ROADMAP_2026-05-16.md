@@ -891,12 +891,15 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 
 ## 📆 Mi-juin (Sprint 3 — Engagement, 14 J)
 
-### 3.1 Scheduler Hangfire backend (~3 J)
-- [ ] Installer Hangfire + dashboard `/hangfire`
-- [ ] `SendWorkoutReminders` quotidien à 18 h
-- [ ] `SendStreakReminders` à 20 h si streak en danger
-- [ ] `SendNewLiveNotification` 30 min avant
-- [ ] `SendWeeklyRecap` dimanche 18 h
+### 3.1 Scheduler Hangfire backend (~3 J) ✅ FAIT (2026-05-18)
+- [x] Installer Hangfire.AspNetCore 1.8.14 + Hangfire.PostgreSql 1.20.8 (schema PG auto-créé)
+- [x] Dashboard `/hangfire` avec HangfireAdminAuthFilter (loopback + token X-Hangfire-Admin-Token)
+- [x] `SendWorkoutReminders` quotidien 18h UTC (users sans activité 24h)
+- [x] `SendStreakReminders` quotidien 20h UTC (users avec streak > 0 sans activité jour)
+- [x] `SendLiveStartingSoon` toutes les 30 min (lives schedulés dans 30-35 min)
+- [x] `SendWeeklyRecap` dimanche 18h UTC (sessions + volume + PRs)
+- [x] Templates inline FR + Darija + AR selon user.PreferredLanguage
+- [x] Vérifié : 4 jobs visibles en DB hangfire.hash, trigger manuel `WorkoutReminders: 1/1`
 
 ### 3.2 Mode offline log sets (~4 J)
 - [ ] `session.store.ts` : `pendingOps[]` persisté

@@ -4,6 +4,8 @@ using BigBoss.Infrastructure.Data;
 using BigBoss.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -194,6 +196,20 @@ builder.Services.AddHostedService<BigBoss.API.Hubs.AdminDashboardBroadcaster>();
 builder.Services.AddHostedService<BigBoss.API.Jobs.PointsReconciliationJob>();
 builder.Services.AddHostedService<BigBoss.API.Jobs.ChallengeFinalizationJob>();
 
+// Sprint 3.1 — Hangfire scheduler (PostgreSQL storage)
+builder.Services.AddHangfire(cfg => cfg
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(opt => opt.UseNpgsqlConnection(connectionString)));
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 2; // léger pour ne pas saturer
+    options.Queues = new[] { "default", "notifications" };
+});
+builder.Services.AddScoped<BigBoss.API.Jobs.NotificationJobsService>();
+builder.Services.AddSingleton<BigBoss.API.Jobs.HangfireAdminAuthFilter>();
+
 // Build app
 var app = builder.Build();
 
@@ -249,6 +265,38 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<BigBoss.API.Hubs.AdminDashboardHub>("/hubs/admin-dashboard");
+
+// Sprint 3.1 — Hangfire dashboard + recurring jobs registration
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { app.Services.GetRequiredService<BigBoss.API.Jobs.HangfireAdminAuthFilter>() },
+    DashboardTitle = "Big Boss Fitness — Scheduler",
+});
+
+// Register recurring jobs (idempotent — réécrit les définitions à chaque démarrage)
+RecurringJob.AddOrUpdate<BigBoss.API.Jobs.NotificationJobsService>(
+    "workout-reminders-daily",
+    job => job.SendWorkoutRemindersAsync(),
+    "0 18 * * *",                          // 18h UTC chaque jour
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+RecurringJob.AddOrUpdate<BigBoss.API.Jobs.NotificationJobsService>(
+    "streak-reminders-daily",
+    job => job.SendStreakRemindersAsync(),
+    "0 20 * * *",                          // 20h UTC chaque jour
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+RecurringJob.AddOrUpdate<BigBoss.API.Jobs.NotificationJobsService>(
+    "live-starting-soon",
+    job => job.SendLiveStartingSoonAsync(),
+    "*/30 * * * *",                        // toutes les 30 min
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+RecurringJob.AddOrUpdate<BigBoss.API.Jobs.NotificationJobsService>(
+    "weekly-recap-sunday",
+    job => job.SendWeeklyRecapAsync(),
+    "0 18 * * 0",                          // dimanche 18h UTC
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
