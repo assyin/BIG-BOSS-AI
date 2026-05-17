@@ -269,6 +269,24 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Outils IA — accès direct features premium */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Outils IA</Text>
+          <View style={styles.settingsCard}>
+            <TouchableOpacity
+              style={[styles.gamifLink, { borderBottomWidth: 0 }]}
+              onPress={() => router.push('/(main)/sessions/coach-vision' as any)}
+            >
+              <Ionicons name="eye" size={20} color={Colors.gold} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.gamifLinkText}>Coach Vision</Text>
+                <Text style={styles.gamifLinkSub}>Analyse posture en temps réel · 20 exercices</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Parametres</Text>
@@ -528,6 +546,11 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.base,
     fontWeight: Fonts.weight.medium,
     color: Colors.dark,
+  },
+  gamifLinkSub: {
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
+    marginTop: 2,
   },
   logoutButton: {
     flexDirection: 'row',
