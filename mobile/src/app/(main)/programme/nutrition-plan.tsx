@@ -121,7 +121,12 @@ export default function NutritionPlanScreen() {
           <Ionicons name="arrow-back" size={24} color={Colors.dark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Plan Nutrition</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: '/(main)/programme/grocery-list', params: { programmeId } } as any)}
+          style={{ padding: 4 }}
+        >
+          <Ionicons name="cart-outline" size={24} color={Colors.primary} />
+        </TouchableOpacity>
       </View>
 
       {/* Day selector */}

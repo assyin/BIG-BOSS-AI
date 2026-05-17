@@ -122,6 +122,10 @@ export default function MainLayout() {
         options={{ href: null }}
       />
       <Tabs.Screen
+        name="programme/grocery-list"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="points/history"
         options={{ href: null }}
       />
