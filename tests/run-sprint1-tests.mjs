@@ -35,7 +35,12 @@ function checkFail(category, name, detail = '') {
 
 function runCmd(cmd, args, cwd, label) {
   return new Promise((resolve) => {
-    const child = spawn(cmd, args, { cwd, shell: true });
+    // Enrichir PATH avec les dossiers communs Windows (dotnet, etc.)
+    const env = { ...process.env };
+    if (process.platform === 'win32') {
+      env.PATH = `${env.PATH || ''};C:\\Program Files\\dotnet;C:\\Program Files (x86)\\dotnet`;
+    }
+    const child = spawn(cmd, args, { cwd, shell: true, env });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => {
@@ -66,6 +71,7 @@ console.log('═'.repeat(60));
 
 // ─── 1. Backend xUnit tests ───
 console.log('\n[1/5] Backend xUnit (PushNotificationServiceTests)\n');
+// Fix #1: dotnet non dans PATH Git Bash → enrichi via runCmd env.PATH
 const xunitResult = await runCmd(
   'dotnet',
   ['test', 'BigBoss.Tests', '--filter', 'FullyQualifiedName~PushNotificationServiceTests', '--nologo', '--verbosity', 'minimal'],
@@ -128,16 +134,19 @@ if (dbRecipes.ok) {
 
 // ─── 4. R2 reachability ───
 console.log('\n[4/5] R2 URL HEAD check\n');
+// Fix #2: curl -s -o /dev/null -w "%{http_code}" → format string %{...}
+// est interprété par le shell Windows → utiliser -sI qui retourne juste les headers
 const r2Check = runCmdSilent(
-  `curl -s -o /dev/null -w "%{http_code}" https://pub-11df79209fb045dfa8485a9ae0362e41.r2.dev/biceps/concentration-curl.mp4`
+  `curl -sI https://pub-11df79209fb045dfa8485a9ae0362e41.r2.dev/biceps/concentration-curl.mp4`
 );
-if (r2Check.ok && r2Check.output === '200') {
-  checkOk('R2', 'Vidéo demo R2 reachable', 'HTTP 200');
+if (r2Check.ok && r2Check.output.includes('200 OK')) {
+  checkOk('R2', 'Vidéo demo R2 reachable', 'HTTP 200 OK');
 } else {
-  checkFail('R2', 'Vidéo R2 unreachable', `HTTP ${r2Check.output}`);
+  checkFail('R2', 'Vidéo R2 unreachable', `output: ${r2Check.output.slice(0, 80)}`);
 }
 
-const r2Dry = runCmdSilent(`cd "${path.join(REPO_ROOT, 'mobile')}" && py scripts/upload_influencer_videos.py 2>&1 | head -10`);
+// Fix #3: script est à scripts/ (racine), pas mobile/scripts/
+const r2Dry = runCmdSilent(`cd "${REPO_ROOT}" && py scripts/upload_influencer_videos.py 2>&1 | head -10`);
 if (r2Dry.ok && r2Dry.output.includes('Excel mapping')) {
   checkOk('R2', 'Script upload influenceur (dry-run)', 'parse Excel OK');
 } else {
