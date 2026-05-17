@@ -110,6 +110,9 @@ export default function CoachVisionScreen() {
   const startedAtRef = useRef<number>(0);
   const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
+  // Countdown 3-2-1-Go avant de démarrer la détection
+  const [countdown, setCountdown] = useState<number | null>(null);
+
   // Load TF.js + MoveNet at mount (background, ~3-5s on first run)
   useEffect(() => {
     let cancelled = false;
@@ -252,17 +255,35 @@ export default function CoachVisionScreen() {
   };
 
   const handleStart = () => {
-    setIsActive(true);
     setRepCount(0);
     setFormScore(100);
     setLastKeypoints(null);
-    startedAtRef.current = Date.now();
-    setCurrentFeedback([{ type: 'good', message: 'Positionne-toi devant la camera', messageAr: 'وقف قدام الكاميرا' }]);
+    setCurrentFeedback([]);
+    // Countdown 3 → 2 → 1 → Go, puis activate la détection
+    setCountdown(3);
   };
+
+  // Tick countdown 3→2→1→Go puis active la détection
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      // Go ! Active la détection
+      const t = setTimeout(() => {
+        setCountdown(null);
+        setIsActive(true);
+        startedAtRef.current = Date.now();
+        setCurrentFeedback([{ type: 'good', message: 'Yallah champion 💪', messageAr: 'يالاه شامبيون 💪' }]);
+      }, 700); // affiche "GO!" 700ms avant de passer en mode détection
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => setCountdown((c) => (c ?? 1) - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
   const handleStop = useCallback(() => {
     setIsActive(false);
     setLastKeypoints(null);
+    setCountdown(null); // cancel countdown si en cours
     if (repCount > 0) {
       Alert.alert(
         'Seance terminee',
@@ -449,8 +470,8 @@ export default function CoachVisionScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Sprint 1.4 Jour 2: status modèle (loading / ready / error) */}
-            <View style={styles.testDetectionRow}>
+            {/* Sprint 1.4 Jour 2: status modèle pill TOP center */}
+            <View style={styles.statusRow}>
               {!modelReady && !modelError && (
                 <View style={styles.modelLoadingPill}>
                   <ActivityIndicator size="small" color={Colors.white} />
@@ -470,6 +491,20 @@ export default function CoachVisionScreen() {
                 </View>
               )}
             </View>
+
+            {/* Countdown overlay 3-2-1-Go (au centre de l'écran) */}
+            {countdown !== null && (
+              <View style={styles.countdownOverlay} pointerEvents="none">
+                <View style={styles.countdownCircle}>
+                  <Text style={styles.countdownNumber}>
+                    {countdown === 0 ? 'GO!' : countdown}
+                  </Text>
+                </View>
+                <Text style={styles.countdownLabel}>
+                  {countdown === 0 ? 'Yallah! 💪' : 'Prépare-toi...'}
+                </Text>
+              </View>
+            )}
           </View>
         </CameraView>
       </View>
@@ -586,6 +621,60 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     alignItems: 'center',
+  },
+  // Status pill (loading/ready/error) — TOP center pour pas chevaucher boutons bottom
+  statusRow: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 90 : 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  // Countdown 3-2-1-Go au centre de l'écran
+  countdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 100,
+  },
+  countdownCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(200,75,49,0.9)',
+    borderWidth: 4,
+    borderColor: Colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  countdownNumber: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: 96,
+    color: Colors.white,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    lineHeight: 110,
+  },
+  countdownLabel: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.white,
+    marginTop: 24,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   modelLoadingPill: {
     flexDirection: 'row',
