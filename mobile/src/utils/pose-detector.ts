@@ -84,13 +84,24 @@ export async function inferFromBase64(base64: string): Promise<Keypoint[] | null
   const imageTensor = decodeJpeg(raw);
 
   try {
+    const shape = (imageTensor as any).shape;
     const poses = await detector.estimatePoses(imageTensor as unknown as tf.Tensor3D, {
       maxPoses: 1,
       flipHorizontal: false,
     });
-    if (poses.length === 0) return null;
+
+    if (poses.length === 0) {
+      console.log(`[pose-detector] no pose, image shape=${JSON.stringify(shape)}, b64 len=${base64.length}`);
+      return null;
+    }
+
+    const kps = poses[0].keypoints;
+    const avgScore = kps.reduce((s, k) => s + (k.score ?? 0), 0) / kps.length;
+    const maxScore = Math.max(...kps.map((k) => k.score ?? 0));
+    console.log(`[pose-detector] pose OK: ${kps.length} kps, avg score=${avgScore.toFixed(2)}, max=${maxScore.toFixed(2)}, image shape=${JSON.stringify(shape)}`);
+
     // MoveNet keypoints are already in MoveNet order, compatible with pose-engine KEYPOINTS.
-    return poses[0].keypoints.map((kp) => ({
+    return kps.map((kp) => ({
       x: kp.x,
       y: kp.y,
       score: kp.score ?? 0,

@@ -160,7 +160,7 @@ export default function CoachVisionScreen() {
         const t0 = Date.now();
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
-          quality: 0.35,
+          quality: 0.5,
           skipProcessing: true,
         });
         if (!photo?.base64 || cancelled) return;
@@ -294,7 +294,7 @@ export default function CoachVisionScreen() {
       if (cancelled || !cameraRef.current) return;
       try {
         const photo = await cameraRef.current.takePictureAsync({
-          base64: true, quality: 0.3, skipProcessing: true,
+          base64: true, quality: 0.5, skipProcessing: true,
         });
         if (!photo?.base64 || cancelled) return;
         if (photo.width && photo.height) setSourceDims({ w: photo.width, h: photo.height });
@@ -306,8 +306,8 @@ export default function CoachVisionScreen() {
         if (!kps) {
           framesOk = 0;
           setCalibFeedback({
-            msg: 'Aucun corps détecté — vérifie l\'éclairage',
-            msgAr: 'ما لقيتش الجسد — زيد الضوء',
+            msg: 'Pas de pose détectée — recule pour cadrer ton corps',
+            msgAr: 'رجع لور باش يبان الجسد',
             ok: false, visible: 0,
           });
         } else {
