@@ -24,6 +24,10 @@ import {
   type ExerciseConfig,
 } from '@/utils/pose-engine';
 import { initTfjs, loadMoveNet, inferFromBase64 } from '@/utils/pose-detector';
+import { PoseOverlay } from '@/components/coach/PoseOverlay';
+
+const AUTO_STOP_REPS = 30; // auto-stop pour économie batterie
+const AUTO_STOP_DURATION_MS = 5 * 60 * 1000; // 5 minutes max
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -94,10 +98,16 @@ export default function CoachVisionScreen() {
   const [phase, setPhase] = useState('neutral');
   const [showExercisePicker, setShowExercisePicker] = useState(!exerciseName);
 
-  // ─── Sprint 1.4 Jour 1+2: TF.js + MoveNet integration ───
+  // ─── Sprint 1.4 Jour 1+2+3: TF.js + MoveNet + SVG overlay ───
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
+
+  // Jour 3: state pour overlay SVG + auto-stop
+  const [lastKeypoints, setLastKeypoints] = useState<Keypoint[] | null>(null);
+  const [sourceDims, setSourceDims] = useState<{ w: number; h: number }>({ w: 480, h: 640 });
+  const startedAtRef = useRef<number>(0);
+  const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
   // Load TF.js + MoveNet at mount (background, ~3-5s on first run)
   useEffect(() => {
@@ -143,15 +153,22 @@ export default function CoachVisionScreen() {
         });
         if (!photo?.base64 || cancelled) return;
 
+        // Track source dims for SVG overlay scaling
+        if (photo.width && photo.height && (photo.width !== sourceDims.w || photo.height !== sourceDims.h)) {
+          setSourceDims({ w: photo.width, h: photo.height });
+        }
+
         const keypoints = await inferFromBase64(photo.base64);
         const latency = Date.now() - t0;
         if (cancelled) return;
 
         if (!keypoints) {
+          setLastKeypoints(null);
           setCurrentFeedback([
             { type: 'warning', message: `Aucune pose (${latency}ms) — recule pour cadrer ton corps`, messageAr: 'رجع لور باش يبان الجسد كامل' },
           ]);
         } else {
+          setLastKeypoints(keypoints);
           // Apply pose-engine
           const issues = exerciseConfig.checkPoints(keypoints);
           const repResult = exerciseConfig.detectRep(keypoints, prevPhase);
@@ -237,11 +254,14 @@ export default function CoachVisionScreen() {
     setIsActive(true);
     setRepCount(0);
     setFormScore(100);
+    setLastKeypoints(null);
+    startedAtRef.current = Date.now();
     setCurrentFeedback([{ type: 'good', message: 'Positionne-toi devant la camera', messageAr: 'وقف قدام الكاميرا' }]);
   };
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     setIsActive(false);
+    setLastKeypoints(null);
     if (repCount > 0) {
       Alert.alert(
         'Seance terminee',
@@ -249,7 +269,24 @@ export default function CoachVisionScreen() {
         [{ text: 'OK', onPress: () => router.back() }]
       );
     }
-  };
+  }, [repCount, formScore]);
+
+  // Auto-stop: 30 reps ou 5 min (économie batterie)
+  useEffect(() => {
+    if (!isActive) return;
+    if (repCount >= AUTO_STOP_REPS) {
+      Alert.alert('🏆 Bravo !', `Tu as atteint ${AUTO_STOP_REPS} reps — score moyen ${formScore}/100`, [
+        { text: 'OK', onPress: handleStop },
+      ]);
+      return;
+    }
+    const elapsed = Date.now() - startedAtRef.current;
+    if (elapsed > AUTO_STOP_DURATION_MS) {
+      Alert.alert('Temps écoulé', `Session de 5 min terminée — ${repCount} reps, score ${formScore}/100`, [
+        { text: 'OK', onPress: handleStop },
+      ]);
+    }
+  }, [repCount, isActive, formScore, handleStop]);
 
   // Permission not granted
   if (!permission) {
@@ -324,6 +361,18 @@ export default function CoachVisionScreen() {
           style={styles.camera}
           facing="front"
         >
+          {/* Sprint 1.4 Jour 3: SVG overlay keypoints + squelette */}
+          {isActive && lastKeypoints && (
+            <PoseOverlay
+              keypoints={lastKeypoints}
+              sourceWidth={sourceDims.w}
+              sourceHeight={sourceDims.h}
+              displayWidth={SCREEN_W}
+              displayHeight={SCREEN_H * 0.8}
+              mirrored={true}
+            />
+          )}
+
           {/* Overlay */}
           <View style={styles.overlay}>
             {/* Top bar */}
