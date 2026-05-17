@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
+  ScrollView,
   TouchableOpacity,
   Platform,
   Dimensions,
@@ -330,10 +331,10 @@ export default function CoachVisionScreen() {
           <Text style={styles.headerTitle}>Coach Vision</Text>
           <View style={{ width: 24 }} />
         </View>
-        <View style={styles.pickerContainer}>
+        <ScrollView contentContainerStyle={styles.pickerContainer} showsVerticalScrollIndicator={false}>
           <Ionicons name="body-outline" size={64} color={Colors.primary} />
           <Text style={styles.pickerTitle}>Choisis ton exercice</Text>
-          <Text style={styles.pickerSubtitle}>Le coach IA analysera ta posture en temps reel</Text>
+          <Text style={styles.pickerSubtitle}>Le coach IA analysera ta posture en temps reel · {availableExercises.length} exercices</Text>
 
           {availableExercises.map((ex) => (
             <TouchableOpacity
@@ -347,7 +348,7 @@ export default function CoachVisionScreen() {
               <Ionicons name="chevron-forward" size={18} color={Colors.lightGray} />
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -498,7 +499,7 @@ const styles = StyleSheet.create({
   headerTitle: { ...Typography.h4, color: Colors.dark },
 
   // Exercise picker
-  pickerContainer: { flex: 1, alignItems: 'center', padding: 24, paddingTop: 40, gap: 12, backgroundColor: Colors.background },
+  pickerContainer: { alignItems: 'center', padding: 24, paddingTop: 40, paddingBottom: 80, gap: 12, backgroundColor: Colors.background },
   pickerTitle: { ...Typography.h3, color: Colors.dark, marginTop: 16 },
   pickerSubtitle: { ...Typography.body, color: Colors.gray, textAlign: 'center', marginBottom: 16 },
   exerciseOption: {
