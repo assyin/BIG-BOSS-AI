@@ -187,6 +187,11 @@ public class SessionExerciseConfiguration : IEntityTypeConfiguration<SessionExer
             .HasColumnName("ai_notes")
             .HasMaxLength(500);
 
+        // Sprint 3.2 — idempotence offline replay
+        builder.Property(se => se.ProcessedClientUuids)
+            .HasColumnName("processed_client_uuids")
+            .HasColumnType("jsonb");
+
         builder.Property(se => se.IsCompleted)
             .HasColumnName("is_completed")
             .HasDefaultValue(false);

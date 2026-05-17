@@ -901,12 +901,15 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 - [x] Templates inline FR + Darija + AR selon user.PreferredLanguage
 - [x] Vérifié : 4 jobs visibles en DB hangfire.hash, trigger manuel `WorkoutReminders: 1/1`
 
-### 3.2 Mode offline log sets (~4 J)
-- [ ] `session.store.ts` : `pendingOps[]` persisté
-- [ ] Service API wrap : queue si offline
-- [ ] Background sync à reconnect (NetInfo)
-- [ ] Indicateur "X sets en attente"
-- [ ] Backend idempotence via `clientUuid`
+### 3.2 Mode offline log sets (~4 J) ✅ FAIT (2026-05-18)
+- [x] `mobile/src/utils/offline-queue.ts` : queue persistée SecureStore + UUID v4 generator + bounded list 100
+- [x] `session.store.ts` : `pendingOpsCount`, `isSyncing`, `syncPendingOps`, `refreshPendingCount`
+- [x] `logSet` wrap try/catch `isNetworkError` → enqueue + optimistic local update (append completedSets)
+- [x] Background sync via `useFocusEffect` dans active.tsx (au lieu de NetInfo — évite dep native)
+- [x] `OfflineSyncIndicator` badge en haut de session active (cloud-offline / sync en cours, tap = retry manuel)
+- [x] Backend idempotence : `LogSetRequest.ClientUuid` + `SessionExercise.ProcessedClientUuids` JSON list (max 100) + dédupe dans `LogSetAsync` (no-op si UUID déjà traité)
+- [x] DB : colonne `processed_client_uuids jsonb NOT NULL DEFAULT '[]'` + mapping fluent `HasColumnName("processed_client_uuids").HasColumnType("jsonb")`
+- [x] Conflict resolution : 4xx (404/400) → drop l'op, 5xx → retry incrémenté
 
 ### 3.3 Favoris recettes + ajout journal 1 clic (~2 J)
 - [ ] Entité `UserFavoriteRecipe` (vérifier si existe)

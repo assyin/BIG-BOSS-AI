@@ -390,6 +390,24 @@ public class SessionService : ISessionService
 
         if (sessionExercise == null) throw new KeyNotFoundException("Exercice non trouve");
 
+        // Sprint 3.2 — idempotence : si clientUuid déjà traité, on no-op et on retourne l'état actuel
+        if (request.ClientUuid.HasValue)
+        {
+            var uuidStr = request.ClientUuid.Value.ToString();
+            if (sessionExercise.ProcessedClientUuids.Contains(uuidStr))
+            {
+                return MapToSessionExerciseDto(sessionExercise);
+            }
+            sessionExercise.ProcessedClientUuids.Add(uuidStr);
+            // Garder uniquement les 100 derniers
+            if (sessionExercise.ProcessedClientUuids.Count > 100)
+            {
+                sessionExercise.ProcessedClientUuids = sessionExercise.ProcessedClientUuids
+                    .Skip(sessionExercise.ProcessedClientUuids.Count - 100)
+                    .ToList();
+            }
+        }
+
         // Add the completed set
         sessionExercise.RepsCompleted.Add(request.Reps);
         sessionExercise.WeightsCompletedKg.Add(request.WeightKg);

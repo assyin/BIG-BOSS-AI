@@ -8,7 +8,9 @@ public record LogSetRequest(
     decimal WeightKg,
     int? FormScore = null,
     int? RestSeconds = null,
-    string? Notes = null
+    string? Notes = null,
+    // Sprint 3.2 — idempotence offline replay
+    Guid? ClientUuid = null
 );
 
 public class LogSetRequestValidator : AbstractValidator<LogSetRequest>

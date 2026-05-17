@@ -29,6 +29,9 @@ public class SessionExercise
     public string? UserNotes { get; set; }
     public string? AiNotes { get; set; }
 
+    // Sprint 3.2 — idempotence offline replay (derniers 100 client UUIDs traités)
+    public List<string> ProcessedClientUuids { get; set; } = new();
+
     // Status
     public bool IsCompleted { get; set; }
     public bool IsSkipped { get; set; }

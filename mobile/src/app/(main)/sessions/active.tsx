@@ -11,11 +11,12 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Video, ResizeMode } from 'expo-av';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import { useSessionStore } from '@/store/session.store';
+import OfflineSyncIndicator from '@/components/ui/OfflineSyncIndicator';
 
 const REST_OPTIONS = [60, 90, 120];
 
@@ -38,7 +39,17 @@ export default function ActiveWorkoutScreen() {
     isRestTimerActive,
     startRestTimer,
     stopRestTimer,
+    refreshPendingCount,
+    syncPendingOps,
   } = useSessionStore();
+
+  // Sprint 3.2 — sync les ops offline au focus de l'écran
+  useFocusEffect(
+    useCallback(() => {
+      refreshPendingCount().catch(() => {});
+      syncPendingOps().catch(() => {});
+    }, [])
+  );
 
   const [setInputs, setSetInputs] = useState<SetInput[]>([]);
   const [selectedRestDuration, setSelectedRestDuration] = useState(90);
@@ -226,6 +237,9 @@ export default function ActiveWorkoutScreen() {
       <View style={styles.progressBarContainer}>
         <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
       </View>
+
+      {/* Sprint 3.2 — Offline sync badge */}
+      <OfflineSyncIndicator />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}

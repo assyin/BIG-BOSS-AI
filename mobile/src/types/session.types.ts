@@ -62,6 +62,8 @@ export interface LogSetRequest {
   formScore?: number;
   restSeconds?: number;
   notes?: string;
+  // Sprint 3.2 — idempotence offline replay
+  clientUuid?: string;
 }
 
 export interface SkipExerciseRequest {
