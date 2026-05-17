@@ -113,6 +113,14 @@ export default function CoachVisionScreen() {
   // Countdown 3-2-1-Go avant de démarrer la détection
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  // Pre-flight calibration: vérifier position user AVANT countdown
+  const [calibrating, setCalibrating] = useState(false);
+  const [calibFeedback, setCalibFeedback] = useState<{ msg: string; msgAr?: string; ok: boolean; visible: number }>({
+    msg: 'Initialisation...',
+    ok: false,
+    visible: 0,
+  });
+
   // Load TF.js + MoveNet at mount (background, ~3-5s on first run)
   useEffect(() => {
     let cancelled = false;
@@ -259,9 +267,94 @@ export default function CoachVisionScreen() {
     setFormScore(100);
     setLastKeypoints(null);
     setCurrentFeedback([]);
-    // Countdown 3 → 2 → 1 → Go, puis activate la détection
-    setCountdown(3);
+    // Étape 1: pre-flight calibration (vérif position user)
+    setCalibFeedback({ msg: 'Initialisation...', ok: false, visible: 0 });
+    setCalibrating(true);
   };
+
+  // Pre-flight calibration loop: vérifie position user avant countdown
+  useEffect(() => {
+    if (!calibrating || !modelReady || !cameraRef.current) return;
+    let cancelled = false;
+    let framesOk = 0;
+    const FRAMES_OK_TO_PASS = 3; // 3 frames consécutifs OK = position validée
+
+    // Keypoints essentiels pour valider une silhouette complète
+    const ESSENTIAL = [
+      KEYPOINTS.LEFT_SHOULDER, KEYPOINTS.RIGHT_SHOULDER,
+      KEYPOINTS.LEFT_HIP, KEYPOINTS.RIGHT_HIP,
+    ];
+    const NICE_TO_HAVE = [
+      KEYPOINTS.LEFT_ELBOW, KEYPOINTS.RIGHT_ELBOW,
+      KEYPOINTS.LEFT_KNEE, KEYPOINTS.RIGHT_KNEE,
+      KEYPOINTS.LEFT_ANKLE, KEYPOINTS.RIGHT_ANKLE,
+    ];
+
+    const tick = async () => {
+      if (cancelled || !cameraRef.current) return;
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true, quality: 0.3, skipProcessing: true,
+        });
+        if (!photo?.base64 || cancelled) return;
+        if (photo.width && photo.height) setSourceDims({ w: photo.width, h: photo.height });
+
+        const kps = await inferFromBase64(photo.base64);
+        if (cancelled) return;
+        setLastKeypoints(kps);
+
+        if (!kps) {
+          framesOk = 0;
+          setCalibFeedback({
+            msg: 'Aucun corps détecté — vérifie l\'éclairage',
+            msgAr: 'ما لقيتش الجسد — زيد الضوء',
+            ok: false, visible: 0,
+          });
+        } else {
+          const totalVisible = kps.filter((k) => k.score > 0.3).length;
+          const essentialOk = ESSENTIAL.every((i) => kps[i].score > 0.4);
+          const niceOk = NICE_TO_HAVE.filter((i) => kps[i].score > 0.3).length;
+
+          if (!essentialOk) {
+            framesOk = 0;
+            setCalibFeedback({
+              msg: 'Recule pour qu\'on voie ton buste',
+              msgAr: 'رجع لور باش يبان الجسم',
+              ok: false, visible: totalVisible,
+            });
+          } else if (niceOk < 4) {
+            framesOk = 0;
+            setCalibFeedback({
+              msg: 'Cadre toi mieux (épaules + hanches OK, mais bras/jambes pas vus)',
+              msgAr: 'حسن التصوير',
+              ok: false, visible: totalVisible,
+            });
+          } else {
+            framesOk++;
+            setCalibFeedback({
+              msg: framesOk >= FRAMES_OK_TO_PASS
+                ? 'Position parfaite ! 💪'
+                : `Position OK (${framesOk}/${FRAMES_OK_TO_PASS})...`,
+              msgAr: 'الوضعية مزيانة!',
+              ok: true, visible: totalVisible,
+            });
+            if (framesOk >= FRAMES_OK_TO_PASS) {
+              // Position validée → passe au countdown
+              setCalibrating(false);
+              setCountdown(3);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        if (!cancelled) console.error('[calib] tick failed:', err);
+      } finally {
+        if (!cancelled) setTimeout(tick, 600);
+      }
+    };
+    tick();
+    return () => { cancelled = true; };
+  }, [calibrating, modelReady]);
 
   // Tick countdown 3→2→1→Go puis active la détection
   useEffect(() => {
@@ -284,6 +377,7 @@ export default function CoachVisionScreen() {
     setIsActive(false);
     setLastKeypoints(null);
     setCountdown(null); // cancel countdown si en cours
+    setCalibrating(false); // cancel calibration si en cours
     if (repCount > 0) {
       Alert.alert(
         'Seance terminee',
@@ -492,6 +586,37 @@ export default function CoachVisionScreen() {
               )}
             </View>
 
+            {/* Calibration overlay — vérifie position user avant countdown */}
+            {calibrating && (
+              <View style={styles.calibOverlay}>
+                <View style={[styles.calibCard, calibFeedback.ok && styles.calibCardOk]}>
+                  <Ionicons
+                    name={calibFeedback.ok ? 'checkmark-circle' : 'scan'}
+                    size={56}
+                    color={calibFeedback.ok ? Colors.accent : Colors.gold}
+                  />
+                  <Text style={styles.calibTitle}>
+                    {calibFeedback.ok ? 'Position OK' : 'Calibration...'}
+                  </Text>
+                  <Text style={styles.calibMessage}>{calibFeedback.msg}</Text>
+                  {calibFeedback.msgAr && (
+                    <Text style={styles.calibMessageAr}>{calibFeedback.msgAr}</Text>
+                  )}
+                  <View style={styles.calibStats}>
+                    <Text style={styles.calibStatsText}>
+                      {calibFeedback.visible}/17 keypoints détectés
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.calibCancelBtn}
+                    onPress={() => setCalibrating(false)}
+                  >
+                    <Text style={styles.calibCancelText}>Annuler</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             {/* Countdown overlay 3-2-1-Go (au centre de l'écran) */}
             {countdown !== null && (
               <View style={styles.countdownOverlay} pointerEvents="none">
@@ -675,6 +800,82 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  // Pre-flight calibration overlay
+  calibOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 24,
+    zIndex: 90,
+  },
+  calibCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  calibCardOk: {
+    borderColor: Colors.accent,
+    shadowColor: Colors.accent,
+  },
+  calibTitle: {
+    fontFamily: Fonts.family.displayBold,
+    fontSize: Fonts.size.xl,
+    color: Colors.dark,
+    marginTop: 12,
+  },
+  calibMessage: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.md,
+    color: Colors.medium,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 22,
+  },
+  calibMessageAr: {
+    fontFamily: Fonts.family.arRegular,
+    fontSize: Fonts.size.sm,
+    color: Colors.gray,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  calibStats: {
+    marginTop: 16,
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  calibStatsText: {
+    fontFamily: Fonts.family.displayMedium,
+    fontSize: Fonts.size.sm,
+    color: Colors.medium,
+  },
+  calibCancelBtn: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  calibCancelText: {
+    fontFamily: Fonts.family.displaySemiBold,
+    fontSize: Fonts.size.sm,
+    color: Colors.gray,
+    textDecorationLine: 'underline',
   },
   modelLoadingPill: {
     flexDirection: 'row',
