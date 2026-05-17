@@ -168,6 +168,30 @@ export const ProgressService = {
     const response = await api.post('/api/progressphotos', data);
     return mapBackendPhoto(response.data);
   },
+
+  // Sprint 3.4 — Muscle balance (radar)
+  async getMuscleBalance(days = 30): Promise<MuscleBalanceResponse> {
+    const response = await api.get(`/api/me/muscle-balance?days=${days}`);
+    return response.data as MuscleBalanceResponse;
+  },
 };
+
+// Sprint 3.4
+export interface MuscleBalanceMuscle {
+  muscle: string;
+  labelFr: string;
+  volume: number;
+  sets: number;
+  volumeRatio: number;
+  setsRatio: number;
+}
+
+export interface MuscleBalanceResponse {
+  days: number;
+  since: string;
+  totalSets: number;
+  totalVolume: number;
+  muscles: MuscleBalanceMuscle[];
+}
 
 export default ProgressService;

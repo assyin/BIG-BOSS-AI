@@ -274,13 +274,24 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Outils IA</Text>
           <View style={styles.settingsCard}>
             <TouchableOpacity
-              style={[styles.gamifLink, { borderBottomWidth: 0 }]}
+              style={styles.gamifLink}
               onPress={() => router.push('/(main)/sessions/coach-vision' as any)}
             >
               <Ionicons name="eye" size={20} color={Colors.gold} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.gamifLinkText}>Coach Vision</Text>
                 <Text style={styles.gamifLinkSub}>Analyse posture en temps réel · 20 exercices</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.gamifLink, { borderBottomWidth: 0 }]}
+              onPress={() => router.push('/(main)/progress' as any)}
+            >
+              <Ionicons name="analytics" size={20} color={Colors.primary} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.gamifLinkText}>Ma Progression</Text>
+                <Text style={styles.gamifLinkSub}>IMC · FFMI · Radar musculaire · Photos</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={Colors.lightGray} />
             </TouchableOpacity>

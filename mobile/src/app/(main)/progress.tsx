@@ -20,10 +20,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
-import { ProgressService, BodyStat, ProgressPhoto } from '@/services/progress.service';
+import { ProgressService, BodyStat, ProgressPhoto, MuscleBalanceResponse } from '@/services/progress.service';
 import { useAuthStore } from '@/store/auth.store';
 import { SimpleChart, ChartDataPoint } from '@/components/ui/SimpleChart';
 import { LineChart, LineChartDataPoint } from '@/components/ui/LineChart';
+import { calcIMC, calcFFMI, targetWeightForImc } from '@/utils/body-metrics';
+import { MuscleRadarChart } from '@/components/charts/MuscleRadarChart';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const PHOTO_GAP = 10;
@@ -67,23 +69,26 @@ export default function ProgressScreen() {
   const [latestStat, setLatestStat] = useState<BodyStat | null>(null);
   const [allStats, setAllStats] = useState<BodyStat[]>([]);
   const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
+  const [muscleBalance, setMuscleBalance] = useState<MuscleBalanceResponse | null>(null);
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
   const [addingPhoto, setAddingPhoto] = useState(false);
-  const { stats, loadStats } = useAuthStore();
+  const { stats, loadStats, profile } = useAuthStore();
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [latest, statsList, photoList] = await Promise.allSettled([
+      const [latest, statsList, photoList, muscle] = await Promise.allSettled([
         ProgressService.getLatestBodyStat(),
         ProgressService.getBodyStats(),
         ProgressService.getProgressPhotos(),
+        ProgressService.getMuscleBalance(30),
       ]);
       if (latest.status === 'fulfilled') setLatestStat(latest.value);
       else setLatestStat(null);
       if (statsList.status === 'fulfilled') setAllStats(statsList.value);
       if (photoList.status === 'fulfilled') setPhotos(photoList.value);
+      if (muscle.status === 'fulfilled') setMuscleBalance(muscle.value);
       // Also refresh user stats for performances tab
       loadStats();
     } catch {
@@ -193,6 +198,11 @@ export default function ProgressScreen() {
     const bodyFat = latestStat?.bodyFatPercent;
     const measurements = latestStat?.measurements;
     const lastDate = latestStat?.recordedAt;
+    const heightCm = profile?.heightCm ?? null;
+
+    const imc = weight && heightCm ? calcIMC(weight, heightCm) : null;
+    const ffmi = weight && heightCm && bodyFat != null ? calcFFMI(weight, heightCm, bodyFat) : null;
+    const targetWeight = heightCm ? targetWeightForImc(heightCm, 22) : null;
 
     return (
       <View>
@@ -222,6 +232,64 @@ export default function ProgressScreen() {
             <Text style={styles.emptyText}>Aucune mesure enregistree</Text>
           )}
         </View>
+
+        {/* IMC + FFMI cards (Sprint 3.4) */}
+        {(imc || ffmi) && (
+          <View style={styles.metricsRow}>
+            {imc && (
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <Text style={styles.metricLabel}>IMC</Text>
+                  <View style={[styles.metricBadge, { backgroundColor: imc.color + '22' }]}>
+                    <Text style={[styles.metricBadgeText, { color: imc.color }]}>{imc.label}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.metricValue, { color: imc.color }]}>{imc.value}</Text>
+                <Text style={styles.metricHint}>
+                  {targetWeight ? `Cible : ${targetWeight} kg (IMC 22)` : 'kg/m²'}
+                </Text>
+              </View>
+            )}
+            {ffmi && (
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <Text style={styles.metricLabel}>FFMI</Text>
+                  <View style={[styles.metricBadge, { backgroundColor: ffmi.color + '22' }]}>
+                    <Text style={[styles.metricBadgeText, { color: ffmi.color }]}>{ffmi.label}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.metricValue, { color: ffmi.color }]}>{ffmi.value}</Text>
+                <Text style={styles.metricHint}>Masse maigre normalisée</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {!imc && weight && !heightCm && (
+          <TouchableOpacity
+            style={styles.metricsHintCard}
+            onPress={() => router.push('/(main)/profile-edit' as any)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="information-circle-outline" size={20} color={Colors.primary} />
+            <Text style={styles.metricsHintText}>
+              Ajoute ta taille dans le profil pour voir ton IMC et FFMI
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {imc && !ffmi && weight && heightCm && (
+          <TouchableOpacity
+            style={styles.metricsHintCard}
+            onPress={() => router.push('/(main)/progress/add-measurement' as any)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="information-circle-outline" size={20} color={Colors.primary} />
+            <Text style={styles.metricsHintText}>
+              Renseigne ton % de masse grasse pour calculer le FFMI
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Weight History Trend */}
         {allStats.length > 1 && (
@@ -353,8 +421,45 @@ export default function ProgressScreen() {
       return vol.toLocaleString();
     };
 
+    const radarData = muscleBalance?.muscles
+      ?.filter((m) => m.sets > 0)
+      .map((m) => ({ label: m.labelFr, value: m.volumeRatio })) ?? [];
+
     return (
       <View>
+        {/* Sprint 3.4 — Radar musculaire */}
+        <View style={styles.radarCard}>
+          <View style={styles.radarHeader}>
+            <Text style={styles.radarTitle}>Équilibre musculaire</Text>
+            <Text style={styles.radarSubtitle}>30 derniers jours</Text>
+          </View>
+          {radarData.length >= 3 ? (
+            <>
+              <MuscleRadarChart data={radarData} size={280} />
+              <View style={styles.radarFooter}>
+                <View style={styles.radarStat}>
+                  <Text style={styles.radarStatValue}>{muscleBalance?.totalSets ?? 0}</Text>
+                  <Text style={styles.radarStatLabel}>Sets totaux</Text>
+                </View>
+                <View style={styles.radarStat}>
+                  <Text style={styles.radarStatValue}>
+                    {muscleBalance ? Math.round(muscleBalance.totalVolume).toLocaleString() : 0}
+                  </Text>
+                  <Text style={styles.radarStatLabel}>Volume (kg·reps)</Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            <View style={styles.radarEmpty}>
+              <Ionicons name="analytics-outline" size={40} color={Colors.lightGray} />
+              <Text style={styles.radarEmptyText}>
+                Complète au moins 3 groupes musculaires{'\n'}
+                pour voir ton radar
+              </Text>
+            </View>
+          )}
+        </View>
+
         {/* Volume Card */}
         <View style={styles.volumeCard}>
           <Text style={styles.volumeTitle}>Volume total</Text>
@@ -1135,5 +1240,132 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 2,
+  },
+
+  // Sprint 3.4 — IMC + FFMI cards
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  metricLabel: {
+    fontSize: Fonts.size.sm,
+    fontWeight: Fonts.weight.semiBold,
+    color: Colors.gray,
+    letterSpacing: 0.5,
+  },
+  metricBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  metricBadgeText: {
+    fontSize: 10,
+    fontWeight: Fonts.weight.semiBold as any,
+  },
+  metricValue: {
+    fontSize: Fonts.size['3xl'],
+    fontWeight: Fonts.weight.bold,
+    marginBottom: 4,
+  },
+  metricHint: {
+    fontSize: Fonts.size.xs,
+    color: Colors.lightGray,
+  },
+  metricsHintCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: Colors.primaryDim,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+  },
+  metricsHintText: {
+    flex: 1,
+    fontSize: Fonts.size.sm,
+    color: Colors.primary,
+    fontWeight: Fonts.weight.medium,
+  },
+
+  // Sprint 3.4 — Radar musculaire
+  radarCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  radarHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  radarTitle: {
+    fontSize: Fonts.size.md,
+    fontWeight: Fonts.weight.semiBold,
+    color: Colors.dark,
+  },
+  radarSubtitle: {
+    fontSize: Fonts.size.xs,
+    color: Colors.lightGray,
+  },
+  radarFooter: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.background,
+  },
+  radarStat: {
+    alignItems: 'center',
+  },
+  radarStatValue: {
+    fontSize: Fonts.size.lg,
+    fontWeight: Fonts.weight.bold,
+    color: Colors.primary,
+  },
+  radarStatLabel: {
+    fontSize: Fonts.size.xs,
+    color: Colors.gray,
+    marginTop: 2,
+  },
+  radarEmpty: {
+    alignItems: 'center',
+    padding: 40,
+    gap: 12,
+  },
+  radarEmptyText: {
+    fontSize: Fonts.size.sm,
+    color: Colors.lightGray,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

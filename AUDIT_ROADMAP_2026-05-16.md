@@ -911,11 +911,12 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 - [ ] Filtre "Favoris ❤️" dans recipes.tsx
 - [ ] Bouton "Ajouter au déjeuner/dîner" dans recipe-detail
 
-### 3.4 IMC + FFMI + radar musculaire (~3 J)
-- [ ] `mobile/src/utils/body-metrics.ts`
-- [ ] Section IMC + FFMI dans progress
-- [ ] Composant `MuscleRadarChart` (8 axes via `react-native-svg`)
-- [ ] Backend `GET /api/me/muscle-balance`
+### 3.4 IMC + FFMI + radar musculaire (~3 J) ✅ FAIT (2026-05-18)
+- [x] `mobile/src/utils/body-metrics.ts` — calcIMC, calcFFMI, targetWeightForImc, interpretations FR + AR
+- [x] Section IMC + FFMI dans progress (Mesures tab) avec couleur catégorie + hint poids cible
+- [x] Composant `MuscleRadarChart` (10 axes via `react-native-svg`) — gold safran + grille tadelakt
+- [x] Backend `GET /api/me/muscle-balance?days=30` — agrège volume par muscle, normalise en ratios 0-1
+- [x] Link "Ma Progression" ajouté section Outils IA du profil (la tab étant cachée)
 
 ### 3.5 Liste de courses auto (~2 J)
 - [ ] Endpoint `GET /api/programmes/{id}/grocery-list?week=N`
