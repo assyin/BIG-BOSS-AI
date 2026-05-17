@@ -184,6 +184,7 @@ builder.Services.AddScoped<IAffiliationService, AffiliationService>();
 builder.Services.AddScoped<IAntiCheatService, AntiCheatService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 // SignalR
 builder.Services.AddSignalR();

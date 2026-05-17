@@ -48,6 +48,10 @@ public class BigBossDbContext : DbContext
     public DbSet<PostReaction> PostReactions => Set<PostReaction>();
     public DbSet<PostComment> PostComments => Set<PostComment>();
 
+    // Monetization (Sprint 2)
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<Payment> Payments => Set<Payment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
