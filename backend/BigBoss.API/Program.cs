@@ -163,6 +163,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
 builder.Services.AddHttpClient<IElevenLabsService, ElevenLabsService>();
 builder.Services.AddHttpClient<OpenAIService>();
+// Sprint 4.1 — Gemini TTS (darija quality + 100x cheaper than ElevenLabs)
+builder.Services.AddHttpClient<ITTSService, GeminiTTSService>();
 
 // Register services
 builder.Services.AddScoped<ITokenService, TokenService>();
