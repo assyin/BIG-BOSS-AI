@@ -101,8 +101,44 @@ export default function GroceryListScreen() {
       lines.push('');
     }
     lines.push('Généré par Big Boss Fitness 🇲🇦');
+    const message = lines.join('\n');
+
+    // Web: utiliser Web Share API + fallback clipboard / WhatsApp direct
+    if (Platform.OS === 'web') {
+      try {
+        // @ts-ignore — navigator.share dispo Chrome Android 89+
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          // @ts-ignore
+          await navigator.share({ title: 'Liste de courses', text: message });
+          return;
+        }
+      } catch {/* utilisateur a annulé ou bloqué */}
+
+      // Fallback 1: ouvrir WhatsApp Web/App directement avec le texte
+      try {
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        if (typeof window !== 'undefined') {
+          window.open(waUrl, '_blank');
+          return;
+        }
+      } catch {/* bloqué par popup blocker */}
+
+      // Fallback 2: copier dans le presse-papier
+      try {
+        // @ts-ignore
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+          // @ts-ignore
+          await navigator.clipboard.writeText(message);
+          // @ts-ignore
+          if (typeof window !== 'undefined') window.alert('Liste copiée dans le presse-papier !');
+        }
+      } catch {/* ignore */}
+      return;
+    }
+
+    // Natif: Share API React Native
     try {
-      await Share.share({ message: lines.join('\n') });
+      await Share.share({ message });
     } catch {}
   }, [data, checked]);
 
