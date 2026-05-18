@@ -39,8 +39,9 @@ public class MuscleBalanceController : ControllerBase
         var userId = GetCurrentUserId();
         var since = DateTime.UtcNow.AddDays(-Math.Max(7, Math.Min(365, days)));
 
-        // Récupérer SessionExercises completed dans la période
-        var data = await _context.SessionExercises
+        // Récupérer SessionExercises completed dans la période, puis agréger côté C#
+        // (les List<int>/List<decimal> jsonb ne se traduisent pas via LINQ provider)
+        var rawData = await _context.SessionExercises
             .AsNoTracking()
             .Include(se => se.Session)
             .Include(se => se.Exercise)
@@ -48,13 +49,14 @@ public class MuscleBalanceController : ControllerBase
                 && se.IsCompleted
                 && se.CompletedAt >= since
                 && !se.IsSkipped)
-            .Select(se => new
-            {
-                Muscle = se.Exercise.PrimaryMuscle,
-                Volume = se.RepsCompleted.Sum() * (se.WeightsCompletedKg.Any() ? (double)se.WeightsCompletedKg.Average() : 1),
-                Sets = se.SetsCompleted,
-            })
             .ToListAsync();
+
+        var data = rawData.Select(se => new
+        {
+            Muscle = se.Exercise.PrimaryMuscle,
+            Volume = se.RepsCompleted.Sum() * (se.WeightsCompletedKg.Any() ? (double)se.WeightsCompletedKg.Average() : 1),
+            Sets = se.SetsCompleted,
+        }).ToList();
 
         // Filtrer les groupes pertinents pour radar (exclude Mobility, Cardio si peu utilisé)
         var radarMuscles = new[]

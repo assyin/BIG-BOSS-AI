@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BigBoss.Core\BigBoss.Core.csproj" />
     <ProjectReference Include="..\BigBoss.Infrastructure\BigBoss.Infrastructure.csproj" />
+    <ProjectReference Include="..\BigBoss.API\BigBoss.API.csproj" />
   </ItemGroup>
 
 </Project>
