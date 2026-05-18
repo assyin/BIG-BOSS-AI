@@ -87,6 +87,33 @@ function fixSessionVideos(session: any): any {
   return session;
 }
 
+// Backend renvoie les enums en int (convention projet) → on les remap en string côté client
+const PROGRAMME_STATUS_MAP: Record<number, ProgrammeStatus> = {
+  1: 'Active',
+  2: 'Paused',
+  3: 'Completed',
+  4: 'Abandoned',
+};
+const PROGRAMME_SESSION_STATUS_MAP: Record<number, ProgrammeSessionStatus> = {
+  1: 'Planned',
+  2: 'InProgress',
+  3: 'Completed',
+  4: 'Missed',
+  5: 'Skipped',
+};
+
+function mapProgrammeStatus(raw: any): Programme | null {
+  if (!raw) return null;
+  return {
+    ...raw,
+    status: typeof raw.status === 'number' ? (PROGRAMME_STATUS_MAP[raw.status] ?? raw.status) : raw.status,
+    programmeSessions: (raw.programmeSessions ?? []).map((ps: any) => ({
+      ...ps,
+      status: typeof ps.status === 'number' ? (PROGRAMME_SESSION_STATUS_MAP[ps.status] ?? ps.status) : ps.status,
+    })),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -102,7 +129,7 @@ export const ProgrammeService = {
     try {
       const response = await api.get<Programme>(`${BASE}/active`);
       if (response.status === 204 || !response.data) return null;
-      return response.data;
+      return mapProgrammeStatus(response.data);
     } catch {
       return null;
     }

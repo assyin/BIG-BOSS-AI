@@ -144,9 +144,12 @@ public class AchievementService : IAchievementService
             .Where(s => s.UserId == userId && s.Status == SessionStatus.Completed)
             .SumAsync(s => s.TotalVolumeKg ?? 0);
 
-        var prCount = await _context.Sessions
+        // jsonb List<T>.Count ne se traduit pas en SQL (cardinality(jsonb) inexistante) → agrégation côté C#
+        var prLists = await _context.Sessions
             .Where(s => s.UserId == userId && s.Status == SessionStatus.Completed && s.PersonalRecords != null)
-            .SumAsync(s => s.PersonalRecords!.Count);
+            .Select(s => s.PersonalRecords!)
+            .ToListAsync();
+        var prCount = prLists.Sum(pr => pr.Count);
 
         var mealCount = await _context.Meals.CountAsync(m => m.UserId == userId);
 
