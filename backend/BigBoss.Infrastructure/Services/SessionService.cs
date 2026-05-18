@@ -391,6 +391,7 @@ public class SessionService : ISessionService
         if (sessionExercise == null) throw new KeyNotFoundException("Exercice non trouve");
 
         // Sprint 3.2 — idempotence : si clientUuid déjà traité, on no-op et on retourne l'état actuel
+        // Note: EF Core + jsonb ne détecte pas List<T>.Add() comme une modification → on réassigne.
         if (request.ClientUuid.HasValue)
         {
             var uuidStr = request.ClientUuid.Value.ToString();
@@ -398,21 +399,21 @@ public class SessionService : ISessionService
             {
                 return MapToSessionExerciseDto(sessionExercise);
             }
-            sessionExercise.ProcessedClientUuids.Add(uuidStr);
-            // Garder uniquement les 100 derniers
-            if (sessionExercise.ProcessedClientUuids.Count > 100)
+            var newUuids = new List<string>(sessionExercise.ProcessedClientUuids) { uuidStr };
+            if (newUuids.Count > 100)
             {
-                sessionExercise.ProcessedClientUuids = sessionExercise.ProcessedClientUuids
-                    .Skip(sessionExercise.ProcessedClientUuids.Count - 100)
-                    .ToList();
+                newUuids = newUuids.Skip(newUuids.Count - 100).ToList();
             }
+            sessionExercise.ProcessedClientUuids = newUuids;
         }
 
-        // Add the completed set
-        sessionExercise.RepsCompleted.Add(request.Reps);
-        sessionExercise.WeightsCompletedKg.Add(request.WeightKg);
-        if (request.FormScore.HasValue) sessionExercise.FormScores.Add(request.FormScore.Value);
-        if (request.RestSeconds.HasValue) sessionExercise.RestSecondsActual.Add(request.RestSeconds.Value);
+        // Add the completed set — réassignation pour que EF Core détecte les changements jsonb
+        sessionExercise.RepsCompleted = new List<int>(sessionExercise.RepsCompleted) { request.Reps };
+        sessionExercise.WeightsCompletedKg = new List<decimal>(sessionExercise.WeightsCompletedKg) { request.WeightKg };
+        if (request.FormScore.HasValue)
+            sessionExercise.FormScores = new List<int>(sessionExercise.FormScores) { request.FormScore.Value };
+        if (request.RestSeconds.HasValue)
+            sessionExercise.RestSecondsActual = new List<int>(sessionExercise.RestSecondsActual) { request.RestSeconds.Value };
 
         sessionExercise.SetsCompleted = sessionExercise.RepsCompleted.Count;
 

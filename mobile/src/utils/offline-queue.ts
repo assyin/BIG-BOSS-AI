@@ -1,11 +1,14 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 /**
  * Sprint 3.2 — Queue offline pour les ops API qui doivent survivre à un crash réseau.
  *
  * Stratégie :
  * - Chaque op a un clientUuid stable (généré côté client) pour idempotence backend.
- * - Persist via SecureStore (le storage RN-safe le plus simple, déjà utilisé dans le projet).
+ * - Persist :
+ *     - Native (iOS/Android) : SecureStore
+ *     - Web (Chrome/Safari)  : localStorage (SecureStore no-op sur web)
  * - Replay en série (un par un) pour préserver l'ordre des sets.
  * - Sur succès : retirer de la queue. Sur 4xx (sauf 5xx/network) : drop l'op + log (poison message).
  */
@@ -20,10 +23,16 @@ export interface PendingOp<T = any> {
 }
 
 const STORAGE_KEY = 'bbf_offline_queue_v1';
+const IS_WEB = Platform.OS === 'web';
 
 async function read(): Promise<PendingOp[]> {
   try {
-    const raw = await SecureStore.getItemAsync(STORAGE_KEY);
+    let raw: string | null = null;
+    if (IS_WEB && typeof localStorage !== 'undefined') {
+      raw = localStorage.getItem(STORAGE_KEY);
+    } else {
+      raw = await SecureStore.getItemAsync(STORAGE_KEY);
+    }
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -32,7 +41,12 @@ async function read(): Promise<PendingOp[]> {
 
 async function write(ops: PendingOp[]): Promise<void> {
   try {
-    await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(ops));
+    const json = JSON.stringify(ops);
+    if (IS_WEB && typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, json);
+    } else {
+      await SecureStore.setItemAsync(STORAGE_KEY, json);
+    }
   } catch {
     /* storage plein / interdit — la queue en mémoire reste valide pour la session */
   }

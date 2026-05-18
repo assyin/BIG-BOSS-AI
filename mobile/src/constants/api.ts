@@ -1,11 +1,29 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// API Configuration
-// For physical Android device: use your machine's LAN IP (run `hostname -I` to find it)
-const DEV_API_HOST = Platform.OS === 'android' ? '192.168.100.213' : 'localhost';
+// API Configuration — auto-détection IP en dev
+//
+// Stratégie :
+// 1. Web mobile (Chrome sur tél) : window.location.hostname donne l'IP du Metro
+// 2. Web PC : window.location.hostname === 'localhost' → backend sur localhost
+// 3. Natif (Android/iOS) : Constants.expoConfig.hostUri donne l'IP Metro
+// 4. Fallback : localhost
+function getDevApiHost(): string {
+  // Web : prendre l'hôte de la page courante
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return window.location.hostname || 'localhost';
+  }
+  // Natif : extraire l'IP de Metro depuis expoConfig.hostUri (ex: "192.168.19.112:8081")
+  const hostUri = (Constants.expoConfig as any)?.hostUri || (Constants as any).manifest?.debuggerHost || '';
+  const ip = hostUri.split(':')[0];
+  if (ip) return ip;
+  return 'localhost';
+}
+
+const DEV_API_HOST = getDevApiHost();
 
 export const API_CONFIG = {
-  // Base URL - change DEV_API_HOST above when your IP changes
+  // Base URL - détectée automatiquement en dev
   BASE_URL: __DEV__
     ? `http://${DEV_API_HOST}:5050`
     : 'https://api.bigbossfitness.ma',

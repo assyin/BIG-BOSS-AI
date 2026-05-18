@@ -124,13 +124,29 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<BigBoss.Core.DTOs.Auth.RegisterRequestValidator>();
 
-// CORS
+// CORS — en dev, accepte localhost + n'importe quelle IP LAN (192.168.* / 10.*)
+// pour permettre les tests depuis téléphone via Expo web/native
 var allowedOrigins = builder.Configuration["BBF_ALLOWED_ORIGINS"]?.Split(',') ?? new[] { "http://localhost:3000", "http://localhost:3001", "http://localhost:8081", "http://localhost:8082" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowApp", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                if (allowedOrigins.Contains(origin)) return true;
+                // En dev, accepter LAN IPs (192.168.*, 10.*, 172.16-31.*)
+                try
+                {
+                    var uri = new Uri(origin);
+                    var host = uri.Host;
+                    return host == "localhost"
+                        || host.StartsWith("192.168.")
+                        || host.StartsWith("10.")
+                        || (host.StartsWith("172.") && int.TryParse(host.Split('.')[1], out var second) && second >= 16 && second <= 31);
+                }
+                catch { return false; }
+            })
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
