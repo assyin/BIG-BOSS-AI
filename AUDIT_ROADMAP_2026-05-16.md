@@ -593,7 +593,9 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 
 **Objectif** : Coach Vocal ElevenLabs opérationnel, Coach Vision MediaPipe avec AR overlay, Claude Vision photos progression.
 
-### 4.1 ElevenLabs voix clonée influenceur *(5 J)*
+### 4.1 ElevenLabs voix clonée influenceur *(5 J)* ⏸️ PAUSED (2026-05-19)
+> Aucun TTS commercial testé (ElevenLabs, Gemini, Azure ar-MA) ne fait du darija authentique. Code Azure + Gemini en repo mais désactivé. Reprendre avec audios pré-enregistrés influenceur OU voice cloning Cartesia (cf memory project_tts_paused).
+
 
 - **Sous-étapes** :
   1. Enregistrer 60 min audio propre influenceur (FR + Darija) — coordination avec influenceur
