@@ -260,6 +260,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Sprint 6.3 — Security headers en tout début (avant CORS)
+app.UseMiddleware<BigBoss.API.Middlewares.SecurityHeadersMiddleware>();
+
 // CORS must be before other middlewares
 app.UseCors("AllowApp");
 
