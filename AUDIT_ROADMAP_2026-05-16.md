@@ -605,6 +605,15 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 ### 5.3 Live streaming Cloudflare ✅ FAIT (2026-05-19)
 > CloudflareStreamService (REST API direct, mode mock si pas de creds avec test Mux HLS), endpoints start/stop/status, SignalR LiveChatHub avec modération Claude inline (auto-mute >0.85), mobile expo-av Video HLS + LiveChatPanel SignalR client (@microsoft/signalr), webhook /api/lives/webhook/cloudflare pour replay auto. Activer prod: BBF_CF_STREAM_API_TOKEN + BBF_CF_STREAM_CUSTOMER_SUBDOMAIN + BBF_CF_WEBHOOK_SECRET.
 
+### 5.2 Gym buddies matching ✅ FAIT (2026-05-19)
+> BuddyProfile + BuddyConnection entities, algo matching 0-100 (ville+40, salle+20, goals+5/overlap, slots+10/overlap, niveau+10, nouveau+5), auto-accept mutual match, push notif demande/accept. Mobile écran liste cards avec score color-coded + edit profile (10 villes Maroc + 6 goals + 5 slots).
+
+### 5.4 Dashboard influenceur ✅ FAIT (2026-05-19)
+> GET /api/admin/influencer-analytics agrège KPIs (totalUsers, DAU/MAU, conversion Free→Premium, revenus Payments succeeded, growthRate vs prev 30j, sessions/lives counts, top recettes par favoris, top challenges par participations, cityHeatmap merge BuddyProfile+Users). Admin Next.js /influencer page avec 8 KPI cards + growth curve + heatmap horizontal bars + tops.
+
+### 6.1 Admin dashboard tech ✅ FAIT (2026-05-19)
+> AdminTechController: /system-health (uptime, mem, threads, DB latency), /users avec search ILIKE + suspend toggle, /moderation-queue (posts+comments+chatMessages flaggés), /posts/{id}/approve|delete, /ai-cost estim Claude $0.003/msg. Admin /monitoring page avec auto-refresh 30s + actions inline.
+
 
 - **Sous-étapes** :
   1. Enregistrer 60 min audio propre influenceur (FR + Darija) — coordination avec influenceur
