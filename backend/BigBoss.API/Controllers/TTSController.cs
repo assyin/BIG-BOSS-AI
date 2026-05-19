@@ -65,8 +65,16 @@ public class TTSController : ControllerBase
         return Ok(new
         {
             configured = _tts.IsConfigured,
-            defaultVoice = GeminiTTSService.DEFAULT_VOICE,
-            voices = new[] { "Charon", "Kore", "Puck", "Aoede", "Zephyr", "Fenrir", "Leda", "Orus" },
+            provider = "Azure Speech",
+            defaultVoice = AzureTTSService.DEFAULT_VOICE,
+            voices = new[]
+            {
+                new { name = "ar-MA-MounaNeural", lang = "darija", gender = "Female" },
+                new { name = "ar-MA-JamalNeural",  lang = "darija", gender = "Male" },
+                new { name = "fr-FR-HenriNeural",  lang = "français", gender = "Male" },
+                new { name = "fr-FR-DeniseNeural", lang = "français", gender = "Female" },
+                new { name = "ar-EG-SalmaNeural",  lang = "arabe-eg", gender = "Female" },
+            },
         });
     }
 }

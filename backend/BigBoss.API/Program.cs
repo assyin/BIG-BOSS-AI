@@ -163,8 +163,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
 builder.Services.AddHttpClient<IElevenLabsService, ElevenLabsService>();
 builder.Services.AddHttpClient<OpenAIService>();
-// Sprint 4.1 — Gemini TTS (darija quality + 100x cheaper than ElevenLabs)
-builder.Services.AddHttpClient<ITTSService, GeminiTTSService>();
+// Sprint 4.1 — Azure TTS (vraies voix darija marocain natives ar-MA-Mouna/Jamal)
+// GeminiTTSService disponible en fallback FR/EN si Azure indispo (cf project_gemini_tts_darija_failed.md)
+builder.Services.AddHttpClient<ITTSService, AzureTTSService>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        // Force TLS 1.2/1.3 + handle SslProtocols pour éviter handshake fail intermittent
+        SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
+    });
+builder.Services.AddHttpClient<GeminiTTSService>();
 
 // Register services
 builder.Services.AddScoped<ITokenService, TokenService>();
