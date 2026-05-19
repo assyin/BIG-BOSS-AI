@@ -614,6 +614,12 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 ### 6.1 Admin dashboard tech ✅ FAIT (2026-05-19)
 > AdminTechController: /system-health (uptime, mem, threads, DB latency), /users avec search ILIKE + suspend toggle, /moderation-queue (posts+comments+chatMessages flaggés), /posts/{id}/approve|delete, /ai-cost estim Claude $0.003/msg. Admin /monitoring page avec auto-refresh 30s + actions inline.
 
+### 6.2 Cache Redis agressif ✅ FAIT (2026-05-19)
+> IRedisCacheService.GetOrSetAsync<T>(key, factory, ttl) + métriques hits/misses + IsConnected. NoOpCacheService fallback si Redis down. Cache appliqué sur GET /api/exercises (1h sans filtre) + GET /api/exercises/{id} (24h détail). AdminTech /cache-stats + /cache/invalidate pattern.
+
+### 6.3 Audit sécurité OWASP Top 10 ✅ FAIT (2026-05-19)
+> SecurityHeadersMiddleware: 6 headers OWASP (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP). SecurityAuditController /api/admin/security/audit avec 12 checks Top 10 (A01-A10 + BBF) + secrets check. Admin /security page avec stats + checks color-coded. Score actuel: 8 OK · 4 INFO/WARN · 0 FAIL.
+
 
 - **Sous-étapes** :
   1. Enregistrer 60 min audio propre influenceur (FR + Darija) — coordination avec influenceur
