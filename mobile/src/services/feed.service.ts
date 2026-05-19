@@ -53,6 +53,15 @@ export const FeedService = {
     return res.data;
   },
 
+  // Sprint 5.1 — Upload image vers R2 pour insertion dans un post
+  async uploadImage(photoBase64: string): Promise<{ imageUrl: string; objectKey: string }> {
+    const res = await api.post<{ imageUrl: string; objectKey: string }>(
+      `${BASE}/upload-image`,
+      { photoBase64 }
+    );
+    return res.data;
+  },
+
   async react(postId: string, type: number): Promise<boolean> {
     const res = await api.post<{ reacted: boolean }>(`${BASE}/${postId}/react`, { type });
     return res.data.reacted;

@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'react-native';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
 import FeedService, { FeedPost, REACTION_EMOJIS, POST_TYPE_LABELS } from '@/services/feed.service';
@@ -25,7 +27,9 @@ export default function CommunityScreen() {
   const [newPost, setNewPost] = useState('');
   const [posting, setPosting] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
-  // Sprint 5.1 — Infinite scroll
+  // Sprint 5.1 — Compose avec photo + Infinite scroll
+  const [composePhotoBase64, setComposePhotoBase64] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -71,15 +75,50 @@ export default function CommunityScreen() {
   }, []));
 
   const handlePost = async () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() && !composePhotoBase64) return;
     setPosting(true);
     try {
-      await FeedService.createPost(newPost.trim());
+      let imageUrl: string | undefined;
+      if (composePhotoBase64) {
+        setUploadingImage(true);
+        const up = await FeedService.uploadImage(composePhotoBase64);
+        imageUrl = up.imageUrl;
+        setUploadingImage(false);
+      }
+      await FeedService.createPost(newPost.trim(), imageUrl);
       setNewPost('');
+      setComposePhotoBase64(null);
       setShowCompose(false);
       await loadFeed(true);
-    } catch { Alert.alert('Erreur', 'Impossible de publier'); }
-    finally { setPosting(false); }
+    } catch (e: any) {
+      Alert.alert('Erreur', e?.response?.data?.error || 'Impossible de publier');
+    } finally {
+      setPosting(false);
+      setUploadingImage(false);
+    }
+  };
+
+  const handlePickImage = async (source: 'camera' | 'gallery') => {
+    try {
+      if (source === 'camera') {
+        const perm = await ImagePicker.requestCameraPermissionsAsync();
+        if (!perm.granted) {
+          Alert.alert('Permission requise', "Autorise l'acces a la camera.");
+          return;
+        }
+        const r = await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true, aspect: [4, 3],
+        });
+        if (!r.canceled && r.assets?.[0]?.base64) setComposePhotoBase64(r.assets[0].base64);
+      } else {
+        const r = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'], quality: 0.6, base64: true, allowsEditing: true, aspect: [4, 3],
+        });
+        if (!r.canceled && r.assets?.[0]?.base64) setComposePhotoBase64(r.assets[0].base64);
+      }
+    } catch {
+      Alert.alert('Erreur', "Impossible d'ouvrir l'image.");
+    }
   };
 
   const handleReact = async (postId: string, type: number) => {
@@ -173,6 +212,15 @@ export default function CommunityScreen() {
           <Text style={styles.postContent}>{item.content}</Text>
         )}
 
+        {/* Sprint 5.1 — Photo attachée au post */}
+        {item.imageUrl && (
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.postImage}
+            resizeMode="cover"
+          />
+        )}
+
         {/* Reactions */}
         <View style={styles.reactionsRow}>
           {REACTIONS.map((r) => {
@@ -247,17 +295,53 @@ export default function CommunityScreen() {
             multiline
             maxLength={280}
           />
-          <TouchableOpacity
-            style={[styles.postBtn, (!newPost.trim() || posting) && styles.postBtnDisabled]}
-            onPress={handlePost}
-            disabled={!newPost.trim() || posting}
-          >
-            {posting ? (
-              <ActivityIndicator size="small" color={Colors.white} />
-            ) : (
-              <Text style={styles.postBtnText}>Publier</Text>
-            )}
-          </TouchableOpacity>
+
+          {/* Photo preview */}
+          {composePhotoBase64 && (
+            <View style={styles.composePhotoPreview}>
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${composePhotoBase64}` }}
+                style={{ width: '100%', height: 200, borderRadius: 12 }}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                style={styles.composePhotoRemove}
+                onPress={() => setComposePhotoBase64(null)}
+              >
+                <Ionicons name="close-circle" size={28} color={Colors.dark} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Action row: camera + galerie + publier */}
+          <View style={styles.composeActions}>
+            <TouchableOpacity
+              style={styles.composeIconBtn}
+              onPress={() => handlePickImage('camera')}
+              disabled={posting}
+            >
+              <Ionicons name="camera-outline" size={22} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.composeIconBtn}
+              onPress={() => handlePickImage('gallery')}
+              disabled={posting}
+            >
+              <Ionicons name="image-outline" size={22} color={Colors.primary} />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }} />
+            <TouchableOpacity
+              style={[styles.postBtn, (!newPost.trim() && !composePhotoBase64) || posting ? styles.postBtnDisabled : null]}
+              onPress={handlePost}
+              disabled={(!newPost.trim() && !composePhotoBase64) || posting}
+            >
+              {posting ? (
+                <ActivityIndicator size="small" color={Colors.white} />
+              ) : (
+                <Text style={styles.postBtnText}>{uploadingImage ? 'Upload...' : 'Publier'}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -394,4 +478,21 @@ const styles = StyleSheet.create({
   emptyText: { ...Typography.body, color: Colors.gray, fontWeight: Fonts.weight.semiBold },
   emptySubtext: { ...Typography.caption, color: Colors.lightGray, textAlign: 'center' },
   endText: { textAlign: 'center', color: Colors.lightGray, fontSize: Fonts.size.xs, paddingVertical: 16, fontStyle: 'italic' },
+
+  // Sprint 5.1 — Compose photo
+  composePhotoPreview: { position: 'relative', marginTop: 10, marginBottom: 4 },
+  composePhotoRemove: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14 },
+  composeActions: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  composeIconBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: Colors.primaryDim,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  postImage: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: 12,
+    marginTop: 10,
+    backgroundColor: Colors.background,
+  },
 });

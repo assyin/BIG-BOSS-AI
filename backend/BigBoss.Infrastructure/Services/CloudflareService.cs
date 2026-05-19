@@ -19,17 +19,25 @@ public class CloudflareService : ICloudflareService
         ILogger<CloudflareService> logger)
     {
         _logger = logger;
-        _bucketName = configuration["BBF_CLOUDFLARE_R2_BUCKET"] ?? "bigboss-videos";
-        _publicUrl = configuration["BBF_CLOUDFLARE_R2_PUBLIC_URL"] ?? "";
+        // Sprint 5.1 — fallback BBF_R2_* (vraies clés en place) si BBF_CLOUDFLARE_R2_* placeholder
+        _bucketName = configuration["BBF_R2_BUCKET"]
+            ?? configuration["BBF_CLOUDFLARE_R2_BUCKET"]
+            ?? "bbf-videos";
+        _publicUrl = configuration["BBF_R2_PUBLIC_URL"]
+            ?? configuration["BBF_CLOUDFLARE_R2_PUBLIC_URL"]
+            ?? "";
         _defaultExpirySeconds = int.Parse(configuration["BBF_CLOUDFLARE_SIGNED_URL_EXPIRY"] ?? "1800");
 
-        var accountId = configuration["BBF_CLOUDFLARE_ACCOUNT_ID"];
-        var accessKey = configuration["BBF_CLOUDFLARE_R2_ACCESS_KEY"];
-        var secretKey = configuration["BBF_CLOUDFLARE_R2_SECRET_KEY"];
+        var accessKey = configuration["BBF_R2_ACCESS_KEY_ID"]
+            ?? configuration["BBF_CLOUDFLARE_R2_ACCESS_KEY"];
+        var secretKey = configuration["BBF_R2_SECRET_ACCESS_KEY"]
+            ?? configuration["BBF_CLOUDFLARE_R2_SECRET_KEY"];
+        var endpoint = configuration["BBF_R2_ENDPOINT"]
+            ?? $"https://{configuration["BBF_CLOUDFLARE_ACCOUNT_ID"]}.r2.cloudflarestorage.com";
 
         var config = new AmazonS3Config
         {
-            ServiceURL = $"https://{accountId}.r2.cloudflarestorage.com",
+            ServiceURL = endpoint,
             ForcePathStyle = true
         };
 
