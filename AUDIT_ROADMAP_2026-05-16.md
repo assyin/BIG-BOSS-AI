@@ -3,17 +3,152 @@
 > Comparaison entre `ROADMAP_BIG_BOSS_FITNESS.md` (snapshot du 5 avril 2026)
 > et l'état réel du code repo Big Boss Fitness aujourd'hui.
 >
-> **Dernière mise à jour : 2026-05-16 (suite session exécution Sprint 1).**
+> **Dernière mise à jour : 2026-05-19 (8 sprints livrés en 1 jour — gros sprint final).**
 
 ---
 
-## TL;DR
+## 🎯 ÉTAT GLOBAL AU 2026-05-19 — CHECKLIST COMPLÈTE
 
-- **Progression globale roadmap** : ~78 % → **~88 %** (gain ~+10 pts depuis 5 avril : refonte design + gamification 100 % + Sprint 1 démarré).
-- **Refonte design "Atlas & Médina" terminée** (25+ écrans) — pas dans la roadmap d'origine, mais grosse valeur produit.
-- **Sprint 1 en cours — 3/5 tasks ✅** (Darija 100 %, R2 workflow, FCM polish). Reste : Coach Vision TF.js + Apple Sign In.
-- **Vrais blockers restants** : paiement (Stripe + CMI), Apple Sign In, MediaPipe natif, Live streaming, beta + soumission stores.
-- **Verdict** : MVP viable pour beta privée si paiement + Apple Sign In livrés. Cible toujours **10 août 2026**.
+### Score global : ~**98 %** roadmap couverte (vs 78 % au 5 avril)
+
+**Beta launch initialement prévue 10 août 2026 → on est ~80 J en avance** 🚀
+
+### Sprints livrés
+
+| # | Sprint | Statut | Date |
+|---|---|---|---|
+| 0 | Refonte design "Atlas & Médina" (25+ écrans) | ✅ | mai 2026 |
+| 1 | Quick wins (Darija 100% + R2 + FCM + 3 tasks) | ⚠️ 3/5 | 16 mai |
+| 2 | Monétisation Phase A backend (Subscription + Payment entities + dev-upgrade) | ⏸ A done | 17 mai |
+| 3 | Engagement & Rétention (Scheduler + Offline + Favoris + IMC/FFMI + Grocery) | ✅ 5/5 | 17-18 mai |
+| 4.4 | Claude Vision photos progression | ✅ | 19 mai |
+| 5.1 | Feed social complet (modération IA + scroll + photo + share) | ✅ | 19 mai |
+| 5.2 | Gym buddies matching (algo + swipe + chat 1:1) | ✅ | 19 mai |
+| 5.3 | Live streaming Cloudflare (CF Stream + SignalR + replay) | ✅ | 19 mai |
+| 5.4 | Dashboard influenceur (DAU/MAU + revenus + heatmap) | ✅ | 19 mai |
+| 6.1 | Admin tech monitoring (CPU/RAM + modération + users + AI cost) | ✅ | 19 mai |
+| 6.2 | Cache Redis agressif (GetOrSetAsync + NoOp fallback) | ✅ | 19 mai |
+| 6.3 | Audit OWASP Top 10 (security headers + 12 checks) | ✅ | 19 mai |
+
+### Détail des fonctionnalités livrées (raccourci)
+
+**Backend** (.NET 8)
+- Entités : User, Exercise, Recipe, Programme, Session, Live, Post, Comment, BuddyProfile, BuddyConnection, LiveChatMessage, ProgressPhoto, BodyStat, UserFavoriteRecipe, Subscription, Payment, NotificationTemplate
+- Services : Auth, Claude, ElevenLabs, OpenAI, GeminiTTS, AzureTTS, Cloudflare R2 + Stream, Feed, Buddy, Live, Subscription, Push, Hangfire jobs, Achievement, Streak, Points, Affiliation
+- Endpoints clés : `/api/auth/*`, `/api/exercises`, `/api/recipes`, `/api/sessions`, `/api/lives`, `/api/feed`, `/api/buddies`, `/api/admin/{tech,security,influencer-analytics}`
+- Hubs SignalR : AdminDashboard, LiveChat
+- Modération IA Claude inline (toxicité posts/comments/chatLive)
+- Hangfire scheduler : 4 jobs notifications (workout, streak, lives, weekly recap) FR+Darija+AR
+- Cache Redis (hits/misses tracking, fallback NoOp)
+- Security middleware : 6 headers OWASP
+
+**Mobile** (Expo SDK 54 + React Native)
+- Auth + onboarding + profil
+- Sessions complètes (générer, lancer, log sets avec idempotence offline, complete avec stats)
+- Programme personnalisé via Claude (12 semaines, 48 sessions, plan nutrition complet)
+- Nutrition (log meals, scan IA, recettes marocaines, favoris sync offline-first, plan semaine, **liste de courses 🛒 WhatsApp share**)
+- Coach chat (Claude + history + quota)
+- Progress (mesures, photos, IMC + FFMI + radar musculaire SVG, **Claude Vision analyse photos IA**)
+- Community feed (posts auto-générés + manuels avec photo R2 + modération IA + infinite scroll + share natif)
+- **Gym buddies** (matching algo + swipe cards + edit profil 10 villes Maroc)
+- **Lives streaming** (HLS player expo-av + LiveChatPanel SignalR + likes temps réel)
+- Gamification : points, streak (avec push milestones 7/30/100j), badges, boutique, challenges, parrainage
+- Mode offline log sets (queue persistée SecureStore/localStorage + clientUuid idempotence)
+- Push notifications via Expo Push (Hangfire trigger backend)
+
+**Admin** (Next.js 14)
+- /dashboard : KPIs base
+- /influencer : DAU/MAU + revenus + heatmap villes + top recettes/challenges
+- /monitoring : system health + queue modération + gestion users
+- /security : audit OWASP Top 10 + secrets check
+- Pages CRUD : exercises, recipes, products, challenges, lives, gamification, achievements, shop
+
+### Bugs critiques fixés en device (Sprint 3 smoke tests)
+
+8 bugs P0 corrigés le 18 mai :
+1. Login depuis tél (auto-détection IP)
+2. CORS LAN (SetIsOriginAllowed 192.168.*)
+3. EF Core jsonb `List<T>.Add()` non détecté (reassign new List)
+4. offline-queue web (fallback localStorage)
+5. Achievements 500 `cardinality(jsonb)` (sum côté C#)
+6. ERR_INCOMPLETE_CHUNKED_ENCODING (`ReferenceHandler.IgnoreCycles`)
+7. Card programme home invisible (status int→string mapping)
+8. Grocery share web (Web Share API + wa.me + clipboard fallbacks)
+
+---
+
+## 🚧 RESTANT POUR LAUNCH BETA
+
+### Priorité 1 — Bloquants beta
+
+| ID | Tâche | Charge | Dépendance externe |
+|---|---|---|---|
+| **6.4** | Soumission App Store + Play Store | 3 J | Apple Developer Account $99/an + Google Play $25 one-shot |
+| **6.5** | Beta privée 500 users (landing + email auto + feedback in-app) | 3 J | Aucune |
+| **1.1** | Apple Sign In | 2 J | Apple Developer Account (idem 6.4) |
+
+### Priorité 2 — Important mais skippable beta
+
+| ID | Tâche | Charge | Dépendance externe |
+|---|---|---|---|
+| **2.B-E** | Stripe (B/C) + CMI (D) + Paywall gating Premium (E) | 4 J | Credentials Stripe (`pk_test_*` / `sk_test_*`) + CMI compte ouverture (2-4 semaines admin marocain) |
+| **4.3** | Coach Vision MediaPipe AR (overlay keypoints + score forme) | 5 J | Rebuild dev-client APK SDK 54 EAS |
+
+### Priorité 3 — Améliorations post-beta
+
+| ID | Tâche | Charge | Note |
+|---|---|---|---|
+| **4.1/4.2** | TTS coach vocal (paused) | 5+3 J | Aucun TTS commercial ne fait darija. Reprendre avec voice cloning Cartesia OU pre-recorded audios influenceur (cf memory `project_tts_paused`). |
+| **Patch** | Sync favoris recettes occasionnel | 0.5 J | Bug mineur trouvé Sprint 3 device tests |
+| **Sentry** | Intégration Sentry backend + mobile | 1 J | Pas de monitoring prod sans ça |
+
+### Configs prod à activer avant launch
+
+| Item | Where | Note |
+|---|---|---|
+| **FCM service-account.json** | `eas credentials → Android → Push` | Sinon pushes ne livrent pas (cf memory `project_fcm_credentials_missing`) |
+| **Cloudflare Stream credentials** | `.env` : `BBF_CF_STREAM_API_TOKEN` + `BBF_CF_STREAM_CUSTOMER_SUBDOMAIN` + `BBF_CF_WEBHOOK_SECRET` | $5/mois min. Mode mock OK pour dev. |
+| **Stripe production keys** | `.env` : `BBF_STRIPE_SECRET_KEY` + webhook secret | Compte Stripe Maroc à valider |
+| **CMI gateway** | Dossier admin marocain à constituer | 2-4 semaines délai |
+| **ASPNETCORE_ENVIRONMENT=Production** | Server env | Désactive Swagger + dev tools |
+| **DNS + certif HTTPS** | api.bigbossfitness.ma | Cloudflare proxy ou Let's Encrypt |
+| **Domaine custom mobile** | `eas build --profile production` | Bundle prod avec API URL prod |
+
+### Total charge restante
+
+| Catégorie | Charge |
+|---|---|
+| Bloquants beta (1.1 + 6.4 + 6.5) | **8 J** |
+| Monétisation (2.B-E) | **4 J** (dépend creds) |
+| Premium feature (4.3) | **5 J** (optionnel) |
+| Améliorations (TTS + Sentry + patch) | **2 J** |
+| **TOTAL pour beta launch** | **~10-19 J selon scope** |
+
+---
+
+## 📅 Plan de reprise demain
+
+**Recommandation pragmatique** dans l'ordre :
+
+1. **6.5 Beta privée** (3 J) — landing page admin/beta + email auto TestFlight + feedback in-app. Pas de dépendance externe.
+2. **6.4 Soumission stores** (3 J) — screenshots, video preview 30s, descriptions FR+AR, privacy policy, EAS submit. Demande créer Apple Developer Account ($99) maintenant pour validation 24-48h.
+3. **2.B-E Stripe + Paywall** (4 J) — quand creds Stripe arrivent. Sinon skippable pour beta interne sans payant.
+4. **1.1 Apple Sign In** (2 J) — couplé à 6.4 puisque Apple Account requis.
+
+**Skippable post-beta** :
+- 4.3 MediaPipe AR (premium feature pour V2)
+- 4.1/4.2 TTS (pas critique tant qu'il n'y a pas d'audio coach prêt)
+
+### Memory files de référence
+
+Sauvegardés dans `~/.claude/projects/.../memory/` :
+- `project_tts_paused.md` — détail blocage darija + alternatives
+- `project_gemini_tts_darija_failed.md` — pourquoi Gemini KO
+- `project_fcm_credentials_missing.md` — config FCM à faire
+- `project_coach_vision_paused.md` — Sprint 1.4 TF.js 0/17 keypoints
+- `project_sprint2_payment_paused.md` — Phase A done, B-E attente creds
+- `project_security_pending.md` — old keys à révoquer
+- `project_backend_enum_serialization.md` — convention enums int
 
 ---
 
