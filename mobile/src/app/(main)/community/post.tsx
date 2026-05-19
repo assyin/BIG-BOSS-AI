@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity,
   Platform, ActivityIndicator, TextInput, KeyboardAvoidingView,
+  Image, Share, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -51,6 +52,47 @@ export default function PostDetailScreen() {
     setPost(updated);
   };
 
+  // Sprint 5.1 — Share du post detail
+  const handleShare = async () => {
+    if (!post) return;
+    const title = post.autoTitle || POST_TYPE_LABELS[post.postType] || '';
+    const lines = [
+      `🇲🇦 ${post.userName} sur Big Boss Fitness`,
+      '',
+      title || post.content,
+      post.autoStats || '',
+      '',
+      '#BigBossFitness #فيتنس #Maroc',
+    ].filter(Boolean);
+    const message = lines.join('\n');
+
+    if (Platform.OS === 'web') {
+      try {
+        // @ts-ignore
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          // @ts-ignore
+          await navigator.share({ title: 'Big Boss Fitness', text: message });
+          return;
+        }
+      } catch {/* annulé */}
+      try {
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        if (typeof window !== 'undefined') { window.open(waUrl, '_blank'); return; }
+      } catch {/* bloqué */}
+      try {
+        // @ts-ignore
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+          // @ts-ignore
+          await navigator.clipboard.writeText(message);
+          // @ts-ignore
+          if (typeof window !== 'undefined') window.alert('Publication copiée !');
+        }
+      } catch {/* ignore */}
+      return;
+    }
+    try { await Share.share({ message }); } catch {/* annulé */}
+  };
+
   const timeAgo = (date: string) => {
     const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
     if (mins < 1) return "A l'instant";
@@ -83,7 +125,9 @@ export default function PostDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={Colors.dark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Publication</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={handleShare}>
+          <Ionicons name="share-social-outline" size={24} color={Colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -105,6 +149,15 @@ export default function PostDetailScreen() {
               {post.autoTitle && <Text style={styles.autoTitle}>{post.autoTitle}</Text>}
               {post.autoStats && <Text style={styles.autoStats}>{post.autoStats}</Text>}
               {post.content && post.postType === 10 && <Text style={styles.content}>{post.content}</Text>}
+
+              {/* Sprint 5.1 — Photo attachée au post */}
+              {post.imageUrl && (
+                <Image
+                  source={{ uri: post.imageUrl }}
+                  style={styles.postImage}
+                  resizeMode="cover"
+                />
+              )}
 
               <View style={styles.reactionsRow}>
                 {REACTIONS.map((r) => {
@@ -133,6 +186,13 @@ export default function PostDetailScreen() {
               </View>
             </View>
           )}
+          ListEmptyComponent={
+            <View style={styles.emptyComments}>
+              <Ionicons name="chatbubbles-outline" size={36} color={Colors.lightGray} />
+              <Text style={styles.emptyCommentsText}>Aucun commentaire</Text>
+              <Text style={styles.emptyCommentsSubtext}>Sois le premier à réagir 💬</Text>
+            </View>
+          }
         />
 
         {/* Comment input */}
@@ -201,4 +261,28 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, fontSize: Fonts.size.base, color: Colors.dark, padding: 0 },
   emptyText: { ...Typography.body, color: Colors.gray },
+
+  // Sprint 5.1
+  postImage: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: 12,
+    marginVertical: 10,
+    backgroundColor: Colors.background,
+  },
+  emptyComments: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    gap: 6,
+  },
+  emptyCommentsText: {
+    ...Typography.body,
+    color: Colors.gray,
+    fontWeight: Fonts.weight.semiBold,
+    marginTop: 8,
+  },
+  emptyCommentsSubtext: {
+    ...Typography.caption,
+    color: Colors.lightGray,
+  },
 });
