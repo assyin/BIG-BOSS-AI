@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity,
-  Platform, ActivityIndicator, RefreshControl, TextInput, Alert,
+  Platform, ActivityIndicator, RefreshControl, TextInput, Alert, Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,20 +25,50 @@ export default function CommunityScreen() {
   const [newPost, setNewPost] = useState('');
   const [posting, setPosting] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
+  // Sprint 5.1 — Infinite scroll
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 20;
 
-  const loadFeed = useCallback(async () => {
+  const loadFeed = useCallback(async (resetPage = true) => {
     try {
-      const data = await FeedService.getFeed(1, 30);
-      setPosts(data);
+      const targetPage = resetPage ? 1 : page;
+      const data = await FeedService.getFeed(targetPage, PAGE_SIZE);
+      if (resetPage) {
+        setPosts(data);
+        setPage(2);
+        setHasMore(data.length === PAGE_SIZE);
+      } else {
+        // Dédupe par id si jamais
+        setPosts((prev) => {
+          const ids = new Set(prev.map((p) => p.id));
+          const append = data.filter((p) => !ids.has(p.id));
+          return [...prev, ...append];
+        });
+        setPage(targetPage + 1);
+        setHasMore(data.length === PAGE_SIZE);
+      }
     } catch (err) { console.error(err); }
-  }, []);
+  }, [page]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || refreshing) return;
+    setLoadingMore(true);
+    try {
+      await loadFeed(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, refreshing, loadFeed]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
     setLoading(true);
-    loadFeed().finally(() => { if (active) setLoading(false); });
+    loadFeed(true).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [loadFeed]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []));
 
   const handlePost = async () => {
     if (!newPost.trim()) return;
@@ -47,14 +77,55 @@ export default function CommunityScreen() {
       await FeedService.createPost(newPost.trim());
       setNewPost('');
       setShowCompose(false);
-      await loadFeed();
+      await loadFeed(true);
     } catch { Alert.alert('Erreur', 'Impossible de publier'); }
     finally { setPosting(false); }
   };
 
   const handleReact = async (postId: string, type: number) => {
     await FeedService.react(postId, type);
-    await loadFeed();
+    await loadFeed(true);
+  };
+
+  // Sprint 5.1 — Partage externe (Share API native + fallback web)
+  const handleShare = async (post: FeedPost) => {
+    const title = post.autoTitle || POST_TYPE_LABELS[post.postType] || '';
+    const lines = [
+      `🇲🇦 ${post.userName} sur Big Boss Fitness`,
+      '',
+      title || post.content,
+      post.autoStats || '',
+      '',
+      '#BigBossFitness #فيتنس #Maroc',
+    ].filter(Boolean);
+    const message = lines.join('\n');
+
+    if (Platform.OS === 'web') {
+      try {
+        // @ts-ignore — Web Share API
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          // @ts-ignore
+          await navigator.share({ title: 'Big Boss Fitness', text: message });
+          return;
+        }
+      } catch {/* annulé */}
+      try {
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        if (typeof window !== 'undefined') { window.open(waUrl, '_blank'); return; }
+      } catch {/* bloqué */}
+      try {
+        // @ts-ignore
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+          // @ts-ignore
+          await navigator.clipboard.writeText(message);
+          // @ts-ignore
+          if (typeof window !== 'undefined') window.alert('Publication copiée !');
+        }
+      } catch {/* ignore */}
+      return;
+    }
+
+    try { await Share.share({ message }); } catch {/* annulé */}
   };
 
   const timeAgo = (date: string) => {
@@ -126,6 +197,11 @@ export default function CommunityScreen() {
             <Ionicons name="chatbubble-outline" size={16} color={Colors.gray} />
             {item.commentCount > 0 && <Text style={styles.commentCount}>{item.commentCount}</Text>}
           </TouchableOpacity>
+
+          {/* Sprint 5.1 — Bouton Share natif/web */}
+          <TouchableOpacity style={styles.commentBtn} onPress={() => handleShare(item)}>
+            <Ionicons name="share-social-outline" size={16} color={Colors.gray} />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -191,7 +267,16 @@ export default function CommunityScreen() {
         renderItem={renderPost}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadFeed(); setRefreshing(false); }} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadFeed(true); setRefreshing(false); }} tintColor={Colors.primary} />}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore
+            ? <View style={{ paddingVertical: 20 }}><ActivityIndicator size="small" color={Colors.primary} /></View>
+            : (!hasMore && posts.length > 0)
+              ? <Text style={styles.endText}>— Fin du feed —</Text>
+              : null
+        }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="people-outline" size={48} color={Colors.lightGray} />
@@ -308,4 +393,5 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 60, gap: 8 },
   emptyText: { ...Typography.body, color: Colors.gray, fontWeight: Fonts.weight.semiBold },
   emptySubtext: { ...Typography.caption, color: Colors.lightGray, textAlign: 'center' },
+  endText: { textAlign: 'center', color: Colors.lightGray, fontSize: Fonts.size.xs, paddingVertical: 16, fontStyle: 'italic' },
 });

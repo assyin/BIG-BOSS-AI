@@ -9,7 +9,17 @@ public interface IClaudeService
     Task<string> GenerateMotivationalMessageAsync(MotivationContext context);
     // Sprint 4.4 — Claude Vision analyse photos progression
     Task<string> AnalyzeProgressPhotoAsync(string imageBase64, ProgressPhotoAnalysisContext context);
+
+    // Sprint 5.1 — Modération IA toxicité posts/commentaires feed social
+    Task<ModerationResult> ScoreToxicityAsync(string text);
 }
+
+public record ModerationResult(
+    decimal ToxicityScore,    // 0.0 (safe) → 1.0 (toxic)
+    bool ShouldFlag,          // true si score > 0.7 OU catégorie risquée
+    string? Category,         // "harassment" | "hate" | "violence" | "sexual" | "spam" | null
+    string? Reason            // explication courte si flag
+);
 
 public record ProgressPhotoAnalysisContext(
     string? Gender,                    // "male" | "female" | null

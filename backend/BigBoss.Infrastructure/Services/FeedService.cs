@@ -9,11 +9,13 @@ namespace BigBoss.Infrastructure.Services;
 public class FeedService : IFeedService
 {
     private readonly BigBossDbContext _context;
+    private readonly IClaudeService _claude;
     private readonly ILogger<FeedService> _logger;
 
-    public FeedService(BigBossDbContext context, ILogger<FeedService> logger)
+    public FeedService(BigBossDbContext context, IClaudeService claude, ILogger<FeedService> logger)
     {
         _context = context;
+        _claude = claude;
         _logger = logger;
     }
 
@@ -53,6 +55,9 @@ public class FeedService : IFeedService
 
     public async Task<Post> CreatePostAsync(Guid userId, CreatePostRequest request)
     {
+        // Sprint 5.1 — Modération IA Claude (fail-open : si Claude indispo, on publie)
+        var moderation = await _claude.ScoreToxicityAsync(request.Content);
+
         var post = new Post
         {
             Id = Guid.NewGuid(),
@@ -61,11 +66,24 @@ public class FeedService : IFeedService
             Content = request.Content,
             ImageUrl = request.ImageUrl,
             CreatedAt = DateTime.UtcNow,
+            IsFlagged = moderation.ShouldFlag,
+            FlagReason = moderation.ShouldFlag
+                ? $"[AI-modération] {moderation.Category ?? "toxic"} (score={moderation.ToxicityScore:F2}): {moderation.Reason}"
+                : null,
         };
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Post created by user {UserId}", userId);
+        if (moderation.ShouldFlag)
+        {
+            _logger.LogWarning("Post flagged by AI: user={UserId} score={Score} category={Cat}",
+                userId, moderation.ToxicityScore, moderation.Category);
+        }
+        else
+        {
+            _logger.LogInformation("Post created by user {UserId} (toxicity score: {Score:F2})",
+                userId, moderation.ToxicityScore);
+        }
         return post;
     }
 
@@ -125,12 +143,16 @@ public class FeedService : IFeedService
 
     public async Task<PostComment> CommentAsync(Guid userId, Guid postId, string content)
     {
+        // Sprint 5.1 — Modération IA Claude sur commentaires aussi
+        var moderation = await _claude.ScoreToxicityAsync(content);
+
         var comment = new PostComment
         {
             Id = Guid.NewGuid(),
             PostId = postId,
             UserId = userId,
             Content = content,
+            IsFlagged = moderation.ShouldFlag,
             CreatedAt = DateTime.UtcNow,
         };
         _context.PostComments.Add(comment);

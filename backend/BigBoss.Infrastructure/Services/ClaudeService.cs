@@ -292,6 +292,86 @@ Analyse cette photo et estime composition corporelle + recommandation focus.";
         return response.Content;
     }
 
+    public async Task<ModerationResult> ScoreToxicityAsync(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || text.Length > 5000)
+        {
+            // Texte invalide/trop long → considéré comme non-toxique pour ne pas bloquer l'UX,
+            // mais à signaler éventuellement
+            return new ModerationResult(0m, false, null, null);
+        }
+
+        var systemPrompt = @"Tu es un modérateur de contenu pour une app fitness marocaine.
+Analyse ce texte (FR/Darija/Arabe/EN) et retourne UNIQUEMENT du JSON valide:
+{
+  ""toxicityScore"": number,        // 0.0 (safe) à 1.0 (toxic)
+  ""category"": ""string|null"",     // ""harassment"" | ""hate"" | ""violence"" | ""sexual"" | ""spam"" | null
+  ""reason"": ""string|null""        // 1 phrase courte d'explication si flag
+}
+
+Critères de toxicité (score augmente avec):
+- Insultes, harcèlement personnel
+- Discours de haine (racisme, sexisme, homophobie, religion)
+- Violence ou menaces
+- Contenu sexuel explicite
+- Spam (publicité, scam, multi-posts identiques)
+- Cyberbullying
+
+NE PAS flagger:
+- Expressions darija/maghrebines normales
+- Critique constructive
+- Émotions négatives modérées (frustration, déception)
+- Vocabulaire fitness intense (""tuer la salle"", ""démonter"", etc.)";
+
+        try
+        {
+            var response = await SendMessageAsync(new ClaudeRequest(
+                SystemPrompt: systemPrompt,
+                UserMessage: $"Texte à analyser:\n\"\"\"\n{text}\n\"\"\"",
+                Model: _modelFast,    // Haiku (rapide + cheap pour modération)
+                MaxTokens: 200
+            ));
+
+            var json = CleanJsonForModeration(response.Content);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            decimal score = 0;
+            if (root.TryGetProperty("toxicityScore", out var s) && s.ValueKind == System.Text.Json.JsonValueKind.Number)
+                score = s.GetDecimal();
+
+            string? category = null;
+            if (root.TryGetProperty("category", out var c) && c.ValueKind == System.Text.Json.JsonValueKind.String)
+                category = c.GetString();
+
+            string? reason = null;
+            if (root.TryGetProperty("reason", out var r) && r.ValueKind == System.Text.Json.JsonValueKind.String)
+                reason = r.GetString();
+
+            return new ModerationResult(
+                ToxicityScore: score,
+                ShouldFlag: score > 0.7m || category == "hate" || category == "harassment" || category == "violence",
+                Category: category,
+                Reason: reason
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Toxicity check failed, defaulting to safe");
+            // Fail open: si Claude ne répond pas, on ne bloque pas la publication
+            return new ModerationResult(0m, false, null, null);
+        }
+    }
+
+    private static string CleanJsonForModeration(string text)
+    {
+        var trimmed = text.Trim();
+        if (trimmed.StartsWith("```json")) trimmed = trimmed[7..];
+        else if (trimmed.StartsWith("```")) trimmed = trimmed[3..];
+        if (trimmed.EndsWith("```")) trimmed = trimmed[..^3];
+        return trimmed.Trim();
+    }
+
     public async Task<string> GenerateMotivationalMessageAsync(MotivationContext context)
     {
         var systemPrompt = @"Tu es Big Boss, coach fitness marocain charismatique et motivant.
