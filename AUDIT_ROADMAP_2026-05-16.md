@@ -596,6 +596,12 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 ### 4.1 ElevenLabs voix clonée influenceur *(5 J)* ⏸️ PAUSED (2026-05-19)
 > Aucun TTS commercial testé (ElevenLabs, Gemini, Azure ar-MA) ne fait du darija authentique. Code Azure + Gemini en repo mais désactivé. Reprendre avec audios pré-enregistrés influenceur OU voice cloning Cartesia (cf memory project_tts_paused).
 
+### 4.4 Claude Vision photos progression ✅ FAIT (2026-05-19)
+> Endpoint POST /api/progressphotos/{id}/analyze + Claude Sonnet vision + JSON structuré (bodyFat, postureScore, muscleMassScore, distribution, strengths, improvements, recommendation). Mobile bouton "Analyser avec IA" + modal PhotoAnalysisCard.
+
+### 5.1 Feed social complet ✅ FAIT (2026-05-19)
+> Modération IA Claude (toxicity score 0-1 + auto-flag), infinite scroll mobile, photo upload R2 + display, Share natif/web (wa.me + clipboard fallback), post detail thread avec compose comments + empty state.
+
 
 - **Sous-étapes** :
   1. Enregistrer 60 min audio propre influenceur (FR + Darija) — coordination avec influenceur
