@@ -298,6 +298,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<BigBoss.API.Hubs.AdminDashboardHub>("/hubs/admin-dashboard");
+// Sprint 5.3 — Chat live temps réel
+app.MapHub<BigBoss.API.Hubs.LiveChatHub>("/hubs/live-chat");
 
 // Sprint 3.1 — Hangfire dashboard + recurring jobs registration
 app.UseHangfireDashboard("/hangfire", new DashboardOptions

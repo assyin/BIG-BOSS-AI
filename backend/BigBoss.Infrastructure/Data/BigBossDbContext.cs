@@ -19,6 +19,7 @@ public class BigBossDbContext : DbContext
     public DbSet<ProgressPhoto> ProgressPhotos => Set<ProgressPhoto>();
     public DbSet<CoachMessage> CoachMessages => Set<CoachMessage>();
     public DbSet<Live> Lives => Set<Live>();
+    public DbSet<LiveChatMessage> LiveChatMessages => Set<LiveChatMessage>();
     public DbSet<Challenge> Challenges => Set<Challenge>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Food> Foods => Set<Food>();
