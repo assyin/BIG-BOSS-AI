@@ -1,6 +1,7 @@
 using BigBoss.Core.Entities;
 using BigBoss.Core.Enums;
 using BigBoss.Infrastructure.Data;
+using BigBoss.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace BigBoss.API.Controllers;
 
 /// <summary>
 /// Sprint 6.1 — Admin dashboard tech: monitoring système, modération, gestion users.
+/// Sprint 6.2 — + cache stats + invalidation.
 /// </summary>
 [ApiController]
 [Route("api/admin/tech")]
@@ -17,11 +19,13 @@ namespace BigBoss.API.Controllers;
 public class AdminTechController : ControllerBase
 {
     private readonly BigBossDbContext _db;
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<AdminTechController> _logger;
 
-    public AdminTechController(BigBossDbContext db, ILogger<AdminTechController> logger)
+    public AdminTechController(BigBossDbContext db, IRedisCacheService cache, ILogger<AdminTechController> logger)
     {
         _db = db;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -250,5 +254,39 @@ public class AdminTechController : ControllerBase
             },
             note = "Estimation basée sur le nombre de messages coach. Précision ±20%.",
         });
+    }
+
+    /// <summary>
+    /// Sprint 6.2 — Stats du cache Redis (hit ratio + connection status).
+    /// </summary>
+    [HttpGet("cache-stats")]
+    public IActionResult CacheStats()
+    {
+        var total = _cache.CacheHits + _cache.CacheMisses;
+        var hitRatio = total > 0 ? Math.Round((double)_cache.CacheHits * 100 / total, 1) : 0.0;
+        return Ok(new
+        {
+            connected = _cache.IsConnected,
+            hits = _cache.CacheHits,
+            misses = _cache.CacheMisses,
+            hitRatioPercent = hitRatio,
+        });
+    }
+
+    public record InvalidateCacheRequest(string Pattern);
+
+    /// <summary>
+    /// Sprint 6.2 — Invalide un pattern de clés cache (ex: "exercises:*" ou "recipe:*").
+    /// Utile après bulk update admin pour forcer un refresh.
+    /// </summary>
+    [HttpPost("cache/invalidate")]
+    public async Task<IActionResult> InvalidateCache([FromBody] InvalidateCacheRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Pattern) || req.Pattern.Length < 3)
+            return BadRequest(new { error = "pattern required, min 3 chars (e.g. 'exercises:*')" });
+
+        await _cache.InvalidatePatternAsync(req.Pattern);
+        _logger.LogInformation("Admin invalidated cache pattern: {Pattern}", req.Pattern);
+        return Ok(new { invalidated = true, pattern = req.Pattern });
     }
 }

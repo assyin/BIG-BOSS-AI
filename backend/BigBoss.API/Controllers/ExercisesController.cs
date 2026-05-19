@@ -1,6 +1,7 @@
 using BigBoss.Core.DTOs.Exercises;
 using BigBoss.Core.Enums;
 using BigBoss.Core.Interfaces;
+using BigBoss.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,27 +13,47 @@ namespace BigBoss.API.Controllers;
 public class ExercisesController : ControllerBase
 {
     private readonly IExerciseService _exerciseService;
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<ExercisesController> _logger;
 
-    public ExercisesController(IExerciseService exerciseService, ILogger<ExercisesController> logger)
+    public ExercisesController(IExerciseService exerciseService, IRedisCacheService cache, ILogger<ExercisesController> logger)
     {
         _exerciseService = exerciseService;
+        _cache = cache;
         _logger = logger;
     }
 
     /// <summary>
-    /// Get exercises with optional filters
+    /// Get exercises with optional filters (cached 1h pour les requêtes sans filtre)
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(ExerciseListResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ExerciseListResponse>> GetExercises([FromQuery] ExerciseFilterRequest filter)
     {
-        var result = await _exerciseService.GetExercisesAsync(filter);
+        // Sprint 6.2 — cache uniquement pour les requêtes "défaut" sans filtre actif
+        // (la plupart du trafic = liste générale). Avec filtres → on bypasse pour éviter explosion de clés.
+        var canCache = string.IsNullOrEmpty(filter?.SearchQuery)
+            && filter?.MuscleGroup == null
+            && filter?.Equipment == null
+            && filter?.Difficulty == null;
+
+        if (canCache)
+        {
+            var cacheKey = $"exercises:list:p{filter?.Page ?? 1}:s{filter?.PageSize ?? 20}";
+            var cached = await _cache.GetOrSetAsync(
+                cacheKey,
+                async () => await _exerciseService.GetExercisesAsync(filter ?? new ExerciseFilterRequest()),
+                TimeSpan.FromHours(1)
+            );
+            return Ok(cached);
+        }
+
+        var result = await _exerciseService.GetExercisesAsync(filter ?? new ExerciseFilterRequest());
         return Ok(result);
     }
 
     /// <summary>
-    /// Get exercise details with signed video URLs
+    /// Get exercise details with signed video URLs (cached 24h)
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ExerciseDetailDto), StatusCodes.Status200OK)]
@@ -40,7 +61,13 @@ public class ExercisesController : ControllerBase
     public async Task<ActionResult<ExerciseDetailDto>> GetExerciseDetail(Guid id)
     {
         var userId = GetCurrentUserId();
-        var exercise = await _exerciseService.GetExerciseDetailAsync(id, userId);
+        // Sprint 6.2 — cache détail 24h (ne change pas souvent, signed video URLs gérés séparément)
+        var cacheKey = $"exercise:detail:{id}:u{userId}";
+        var exercise = await _cache.GetOrSetAsync(
+            cacheKey,
+            async () => await _exerciseService.GetExerciseDetailAsync(id, userId),
+            TimeSpan.FromHours(24)
+        );
 
         if (exercise == null)
         {

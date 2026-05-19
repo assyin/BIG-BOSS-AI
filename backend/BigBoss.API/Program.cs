@@ -205,8 +205,9 @@ try
 }
 catch
 {
-    // Redis not available - use no-op implementation
-    Log.Warning("Redis not available at {Connection}, caching disabled", redisConnection);
+    // Redis not available - register no-op service so DI doesn't fail
+    Log.Warning("Redis not available at {Connection}, caching disabled (using NoOpCacheService)", redisConnection);
+    builder.Services.AddSingleton<IRedisCacheService, NoOpCacheService>();
 }
 
 // Gamification services

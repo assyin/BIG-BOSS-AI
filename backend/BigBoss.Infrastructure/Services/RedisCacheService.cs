@@ -11,10 +11,18 @@ public interface IRedisCacheService
     Task RemoveAsync(string key);
     Task InvalidatePatternAsync(string pattern);
 
+    // Sprint 6.2 — pattern get-or-set transparent
+    Task<T?> GetOrSetAsync<T>(string key, Func<Task<T?>> factory, TimeSpan? expiry = null);
+
     // Sorted sets for leaderboards
     Task SetLeaderboardScoreAsync(string leaderboardKey, string memberId, double score);
     Task<List<LeaderboardCacheEntry>> GetLeaderboardAsync(string leaderboardKey, int top = 50);
     Task RemoveLeaderboardAsync(string leaderboardKey);
+
+    // Sprint 6.2 — métriques pour monitoring
+    bool IsConnected { get; }
+    long CacheHits { get; }
+    long CacheMisses { get; }
 }
 
 public class LeaderboardCacheEntry
@@ -31,6 +39,12 @@ public class RedisCacheService : IRedisCacheService
     private readonly IDatabase _db;
     private static readonly TimeSpan DefaultExpiry = TimeSpan.FromMinutes(5);
 
+    private long _hits;
+    private long _misses;
+    public bool IsConnected => _redis.IsConnected;
+    public long CacheHits => Interlocked.Read(ref _hits);
+    public long CacheMisses => Interlocked.Read(ref _misses);
+
     public RedisCacheService(IConnectionMultiplexer redis, ILogger<RedisCacheService> logger)
     {
         _redis = redis;
@@ -43,14 +57,33 @@ public class RedisCacheService : IRedisCacheService
         try
         {
             var value = await _db.StringGetAsync(key);
-            if (value.IsNullOrEmpty) return default;
+            if (value.IsNullOrEmpty)
+            {
+                Interlocked.Increment(ref _misses);
+                return default;
+            }
+            Interlocked.Increment(ref _hits);
             return JsonSerializer.Deserialize<T>(value!);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Redis GET failed for key {Key}", key);
+            Interlocked.Increment(ref _misses);
             return default;
         }
+    }
+
+    public async Task<T?> GetOrSetAsync<T>(string key, Func<Task<T?>> factory, TimeSpan? expiry = null)
+    {
+        var cached = await GetAsync<T>(key);
+        if (cached != null) return cached;
+
+        var value = await factory();
+        if (value != null)
+        {
+            await SetAsync(key, value, expiry);
+        }
+        return value;
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
