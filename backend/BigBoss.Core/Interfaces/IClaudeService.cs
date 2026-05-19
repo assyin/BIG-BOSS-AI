@@ -7,7 +7,18 @@ public interface IClaudeService
     Task<string> GenerateSessionPromptAsync(SessionGenerationContext context);
     Task<string> AnalyzeMealImageAsync(string imageBase64);
     Task<string> GenerateMotivationalMessageAsync(MotivationContext context);
+    // Sprint 4.4 — Claude Vision analyse photos progression
+    Task<string> AnalyzeProgressPhotoAsync(string imageBase64, ProgressPhotoAnalysisContext context);
 }
+
+public record ProgressPhotoAnalysisContext(
+    string? Gender,                    // "male" | "female" | null
+    decimal? WeightKg,
+    decimal? HeightCm,
+    decimal? BodyFatPercent,           // si déjà mesuré (à comparer)
+    string? Goal,                      // "BuildMuscle" | "LoseWeight" | "Maintain" | etc.
+    string PoseType                    // "front" | "side" | "back"
+);
 
 public record ClaudeRequest(
     string SystemPrompt,

@@ -243,6 +243,55 @@ Analyse cette image de repas et reponds UNIQUEMENT en JSON valide:
         return response.Content;
     }
 
+    public async Task<string> AnalyzeProgressPhotoAsync(string imageBase64, ProgressPhotoAnalysisContext context)
+    {
+        var systemPrompt = @"Tu es un coach fitness et nutritionniste expert.
+Analyse cette photo de progression corporelle et reponds UNIQUEMENT en JSON valide (pas de markdown, pas de texte avant ou apres):
+{
+  ""bodyFatEstimate"": number,              // % estimé (entier ou décimal)
+  ""bodyFatRange"": ""string"",             // ex: ""14-17%""
+  ""postureScore"": number,                 // 1-10
+  ""muscleMassScore"": number,              // 1-10
+  ""muscleDistribution"": {
+    ""chest"": ""string"",                  // ""underdeveloped"" | ""average"" | ""developed"" | ""well-developed""
+    ""back"": ""string"",
+    ""arms"": ""string"",
+    ""shoulders"": ""string"",
+    ""core"": ""string"",
+    ""legs"": ""string""
+  },
+  ""strengths"": [""string""],              // 2-4 points forts visibles
+  ""areasToImprove"": [""string""],         // 2-4 zones à travailler
+  ""recommendation"": ""string"",           // 1-2 phrases en français : exercices + plan
+  ""confidenceScore"": number,              // 0-1 (qualité photo + pose)
+  ""disclaimer"": ""string""                // rappel: estimation visuelle, pas mesure clinique
+}
+
+Reste honnête et bienveillant. Ne fais pas de diagnostic médical. Si la photo n'est pas claire (pose non visible, vêtements amples, mauvaise lumière), baisse confidenceScore.";
+
+        var userContext = $@"Profil utilisateur:
+- Genre: {context.Gender ?? "non précisé"}
+- Poids: {(context.WeightKg.HasValue ? $"{context.WeightKg} kg" : "non précisé")}
+- Taille: {(context.HeightCm.HasValue ? $"{context.HeightCm} cm" : "non précisé")}
+- Body fat précédemment renseigné: {(context.BodyFatPercent.HasValue ? $"{context.BodyFatPercent}%" : "inconnu")}
+- Objectif: {context.Goal ?? "non précisé"}
+- Pose photo: {context.PoseType}
+
+Analyse cette photo et estime composition corporelle + recommandation focus.";
+
+        var response = await SendMessageWithImageAsync(
+            new ClaudeRequest(
+                SystemPrompt: systemPrompt,
+                UserMessage: userContext,
+                Model: _modelSmart, // Sonnet pour vision (meilleure qualité analyse)
+                MaxTokens: 1500
+            ),
+            imageBase64
+        );
+
+        return response.Content;
+    }
+
     public async Task<string> GenerateMotivationalMessageAsync(MotivationContext context)
     {
         var systemPrompt = @"Tu es Big Boss, coach fitness marocain charismatique et motivant.

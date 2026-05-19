@@ -20,12 +20,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Fonts, Typography } from '@/constants/fonts';
-import { ProgressService, BodyStat, ProgressPhoto, MuscleBalanceResponse } from '@/services/progress.service';
+import { ProgressService, BodyStat, ProgressPhoto, MuscleBalanceResponse, PhotoAnalysis } from '@/services/progress.service';
 import { useAuthStore } from '@/store/auth.store';
 import { SimpleChart, ChartDataPoint } from '@/components/ui/SimpleChart';
 import { LineChart, LineChartDataPoint } from '@/components/ui/LineChart';
 import { calcIMC, calcFFMI, targetWeightForImc } from '@/utils/body-metrics';
 import { MuscleRadarChart } from '@/components/charts/MuscleRadarChart';
+import { PhotoAnalysisCard } from '@/components/progress/PhotoAnalysisCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const PHOTO_GAP = 10;
@@ -73,6 +74,10 @@ export default function ProgressScreen() {
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(null);
   const [addingPhoto, setAddingPhoto] = useState(false);
+  // Sprint 4.4 — Claude Vision photo analysis
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<PhotoAnalysis | null>(null);
+  const [analysisModalVisible, setAnalysisModalVisible] = useState(false);
   const { stats, loadStats, profile } = useAuthStore();
 
   const loadData = useCallback(async () => {
@@ -165,6 +170,69 @@ export default function ProgressScreen() {
       },
     ]);
   }, []);
+
+  // Sprint 4.4 — Analyser une photo avec Claude Vision IA
+  const handleAnalyzeWithAI = useCallback(async () => {
+    Alert.alert('Analyse IA', "Choisis une photo pour l'analyse Body Fat + Masse musculaire", [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Camera',
+        onPress: async () => {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) {
+            Alert.alert('Permission requise', "Autorise l'acces a la camera.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ['images'],
+            quality: 0.6,
+            base64: true,
+            allowsEditing: true,
+            aspect: [3, 4],
+          });
+          if (!result.canceled && result.assets?.[0]?.base64) {
+            await runAnalysis(result.assets[0].base64, 'front');
+          }
+        },
+      },
+      {
+        text: 'Galerie',
+        onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            quality: 0.6,
+            base64: true,
+            allowsEditing: true,
+            aspect: [3, 4],
+          });
+          if (!result.canceled && result.assets?.[0]?.base64) {
+            await runAnalysis(result.assets[0].base64, 'front');
+          }
+        },
+      },
+    ]);
+  }, []);
+
+  const runAnalysis = useCallback(async (base64: string, poseType: string) => {
+    try {
+      setAnalyzing(true);
+      // 1. Créer d'abord la photo (pour avoir un photoId)
+      const photo = await ProgressService.addProgressPhoto({
+        photoBase64: base64,
+        caption: `Analyse IA ${poseType}`,
+      });
+      // 2. Lancer l'analyse Claude Vision
+      const analysis = await ProgressService.analyzePhoto(photo.id, base64);
+      setAnalysisResult(analysis);
+      setAnalysisModalVisible(true);
+      // 3. Recharger les photos
+      await loadData();
+    } catch (e: any) {
+      Alert.alert('Erreur IA', e?.response?.data?.error || e?.message || "Analyse échouée. Réessaie.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [loadData]);
 
   const handleConfirmPhoto = useCallback(async (poseType: string) => {
     if (!selectedImageBase64) return;
@@ -404,6 +472,22 @@ export default function ProgressScreen() {
           <Ionicons name="camera-outline" size={22} color={Colors.white} />
           <Text style={styles.primaryButtonText}>Ajouter photo</Text>
         </TouchableOpacity>
+        {/* Sprint 4.4 — Bouton Analyse IA Premium */}
+        <TouchableOpacity
+          style={styles.aiAnalysisButton}
+          onPress={handleAnalyzeWithAI}
+          activeOpacity={0.85}
+          disabled={analyzing}
+        >
+          {analyzing ? (
+            <ActivityIndicator size="small" color={Colors.gold} />
+          ) : (
+            <Ionicons name="sparkles" size={22} color={Colors.gold} />
+          )}
+          <Text style={styles.aiAnalysisButtonText}>
+            {analyzing ? 'Analyse en cours…' : 'Analyser avec IA 🤖'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -632,6 +716,24 @@ export default function ProgressScreen() {
         {activeTab === 'photos' && renderPhotos()}
         {activeTab === 'performances' && renderPerformances()}
       </ScrollView>
+
+      {/* Sprint 4.4 — Modal Analyse IA Photo */}
+      <Modal
+        visible={analysisModalVisible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setAnalysisModalVisible(false)}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.aiModalHeader}>
+            <Text style={styles.aiModalTitle}>Analyse IA Premium</Text>
+            <TouchableOpacity onPress={() => setAnalysisModalVisible(false)}>
+              <Ionicons name="close" size={28} color={Colors.dark} />
+            </TouchableOpacity>
+          </View>
+          {analysisResult && <PhotoAnalysisCard analysis={analysisResult} />}
+        </SafeAreaView>
+      </Modal>
 
       {/* Pose Selection Modal */}
       <Modal
@@ -1367,5 +1469,38 @@ const styles = StyleSheet.create({
     color: Colors.lightGray,
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // Sprint 4.4 — Claude Vision photo analysis
+  aiAnalysisButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 10,
+    borderWidth: 1.5,
+    borderColor: Colors.gold,
+    backgroundColor: '#FAF3E4', // creme tadelakt
+  },
+  aiAnalysisButtonText: {
+    fontSize: Fonts.size.md,
+    fontWeight: Fonts.weight.semiBold,
+    color: Colors.gold,
+  },
+  aiModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.background,
+  },
+  aiModalTitle: {
+    fontSize: Fonts.size.lg,
+    fontWeight: Fonts.weight.bold,
+    color: Colors.dark,
   },
 });

@@ -174,7 +174,34 @@ export const ProgressService = {
     const response = await api.get(`/api/me/muscle-balance?days=${days}`);
     return response.data as MuscleBalanceResponse;
   },
+
+  // Sprint 4.4 — Analyse Claude Vision de photo progression
+  async analyzePhoto(photoId: string, photoBase64: string): Promise<PhotoAnalysis> {
+    const response = await api.post(`/api/progressphotos/${photoId}/analyze`, { photoBase64 });
+    return response.data.analysis as PhotoAnalysis;
+  },
 };
+
+// Sprint 4.4 — JSON renvoyé par Claude Vision
+export interface PhotoAnalysis {
+  bodyFatEstimate: number;
+  bodyFatRange: string;
+  postureScore: number;
+  muscleMassScore: number;
+  muscleDistribution: {
+    chest: string;
+    back: string;
+    arms: string;
+    shoulders: string;
+    core: string;
+    legs: string;
+  };
+  strengths: string[];
+  areasToImprove: string[];
+  recommendation: string;
+  confidenceScore: number;
+  disclaimer: string;
+}
 
 // Sprint 3.4
 export interface MuscleBalanceMuscle {
