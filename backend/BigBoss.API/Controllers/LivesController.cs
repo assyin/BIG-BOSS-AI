@@ -1,8 +1,10 @@
 using BigBoss.Core.DTOs.Lives;
 using BigBoss.Core.Interfaces;
+using BigBoss.Infrastructure.Data;
 using BigBoss.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BigBoss.API.Controllers;
 
@@ -13,12 +15,21 @@ public class LivesController : ControllerBase
 {
     private readonly ILiveService _liveService;
     private readonly IPushNotificationService _pushService;
+    private readonly ICloudflareStreamService _cfStream;
+    private readonly BigBossDbContext _db;
     private readonly ILogger<LivesController> _logger;
 
-    public LivesController(ILiveService liveService, IPushNotificationService pushService, ILogger<LivesController> logger)
+    public LivesController(
+        ILiveService liveService,
+        IPushNotificationService pushService,
+        ICloudflareStreamService cfStream,
+        BigBossDbContext db,
+        ILogger<LivesController> logger)
     {
         _liveService = liveService;
         _pushService = pushService;
+        _cfStream = cfStream;
+        _db = db;
         _logger = logger;
     }
 
@@ -115,5 +126,89 @@ public class LivesController : ControllerBase
             return NotFound(new { message = "Live non trouve" });
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Sprint 5.3 — Démarre le live stream via Cloudflare Stream.
+    /// Crée un live input CF (ou utilise l'existant si déjà créé), retourne le RTMP pour OBS
+    /// et l'URL HLS pour les viewers. Admin only.
+    /// </summary>
+    [HttpPost("{id:guid}/start-stream")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> StartStream(Guid id)
+    {
+        var live = await _db.Lives.FirstOrDefaultAsync(l => l.Id == id);
+        if (live == null) return NotFound(new { message = "Live non trouvé" });
+
+        // Si déjà créé : ré-utiliser
+        if (!string.IsNullOrEmpty(live.CloudflareInputUid))
+        {
+            var status = await _cfStream.GetLiveInputStatusAsync(live.CloudflareInputUid);
+            return Ok(new
+            {
+                liveInputUid = live.CloudflareInputUid,
+                rtmpKey = live.RtmpKey,                   // PRIVATE — admin only
+                hlsUrl = live.StreamUrl,
+                state = status.State,
+                reused = true,
+            });
+        }
+
+        var meta = $"BBF-Live-{id}";
+        var input = await _cfStream.CreateLiveInputAsync(meta);
+
+        live.CloudflareInputUid = input.LiveInputUid;
+        live.RtmpKey = input.RtmpKey;
+        live.StreamUrl = input.HlsUrl;
+        live.StartedAt = DateTime.UtcNow;
+        live.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Live stream started for {LiveId}, mock={Mock}", id, input.IsMock);
+
+        return Ok(new
+        {
+            liveInputUid = input.LiveInputUid,
+            rtmpUrl = input.RtmpUrl,
+            rtmpKey = input.RtmpKey,
+            hlsUrl = input.HlsUrl,
+            dashUrl = input.DashUrl,
+            playbackId = input.PlaybackId,
+            isMock = input.IsMock,
+        });
+    }
+
+    /// <summary>
+    /// Sprint 5.3 — Termine le live. Met EndedAt. Le replay sera disponible
+    /// quelques minutes après via webhook Cloudflare.
+    /// </summary>
+    [HttpPost("{id:guid}/stop-stream")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> StopStream(Guid id)
+    {
+        var live = await _db.Lives.FirstOrDefaultAsync(l => l.Id == id);
+        if (live == null) return NotFound(new { message = "Live non trouvé" });
+
+        live.EndedAt = DateTime.UtcNow;
+        live.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Live stream stopped for {LiveId}", id);
+        return Ok(new { stopped = true, endedAt = live.EndedAt });
+    }
+
+    /// <summary>
+    /// Sprint 5.3 — État du live input Cloudflare (state, viewers en cours).
+    /// </summary>
+    [HttpGet("{id:guid}/stream-status")]
+    public async Task<IActionResult> StreamStatus(Guid id)
+    {
+        var live = await _db.Lives.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id);
+        if (live == null) return NotFound();
+        if (string.IsNullOrEmpty(live.CloudflareInputUid))
+            return Ok(new { state = "not-started", liveInputUid = (string?)null });
+
+        var status = await _cfStream.GetLiveInputStatusAsync(live.CloudflareInputUid);
+        return Ok(new { status.State, liveInputUid = status.LiveInputUid, status.CurrentViewers });
     }
 }
