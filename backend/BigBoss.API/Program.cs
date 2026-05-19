@@ -184,6 +184,8 @@ builder.Services.AddScoped<ICoachService, CoachService>();
 builder.Services.AddScoped<ICloudflareService, CloudflareService>();
 // Sprint 5.3 — Cloudflare Stream pour les lives (mode mock si pas de creds)
 builder.Services.AddHttpClient<ICloudflareStreamService, CloudflareStreamService>();
+// Sprint 5.2 — Gym buddies matching
+builder.Services.AddScoped<IBuddyService, BuddyService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IProductService, ProductService>();

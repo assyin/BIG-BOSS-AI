@@ -278,9 +278,17 @@ export default function CommunityScreen() {
           <Text style={styles.headerTitle}>Communauté</Text>
           <Text style={styles.headerSubtitle}>المجتمع</Text>
         </View>
-        <TouchableOpacity onPress={() => setShowCompose(!showCompose)} style={styles.composeIconBtn}>
-          <Ionicons name="add" size={20} color={Colors.white} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity
+            onPress={() => router.push('/(main)/community/buddies' as any)}
+            style={styles.composeIconBtn}
+          >
+            <Ionicons name="people" size={20} color={Colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowCompose(!showCompose)} style={styles.composeIconBtn}>
+            <Ionicons name="add" size={20} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       {/* Compose */}

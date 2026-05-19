@@ -138,6 +138,14 @@ export default function MainLayout() {
         options={{ href: null }}
       />
       <Tabs.Screen
+        name="community/buddies"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="community/buddies-edit"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="challenges/index"
         options={{ href: null }}
       />

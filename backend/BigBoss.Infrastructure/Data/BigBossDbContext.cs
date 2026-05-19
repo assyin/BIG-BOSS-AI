@@ -20,6 +20,9 @@ public class BigBossDbContext : DbContext
     public DbSet<CoachMessage> CoachMessages => Set<CoachMessage>();
     public DbSet<Live> Lives => Set<Live>();
     public DbSet<LiveChatMessage> LiveChatMessages => Set<LiveChatMessage>();
+    // Sprint 5.2 — Gym buddies matching
+    public DbSet<BuddyProfile> BuddyProfiles => Set<BuddyProfile>();
+    public DbSet<BuddyConnection> BuddyConnections => Set<BuddyConnection>();
     public DbSet<Challenge> Challenges => Set<Challenge>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Food> Foods => Set<Food>();
