@@ -211,4 +211,120 @@ public class LivesController : ControllerBase
         var status = await _cfStream.GetLiveInputStatusAsync(live.CloudflareInputUid);
         return Ok(new { status.State, liveInputUid = status.LiveInputUid, status.CurrentViewers });
     }
+
+    /// <summary>
+    /// Sprint 5.3 — Webhook Cloudflare Stream.
+    /// Reçu quand une vidéo (replay) est prête après la fin du live.
+    /// Payload typique:
+    /// {
+    ///   "uid": "video-uid-xxx",
+    ///   "meta": { "name": "BBF-Live-<liveId>" },
+    ///   "readyToStream": true,
+    ///   "status": { "state": "ready" },
+    ///   "playback": { "hls": "https://customer.cloudflarestream.com/{uid}/manifest/video.m3u8" }
+    /// }
+    ///
+    /// Auth: header "Authorization: Bearer <BBF_CF_WEBHOOK_SECRET>" (configuré côté CF Stream).
+    /// Pas d'auth utilisateur (CF ne sait pas envoyer un JWT BBF).
+    /// </summary>
+    [HttpPost("webhook/cloudflare")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CloudflareWebhook(
+        [FromBody] System.Text.Json.JsonElement payload,
+        [FromServices] Microsoft.Extensions.Configuration.IConfiguration config)
+    {
+        // Auth simple: vérifier shared secret dans Authorization header
+        var expectedSecret = config["BBF_CF_WEBHOOK_SECRET"];
+        if (!string.IsNullOrEmpty(expectedSecret))
+        {
+            var authHeader = Request.Headers["Authorization"].ToString();
+            if (!authHeader.Equals($"Bearer {expectedSecret}", StringComparison.Ordinal))
+            {
+                _logger.LogWarning("CF webhook: invalid auth header");
+                return Unauthorized();
+            }
+        }
+
+        try
+        {
+            // Extraire meta.name = "BBF-Live-<liveId>"
+            if (!payload.TryGetProperty("meta", out var meta)
+                || !meta.TryGetProperty("name", out var nameElement))
+            {
+                _logger.LogWarning("CF webhook: meta.name missing");
+                return BadRequest(new { error = "meta.name required" });
+            }
+
+            var name = nameElement.GetString() ?? "";
+            if (!name.StartsWith("BBF-Live-"))
+            {
+                _logger.LogInformation("CF webhook: ignoring non-BBF event for {Name}", name);
+                return Ok(new { ignored = true });
+            }
+
+            var liveIdStr = name["BBF-Live-".Length..];
+            if (!Guid.TryParse(liveIdStr, out var liveId))
+                return BadRequest(new { error = "invalid liveId in meta.name" });
+
+            // Vérifier ready
+            bool ready = false;
+            if (payload.TryGetProperty("readyToStream", out var rts) && rts.ValueKind == System.Text.Json.JsonValueKind.True)
+                ready = true;
+            if (payload.TryGetProperty("status", out var status)
+                && status.TryGetProperty("state", out var stateElement)
+                && stateElement.GetString() == "ready")
+                ready = true;
+
+            if (!ready)
+            {
+                _logger.LogInformation("CF webhook: video {Name} not ready yet", name);
+                return Ok(new { received = true, ready = false });
+            }
+
+            // Extraire URL playback HLS
+            string? replayHls = null;
+            if (payload.TryGetProperty("playback", out var playback)
+                && playback.TryGetProperty("hls", out var hls))
+            {
+                replayHls = hls.GetString();
+            }
+
+            // Fallback: construire depuis video uid si pas de playback explicite
+            if (string.IsNullOrEmpty(replayHls)
+                && payload.TryGetProperty("uid", out var uidElement))
+            {
+                var videoUid = uidElement.GetString();
+                var subdomain = config["BBF_CF_STREAM_CUSTOMER_SUBDOMAIN"] ?? "customer-bbf";
+                replayHls = $"https://{subdomain}.cloudflarestream.com/{videoUid}/manifest/video.m3u8";
+            }
+
+            if (string.IsNullOrEmpty(replayHls))
+            {
+                _logger.LogWarning("CF webhook: no playback HLS for {Name}", name);
+                return Ok(new { received = true, replayUrl = (string?)null });
+            }
+
+            // Update DB
+            var live = await _db.Lives.FirstOrDefaultAsync(l => l.Id == liveId);
+            if (live == null)
+            {
+                _logger.LogWarning("CF webhook: live {LiveId} not found in DB", liveId);
+                return NotFound();
+            }
+
+            live.ReplayUrl = replayHls;
+            live.UpdatedAt = DateTime.UtcNow;
+            // Si EndedAt pas encore set, on assume que le live est fini
+            if (!live.EndedAt.HasValue) live.EndedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("CF webhook: replay ready for live {LiveId}: {Url}", liveId, replayHls);
+            return Ok(new { received = true, liveId, replayUrl = replayHls });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CF webhook processing failed");
+            return StatusCode(500, new { error = "webhook processing failed" });
+        }
+    }
 }
