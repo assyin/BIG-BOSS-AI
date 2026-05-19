@@ -602,6 +602,9 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 ### 5.1 Feed social complet ✅ FAIT (2026-05-19)
 > Modération IA Claude (toxicity score 0-1 + auto-flag), infinite scroll mobile, photo upload R2 + display, Share natif/web (wa.me + clipboard fallback), post detail thread avec compose comments + empty state.
 
+### 5.3 Live streaming Cloudflare ✅ FAIT (2026-05-19)
+> CloudflareStreamService (REST API direct, mode mock si pas de creds avec test Mux HLS), endpoints start/stop/status, SignalR LiveChatHub avec modération Claude inline (auto-mute >0.85), mobile expo-av Video HLS + LiveChatPanel SignalR client (@microsoft/signalr), webhook /api/lives/webhook/cloudflare pour replay auto. Activer prod: BBF_CF_STREAM_API_TOKEN + BBF_CF_STREAM_CUSTOMER_SUBDOMAIN + BBF_CF_WEBHOOK_SECRET.
+
 
 - **Sous-étapes** :
   1. Enregistrer 60 min audio propre influenceur (FR + Darija) — coordination avec influenceur
