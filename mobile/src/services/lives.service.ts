@@ -48,6 +48,26 @@ function fixUrl(url: string | null | undefined): string | null {
   return url;
 }
 
+// Sprint 5.3
+export interface LiveStreamInfo {
+  liveInputUid: string;
+  rtmpUrl?: string;
+  rtmpKey?: string;
+  hlsUrl: string;
+  dashUrl?: string;
+  playbackId?: string;
+  isMock?: boolean;
+}
+
+export interface LiveChatMessage {
+  id: string;
+  userId: string;
+  userName: string;
+  content: string;
+  createdAt: string;
+  isFlagged?: boolean;
+}
+
 const BASE = '/api/lives';
 
 export const LivesService = {
@@ -71,6 +91,26 @@ export const LivesService = {
       replayUrl: fixUrl(live.replayUrl),
     };
   },
+
+  // Sprint 5.3 — Admin only
+  async startStream(id: string): Promise<LiveStreamInfo> {
+    const r = await api.post<LiveStreamInfo>(`${BASE}/${id}/start-stream`);
+    return r.data;
+  },
+
+  async stopStream(id: string): Promise<void> {
+    await api.post(`${BASE}/${id}/stop-stream`);
+  },
+
+  async streamStatus(id: string): Promise<{ state: string; liveInputUid?: string; currentViewers?: number }> {
+    const r = await api.get(`${BASE}/${id}/stream-status`);
+    return r.data;
+  },
 };
+
+/** URL du Hub SignalR chat live. */
+export function getLiveChatHubUrl(): string {
+  return `${API_CONFIG.BASE_URL}/hubs/live-chat`;
+}
 
 export default LivesService;

@@ -9,6 +9,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { Colors } from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import LivesService, { LiveDetail, LIVE_TYPE_LABELS } from '@/services/lives.service';
+import LiveChatPanel from '@/components/lives/LiveChatPanel';
 
 export default function LiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -199,6 +200,13 @@ export default function LiveDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Sprint 5.3 — Chat live SignalR (visible quand live actif ou replay) */}
+      {(isLive || isPast) && id && (
+        <View style={styles.chatPanelWrapper}>
+          <LiveChatPanel liveId={id} />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -378,5 +386,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.family.medium,
     fontSize: 14,
     color: Colors.gray,
+  },
+
+  // Sprint 5.3 — Chat panel wrapper (40% écran en bas)
+  chatPanelWrapper: {
+    height: 320,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
 });
