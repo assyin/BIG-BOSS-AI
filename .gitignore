@@ -88,3 +88,11 @@ gemini_input_list.txt
 
 # WhatsApp shared images dropped in repo
 WhatsApp Image*
+
+# IDE / Editor metadata
+.claude/
+
+# Local working folders (not for repo)
+Tanslation Darija Files/
+tests/qr/
+mobile/tests/e2e-*-result.json

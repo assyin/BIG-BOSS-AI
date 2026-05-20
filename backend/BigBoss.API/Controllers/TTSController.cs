@@ -12,11 +12,13 @@ namespace BigBoss.API.Controllers;
 public class TTSController : ControllerBase
 {
     private readonly ITTSService _tts;
+    private readonly GeminiTTSService _gemini;
     private readonly ILogger<TTSController> _logger;
 
-    public TTSController(ITTSService tts, ILogger<TTSController> logger)
+    public TTSController(ITTSService tts, GeminiTTSService gemini, ILogger<TTSController> logger)
     {
         _tts = tts;
+        _gemini = gemini;
         _logger = logger;
     }
 
@@ -47,7 +49,7 @@ public class TTSController : ControllerBase
     }
 
     /// <summary>
-    /// Dev-only: génère depuis du texte sans auth. Pour debug rapide en curl.
+    /// Dev-only: génère depuis du texte sans auth (utilise le service par défaut Azure).
     /// </summary>
     [HttpPost("dev-generate")]
     public async Task<IActionResult> DevGenerate([FromBody] GenerateRequest req)
@@ -55,7 +57,21 @@ public class TTSController : ControllerBase
         if (!_tts.IsConfigured)
             return StatusCode(503, new { error = "TTS not configured" });
         var url = await _tts.GenerateSpeechUrlAsync(req.Text, req.Voice);
-        return Ok(new { url });
+        return Ok(new { url, provider = "azure" });
+    }
+
+    /// <summary>
+    /// Dev-only: génère via Gemini TTS directement (pour comparaison avec Azure).
+    /// Voix Gemini: Aoede, Kore, Charon, Puck, Zephyr, Fenrir, Leda, Orus.
+    /// </summary>
+    [HttpPost("dev-gemini")]
+    public async Task<IActionResult> DevGemini([FromBody] GenerateRequest req)
+    {
+        if (!_gemini.IsConfigured)
+            return StatusCode(503, new { error = "Gemini TTS not configured" });
+        var voice = req.Voice ?? "Aoede";
+        var url = await _gemini.GenerateSpeechUrlAsync(req.Text, voice);
+        return Ok(new { url, provider = "gemini", voice });
     }
 
     /// <summary>État du service (configuré ou non, voix par défaut).</summary>

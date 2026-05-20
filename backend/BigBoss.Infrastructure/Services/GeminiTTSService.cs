@@ -33,16 +33,18 @@ public class GeminiTTSService : ITTSService
     private readonly string _defaultVoice;
     private readonly string _audioDir;
 
-    private const string ENDPOINT =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent";
+    private const string DEFAULT_MODEL = "gemini-2.5-flash-preview-tts";
+    private const string PRO_MODEL = "gemini-2.5-pro-preview-tts";
+    private const string ENDPOINT_FORMAT =
+        "https://generativelanguage.googleapis.com/v1beta/models/{0}:generateContent";
 
     // Voix recommandées (testées pour multilingue arabe/darija)
-    //   "Kore"    : ferme, motivant — bon pour coach masculin
-    //   "Charon"  : informatif, naturel
+    //   "Kore"    : ferme, motivant — bon pour coach masculin (best darija)
     //   "Aoede"   : breezy, energique
     //   "Puck"    : upbeat, enthousiaste — bon pour encouragements
     //   "Zephyr"  : bright, clair
-    public const string DEFAULT_VOICE = "Charon";
+    //   "Charon"  : informatif (mais bias coréen sans prompt hint)
+    public const string DEFAULT_VOICE = "Kore";
 
     public bool IsConfigured => !string.IsNullOrEmpty(_apiKey);
 
@@ -70,11 +72,16 @@ public class GeminiTTSService : ITTSService
         }
 
         var voiceName = voice ?? _defaultVoice;
+
+        // Gemini TTS est prompt-driven + supporte languageCode (BCP-47)
+        var promptedText = PrependLanguageHint(text);
+        var languageCode = DetectLanguageCode(text);
+
         var payload = new
         {
             contents = new[]
             {
-                new { parts = new[] { new { text } } }
+                new { parts = new[] { new { text = promptedText } } }
             },
             generationConfig = new
             {
@@ -84,12 +91,15 @@ public class GeminiTTSService : ITTSService
                     voiceConfig = new
                     {
                         prebuiltVoiceConfig = new { voiceName }
-                    }
+                    },
+                    languageCode,
                 }
             }
         };
 
-        var url = $"{ENDPOINT}?key={_apiKey}";
+        var model = Environment.GetEnvironmentVariable("BBF_GEMINI_TTS_MODEL") ?? DEFAULT_MODEL;
+        var url = string.Format(ENDPOINT_FORMAT, model) + $"?key={_apiKey}";
+        _logger.LogDebug("Gemini TTS request: model={Model}, voice={Voice}, text-len={Len}", model, voiceName, text.Length);
         using var response = await _httpClient.PostAsJsonAsync(url, payload);
 
         if (!response.IsSuccessStatusCode)
@@ -160,6 +170,39 @@ public class GeminiTTSService : ITTSService
     }
 
     // ─── Helpers ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Gemini TTS est prompt-driven : sans hint, il devine la langue selon
+    /// la voix (Charon défault = coréen). On préfixe avec une instruction
+    /// de style pour forcer la prononciation correcte selon les caractères.
+    /// </summary>
+    private static string PrependLanguageHint(string text)
+    {
+        if (HasArabicChars(text))
+        {
+            // Darija marocaine — instruction très directive + arabic native instruction
+            return $"Read the following Moroccan Arabic (Darija) text aloud in a clear, motivating fitness coach voice. Pronounce it as a native Moroccan speaker. Do NOT translate. Do NOT change language. Text: {text}";
+        }
+        if (HasLatinChars(text))
+        {
+            return $"Read aloud in French with a motivating fitness coach tone: {text}";
+        }
+        return text;
+    }
+
+    /// <summary>BCP-47 language code détecté depuis le texte.</summary>
+    private static string DetectLanguageCode(string text)
+    {
+        if (HasArabicChars(text)) return "ar-EG"; // arabe le plus proche supporté
+        if (HasLatinChars(text)) return "fr-FR";
+        return "en-US";
+    }
+
+    private static bool HasArabicChars(string text) =>
+        text.Any(c => c >= 0x0600 && c <= 0x06FF);
+
+    private static bool HasLatinChars(string text) =>
+        text.Any(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
     private static string ComputeHash(string input)
     {
