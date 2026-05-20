@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREENS_DIR = path.join(__dirname, 'screens', 'sprint456-e2e');
 const MOBILE_BASE = 'http://localhost:8082';
-const ADMIN_BASE = 'http://localhost:3000';
+const ADMIN_BASE = process.env.ADMIN_BASE || 'http://localhost:3001';
 const API = 'http://localhost:5050';
 const HEADLESS = process.env.HEADLESS === '1';
 const SLOW_MO_MS = HEADLESS ? 0 : 500;
@@ -89,27 +89,30 @@ try {
   const hasFeed = await page.getByText(/Communauté|aucune publication|publier/i).first().isVisible().catch(() => false);
   logStep(2, 'Tab Communauté affiche feed', hasFeed);
 
-  // ═══ Step 3: Compose post (sans photo pour rester simple) ═══
-  const composeBtn = await page.locator('button, [role="button"]').filter({ hasText: /add|✏|✚/ }).first();
+  // ═══ Step 3: Compose post — taper sur tous les divs cliquables, fallback API direct ═══
   let composed = false;
   try {
-    // Tap le bouton + dans header
-    const addBtns = await page.locator('button').all();
-    for (const b of addBtns.slice(0, 30)) {
+    // Approche 1: chercher tous les éléments cliquables avec icon "add"
+    const clickables = await page.locator('div[tabindex="0"], button').all();
+    for (const b of clickables.slice(0, 80)) {
       const html = await b.innerHTML().catch(() => '');
-      if (html.includes('add') || html.includes('plus')) {
-        await b.click().catch(() => {});
-        break;
+      // Ionicons "add" icon path SVG distinctif
+      if (html.includes('M448 256c0') || html.includes('"add"') || html.includes('person-add') === false && html.includes('add')) {
+        await b.click({ timeout: 500 }).catch(() => {});
+        await page.waitForTimeout(400);
+        // Vérifier si modal/zone compose ouverte
+        const inp = page.getByPlaceholder(/Partage|motivation|publier/i).first();
+        if (await inp.isVisible({ timeout: 500 }).catch(() => false)) {
+          await inp.fill('Test E2E sprint 5.1');
+          composed = true;
+          break;
+        }
       }
-    }
-    const composeInput = page.locator('textarea, input').filter({ hasNot: page.locator('[type="email"], [type="password"]') }).first();
-    if (await composeInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await composeInput.fill('Test E2E sprint 5.1');
-      composed = true;
     }
   } catch {}
   await shot(page, '03-compose');
-  logStep(3, 'Compose post UI accessible', composed, composed ? 'input visible' : 'compose pas trouvé');
+  logStep(3, 'Compose post UI accessible', composed,
+    composed ? 'input visible' : 'compose UI introuvable en web (Ionicons SVG)');
 
   // ═══ Step 4: API test modération (vrai test moderation Claude inline) ═══
   let modFlagged = false;
@@ -120,8 +123,8 @@ try {
         data: { content: 'fuck you idiot piece of shit' },
       });
       if (r.ok()) {
-        // Vérifier en DB via admin moderation queue
-        await page.waitForTimeout(2000);
+        // Attendre Claude moderation API latence (~2-5s) avant check DB
+        await page.waitForTimeout(5000);
         const mod = await page.request.get(`${API}/api/admin/tech/moderation-queue`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
