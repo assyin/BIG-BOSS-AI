@@ -29,6 +29,7 @@
 | 6.1 | Admin tech monitoring (CPU/RAM + modération + users + AI cost) | ✅ | 19 mai |
 | 6.2 | Cache Redis agressif (GetOrSetAsync + NoOp fallback) | ✅ | 19 mai |
 | 6.3 | Audit OWASP Top 10 (security headers + 12 checks) | ✅ | 19 mai |
+| 6.5 | Beta privée 500 users + feedback in-app | ✅ | 20 mai |
 
 ### Détail des fonctionnalités livrées (raccourci)
 
@@ -754,6 +755,9 @@ Sprint 6 (S11-S12) LAUNCH PREP + BETA           27 juil - 9 août 2026
 
 ### 6.3 Audit sécurité OWASP Top 10 ✅ FAIT (2026-05-19)
 > SecurityHeadersMiddleware: 6 headers OWASP (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP). SecurityAuditController /api/admin/security/audit avec 12 checks Top 10 (A01-A10 + BBF) + secrets check. Admin /security page avec stats + checks color-coded. Score actuel: 8 OK · 4 INFO/WARN · 0 FAIL.
+
+### 6.5 Beta privée 500 users + feedback in-app ✅ FAIT (2026-05-20)
+> Backend: BetaInvitation + UserFeedback entities, /api/beta/signup public + landing /beta-signup (counter progress vers 500), /api/feedback submit + /admin/beta + /admin/feedback pages. Mobile /feedback écran (rating stars + 4 catégories + textarea). Export CSV des invitations. Validé end-to-end: signup position 1/500, feedback received.
 
 
 - **Sous-étapes** :
