@@ -314,6 +314,13 @@ export default function ProfileScreen() {
               profile?.notificationsEnabled ? 'Actives' : 'Desactivees',
               () => router.push({ pathname: '/(main)/profile-edit', params: { focus: 'notifications' } } as any)
             )}
+            {/* Sprint 6.5 — Feedback in-app */}
+            {renderSettingRow(
+              'chatbubble-ellipses-outline',
+              'Donner ton avis',
+              'Bug, idée, ou un mot',
+              () => router.push('/(main)/feedback' as any)
+            )}
           </View>
         </View>
 

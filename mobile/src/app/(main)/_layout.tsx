@@ -146,6 +146,10 @@ export default function MainLayout() {
         options={{ href: null }}
       />
       <Tabs.Screen
+        name="feedback"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="challenges/index"
         options={{ href: null }}
       />

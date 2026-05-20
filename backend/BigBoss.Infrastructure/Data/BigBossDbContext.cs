@@ -23,6 +23,9 @@ public class BigBossDbContext : DbContext
     // Sprint 5.2 — Gym buddies matching
     public DbSet<BuddyProfile> BuddyProfiles => Set<BuddyProfile>();
     public DbSet<BuddyConnection> BuddyConnections => Set<BuddyConnection>();
+    // Sprint 6.5 — Beta privée + feedback
+    public DbSet<BetaInvitation> BetaInvitations => Set<BetaInvitation>();
+    public DbSet<UserFeedback> UserFeedbacks => Set<UserFeedback>();
     public DbSet<Challenge> Challenges => Set<Challenge>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Food> Foods => Set<Food>();
